@@ -1,0 +1,206 @@
+1) 概述
+设想一下下面的情景:
+一个程序想clone 他自己的命名空间，但是想获取刚刚mounted的环境(CD),
+shared subtree 提供了必要的机制来完成上面的情况。
+
+它为per-user-namespace和versioned filesystem的功能提供了最基本的架
+构。
+
+2) 功能
+
+shared subtree 提供了四种不同的mounts;更精确的说是struct vfsmount
+(struct vfsmount->mnt_flags标识了该状态)
+	a. shared mount
+	b. slave mount
+	c. private mount
+	d. unbindable mount
+
+2a) 一个shared mount 可以被共享到许多挂载点，并且所有副本之后都保持
+相同
+	举个例子:
+	假设 /mnt 已经有一个mount，该mount是shared状态
+	mount --make-shared /mnt
+	Note: mount(8) 命令现在已经支持--make-shared flag. 所以程序smount
+	已经不再需要，并且现在已经移除了.
+	
+	# mount --bind /mnt /tmp
+	这个命令复制了/mnt 处的mount 到/tmp 挂载点。并且两个挂载点处的内容
+	保持一致.
+	# ls /mnt
+	a b c
+
+	# ls /tmp
+	a b c
+	
+	现在我们挂载一个设备到/tmp/a
+	# mount /dev/sd0 /tmp/a
+
+	#ls /tmp/a
+	t1 t2 t3
+	
+	#ls /mnt/a
+	t1 t2 t3
+	
+	现在这个挂载也已经传递到/mnt处了.
+	
+	即使将/dev/sd0 挂载到/mnt/a. 在/tmp/a 处也可见该挂载行为(双向传递)
+
+2b) 一个slave mount除了mount umount 事件只能传递到它，其他的像shared mount
+一样(只能单向传递)
+
+	所有的slave mounts 有一个master mount，这个mount是shared mount
+
+	举个例子:
+	假设/mnt有一个挂载点，并且是shared状态
+	# mount --make-shared /mnt
+
+	将/tmp bind mount到 /tmp
+	# mount --bind /mnt /tmp
+
+	这个在/tmp处的新挂载点成为了一个shared mount 并且拥有/mnt 的mount副本
+	
+	现在将在/tmp mount状态，转换为slave
+	# mount --make-slave /tmp
+	
+	将/dev/sd0 mount到 /mnt/a
+	# mount /dev/sd0 /mnt/a
+
+	# ls /mnt/a
+	t1 t2 t3
+
+	# ls /tmp/a
+	t1 t2 t3
+	这个mount行为已经传播到/tmp处的mount
+
+	然而我们看看到在/tmp挂载点处做一些mount的操作会发生什么
+	# mount /dev/sd1 /tmp/b
+	
+	# ls /tmp/b
+	s1 s2 s3
+	
+	# ls /mnt/b
+	
+	Note: 这个挂载事件并未传播到/mnt处
+
+2c) 一个private mount不会转发也不会接收传播
+	这种挂载点是default类型
+
+2d) 一个unbindable mount 是一个unbindable private mount
+	我们假设说我们有一个mount在/mnt，并且我们使它unbindable
+	# mount --make-unbindable /mnt
+	
+	我们尝试去bind mount 这个挂载点到任何地方
+	
+	# mount --bind /mnt /tmp
+	mount: wrong fs type, bad option, bad superblock on /mnt,
+		or too many mounted file systems
+	
+	bind 一个unbindable mount是一个非法操作
+
+3) 设置mount 状态
+	
+	mount 命名(util-linux package) 可以用来设置mount 状态:
+
+	mount --make-shared mountpoint
+	mount --make-slave mountpoint
+	mount --make-private mountpoint
+	mount --make-unbindable mountpoint
+
+4) 使用情景
+	
+	A) 一个程序想要去clone 他自己的namespace, 并且拥有最近的mount点
+	
+	情景:
+	
+	系统管理员使在 /cdrom 为 shared状态
+	mount --bind /cdrom /cdrom
+	mount --make-shared /cdrom
+	
+	现在任何程序clone了一个新的命名空间这个命名空间有一个在/cdrom 
+	的挂载点，这个挂载点可以在父进程的命名空间中有一个相同的副本
+
+	所以当这个环境(CD) insert and mounted /cdrom挂载点，将传播到
+	其他任何命名空间在/cdrom的挂载点处
+
+	B) 一个程序希望这个挂载对于其他进程都不可见，但是能看到其他进程
+	的挂载行为
+	
+	情景:
+	在这开始之前, 管理员标记整个的mount tree 是一个shareable的状态
+
+	mount --make-rshared /
+
+	一个新的程序clone了一个新的命名空间,并且标记它的命名空间的部分
+	为slave状态
+
+	mount --make-rslave /myprivatetree
+
+	因此，由太程序做的任何在/myprivatetree的mount行为都不会想其他的命名
+	空间中展示. 但是在父命名空间中的在/myprivatetree中的mount行为仍然
+	会在该进程的命名空间中展示出来
+	
+	另一方面功能提供的基础架构实现解决了下面的问题:
+	
+	C) Per-user namespace
+
+	上面的semantics允许了一种方法来穿过namespace. 但是namespaces是和进程
+	联系到一起的。如果使用user API作为第一分类对象，将命名空间于用户ID关
+	联/取消关联,每个用户拥有自己的命名空间，并且根据自己的需求定制.这个
+	需要在PAM中进行支持
+	
+	D) Versioned files
+	如果整个的mount tree 在多处是可见的，则基础版本控制文件系统可以根据
+	用于访问文件的路径来返回文件的不同版本。
+
+	举一个例子:
+	An example is:
+
+	mount --make-shared /
+	mount --rbind / /view/v1
+	mount --rbind / /view/v2
+	mount --rbind / /view/v3
+	mount --rbind / /view/v4
+	
+	如果/usr 有一个versioning filesystem 被挂载, 然后这个挂载将会出现在
+	/view/v1/usr, /view/v2/usr, /view/v3/usr和/view/v4/usr
+	
+	一个用户可以请求一个v3版本的/usr/fs/namespace.c文件通过/view/v3/usr/
+	fs/namespace.c. 这个基础版本文件系统可以解码正在请求文件系统的v3版本,
+	并返回相应的inode
+
+5) semantics细节
+	这个章节接下来会解释bind, rbind, move ,mount ,umount 和clone-namespace
+	操作的细节
+	
+	Note: 在这个文档中，"vfsmount"和"mount"被用于描述相同事情
+
+5a) mount状态
+
+	一个给出的mount可以被描述为下面的几种状态:
+	1) shared
+	2) slave
+	3) shared and slave
+	4) private
+	5) unbindable
+	
+	一个"propagation event"被定义为在一个vfsmount上产生了mount or umount的行
+	为导致在其他的vfsmount中也产生了该行为.
+
+	一个"peer group” 被定义为一组vfsmounts 向其他人propagation events
+
+	(1) shared mounts
+	一个 "shared mount"定义了为一个 属于一个"peer group" 的vfsmount
+
+	举个例子:
+		mount --make-shared /mnt
+		mount --bind /mnt /tmp
+
+	这个在/mnt和/tmp的挂载点相互共享，并且同属于一个peer group.在/mnt或/tmp下
+	的任何mount 和mount行为都会反射到该peer group 的所有mounts.
+	
+	(2) slave mounts
+	
+	一个"slave mount" 被定义会接收转播来的mount事件，而不会转发事件的vfsmount.
+
+	顾名思义, 一个slave mount有一个来接收mount/umount事件的master mount.事件将
+	不会从slave mount 到master传播.

@@ -1,0 +1,6 @@
+<!-- BEG -->
+<details>
+<summary><code></code></summary>
+
+</details>
+<!-- END-->

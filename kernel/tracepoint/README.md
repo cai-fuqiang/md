@@ -147,9 +147,6 @@ static inline void trace_##name(proto)              \
 //=======================FILE:linux/tracepoint.h=======================
 ```
 
-
-
-
 # tracepoint 初始化流程
 ## 代码流程
 ```
@@ -206,9 +203,15 @@ static __init int event_trace_enable(void)
 
 ```
 
-
 ## trace event session
+for_each_event实际上是从`__start_ftrace_events`-->`__stop_ftrace_events`
+之间的内存进行解析，里面存放的是类似与`struct trace_event_call *[]`这样的
+数组。我们来看下这两个地址的来龙去脉
 相关代码为
+
+<details>
+<summary>代码部分</summary>
+
 ```C/C++
 //=====================include/asm-generic/vmlinux.lds.h===============
 #ifdef CONFIG_EVENT_TRACING
@@ -227,6 +230,7 @@ static __init int event_trace_enable(void)
 #define FTRACE_EVENTS()
 #endif
 ```
+
 那么这个段是怎么和vmlinux session联系起来的呢
 我们看下面的代码:
 ```C/C++
@@ -329,4 +333,201 @@ NOTE: 这里的data* 为struct trace_event_call **
 138772: ffffffff82821b30     0 NOTYPE  GLOBAL DEFAULT   18 __stop_ftrace_events
 ```
 可以看到这两个符号都在.init.data段的范围之间
+</details>
 
+## __trace_early_add_events
+在执行`__trace_early_add_events`之前，实际上已经将所有的`struct trace_event_call`
+挂入全局链表`ftrace_events`中.
+
+而`__trace_early_add_events`要做的是，将`ftrace_events`中的所有的`trace_event_call`
+以某种方式注册到系统中，
+<!-- 有待确认
+并且创建`"event_dir"`, 如下图所有的目录:
+```
+[root@localhost linux-4.18.0-147]# ls /sys/kernel/debug/tracing/events/
+alarmtimer    context_tracking  fib           header_page  iommu        kyber    napi            page_pool  raw_syscalls  sched   sunrpc    tlb       workqueue
+block         cpuhp             fib6          huge_memory  irq          libata   neigh           percpu     rcu           scsi    swiotlb   ucsi      writeback
+bpf_test_run  devlink           filelock      hyperv       irq_matrix   mce      net             power      regmap        signal  syscalls  udp       x86_fpu
+bridge        dma_fence         filemap       i2c          irq_vectors  mdio     nmi             printk     resctrl       skb     task      vmscan    xdp
+cgroup        drm               fs_dax        initcall     kmem         migrate  oom             qdisc      rpm           smbus   tcp       vsock     xen
+clk           enable            ftrace        intel_iommu  kvm          module   page_isolation  random     rseq          sock    thermal   vsyscall  xfs
+compaction    exceptions        header_event  iomap        kvmmmu       msr      pagemap         ras        rtc           spi     timer     wbt       xhci-hcd
+```
+-->
+
+我们来展开下代码:
+<!--__trace_early_add_events BEGIN -->
+<details>
+<summary><code>__trace_early_add_events</code></summary>
+
+```C/C++
+/*
+ * For early boot up, the top trace array requires to have
+ * a list of events that can be enabled. This must be done before
+ * the filesystem is set up in order to allow events to be traced
+ * early.
+ */
+/*
+ * 在启动早期，顶层trace array需要有一个events list去使能。这个需要
+ * 在文件系统建立之前被做完，以便允许events能够早期被跟踪
+ * 
+ * NOTE: 所以从上面的注释来看，执行完该部分，实际上内核就可以使用ftrace
+ * 功能了
+ */
+static __init void
+__trace_early_add_events(struct trace_array *tr)
+{
+    struct trace_event_call *call;
+    int ret;
+	//遍历ftrace_events
+    list_for_each_entry(call, &ftrace_events, list) {
+        /* Early boot up should not have any modules loaded */
+        if (WARN_ON_ONCE(call->mod))
+            continue;
+		//往tr中去注册一个trace_events
+        ret = __trace_early_add_new_event(call, tr);
+        if (ret < 0)
+            pr_warn("Could not create early event %s\n",
+                trace_event_name(call));
+    }
+}
+```
+
+<!--__trace_early_add_new_event BEGIN -->
+<details>
+<summary><code>__trace_early_add_new_event</code></summary>
+
+```C/C++
+/*
+ * Just create a decriptor for early init. A descriptor is required
+ * for enabling events at boot. We want to enable events before
+ * the filesystem is initialized.
+ */
+//注释和上面函数的注释意思一致
+static __init int
+__trace_early_add_new_event(struct trace_event_call *call,
+                struct trace_array *tr)
+{
+    struct trace_event_file *file;
+
+    file = trace_create_new_event(call, tr);
+    if (!file)
+        return -ENOMEM;
+
+    return 0;
+}
+
+```
+这里可以看出实际上在`trace_event_call`之上还有一个数据结构，名为
+`trace_event_file`
+
+<!-- trace_event_new_event BEGIN-->
+<details>
+<summary><code>trace_create_new_event</code></summary>
+
+```C/C++
+static struct trace_event_file *                                  
+trace_create_new_event(struct trace_event_call *call,             
+               struct trace_array *tr)                            
+{                                                                 
+    struct trace_event_file *file;                                
+                                                                  
+    file = kmem_cache_alloc(file_cachep, GFP_TRACE);              
+    if (!file)                                                    
+        return NULL;                                              
+                                                                  
+    file->event_call = call;				//赋值event_call
+    file->tr = tr;             				//赋值tr
+    atomic_set(&file->sm_ref, 0);                                 
+    atomic_set(&file->tm_ref, 0);                                 
+    INIT_LIST_HEAD(&file->triggers);		//这个不知道干嘛
+	//加入到tr->events中实际上这个就算是注册成功了, 因为使能
+	//该events时，实际上是从tr->events中找的
+    list_add(&file->list, &tr->events);
+                                                                  
+    return file;                                                  
+}
+```
+</details>
+<!-- trace_event_new_event END-->
+
+</details>
+<!--__trace_early_add_new_event END-->
+
+</details>
+<!--__trace_early_add_events END-->
+
+## early_enable_events
+` early_enable_events` 函数的作用是, 根据cmdline中的内容，去使能一些trace_event
+我们来看下相关代码
+
+首先我们看下和trace_event cmdline相关代码:
+
+<!--trace_event cmdline BEGIN-->
+<details>
+<summary><code>trace_event cmdline</code></summary>
+
+```C/C++
+//============FILE:kernel/trace/trace_events=============
+//在x86中COMMAND_LINE_SIZE长度为2048
+static char bootup_event_buf[COMMAND_LINE_SIZE] __initdata;
+
+static __init int setup_trace_event(char *str)
+{
+    strlcpy(bootup_event_buf, str, COMMAND_LINE_SIZE);
+    ring_buffer_expanded = true;
+    tracing_selftest_disabled = true;
+
+    return 1;
+}
+__setup("trace_event=", setup_trace_event);
+```
+
+</details>
+<!--trace_event cmdline END-->
+从代码中可以看到, 在cmdline中是以`trace_event=`作为前缀
+<!--early_enable_events BEGIN-->
+<details>
+<summary><code>early_enable_events</code></summary>
+
+```C/C++
+static __init void
+early_enable_events(struct trace_array *tr, bool disable_first)
+{
+    char *buf = bootup_event_buf;
+    char *token;
+    int ret;
+
+    while (true) {
+        //在cmdline中，各个event_call是通过','分隔的
+        token = strsep(&buf, ",");
+
+        if (!token)
+            break;
+
+        if (*token) {
+            /* Restarting syscalls requires that we stop them first */
+            if (disable_first)          //如果是disable的话，先取消使能
+                ftrace_set_clr_event(tr, token, 0);
+
+            ret = ftrace_set_clr_event(tr, token, 1);  //使能该trace_event
+            if (ret)
+                pr_warn("Failed to enable trace event: %s\n", token);
+        }
+
+        /* Put back the comma to allow this to be called again */
+        if (buf)
+            *(buf - 1) = ',';
+    }
+}
+```
+</details>
+<!--early_enable_events BEGIN-->
+
+上面最主要的函数为`ftrace_set_clr_event`，该函数的原型是:<br/>
+```C/C++
+static int ftrace_set_clr_event(struct trace_array *tr, char *buf, int set)
+```
+作用为:使能buf字符串代表的trace events
+
+后面的流程暂不介绍了

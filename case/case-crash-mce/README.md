@@ -611,8 +611,8 @@ formatted such that:
 ```
 可以解析为`11:00.0`
 
-
-# 关于产生panic的核心给其他核心发送NMI请求的代码验证
+# 本case的其他相关点
+## 关于产生panic的核心给其他核心发送NMI请求的代码验证
 代码流程为
 ```
 panic
@@ -681,3 +681,10 @@ static void native_stop_other_cpus(int wait)
 ```
 </details>
 
+##  给客户反馈的说明文档
+
+[给客户反馈的说明文档](./msg.md)
+
+## 对case message __warn原因分析
+
+[__warn原因分析](./__warn.md)

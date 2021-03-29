@@ -79,9 +79,14 @@ topology_sane(struct cpuinfo_x86 *c, struct cpuinfo_x86 *o, const char *name)
 如果两个cpu `cpu_llc_id`相同，但是numa node 不同，则会触发这个__warn
 
 ## 上游内核改动
+* commit 信息
+```
 commit 1340ccfa9a9afefdbab90d7935d4ed19817e37c2
 Author: Alison Schofield <alison.schofield@intel.com>
 Date:   Fri Apr 6 17:21:30 2018 -0700
+```
+
+* code
 
 ```C/C++
 +static const struct x86_cpu_id snc_cpu[] = {

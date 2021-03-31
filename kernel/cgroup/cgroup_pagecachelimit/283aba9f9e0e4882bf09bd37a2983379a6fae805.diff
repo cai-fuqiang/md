@@ -1,0 +1,232 @@
+tree 8c856efae71bb2daaadae48ff565132dd6e0b06b
+parent d43006d503ac921c7df4f94d13c17db6f13c9d26
+author Mel Gorman <mgorman@suse.de> Wed Jul 3 15:01:51 2013 -0700
+committer Linus Torvalds <torvalds@linux-foundation.org> Wed Jul 3 16:07:28 2013 -0700
+
+mm: vmscan: block kswapd if it is encountering pages under writeback
+
+Historically, kswapd used to congestion_wait() at higher priorities if
+it was not making forward progress.  This made no sense as the failure
+to make progress could be completely independent of IO.  It was later
+replaced by wait_iff_congested() and removed entirely by commit 258401a6
+(mm: don't wait on congested zones in balance_pgdat()) as it was
+duplicating logic in shrink_inactive_list().
+
+从历史上看，如果kswapd没有取得进展，则曾经以较高的优先级congestion_wait（）。
+这是没有道理的，因为无法取得进展可能完全独立于IO。后来，它被wait_iff_congested
+（）替换，并被提交258401a6完全删除（mm: don't wait on congested zones 
+in balance_pgdat()），因为它正在缩减rinke_inactive_list（）中的逻辑。
+
+This is problematic.  If kswapd encounters many pages under writeback
+and it continues to scan until it reaches the high watermark then it
+will quickly skip over the pages under writeback and reclaim clean young
+pages or push applications out to swap.
+
+这是有问题的。 如果kswapd在回写下遇到许多页面，并且继续扫描直到达到高
+水位标记，那么它将迅速跳过回写下的页面并回收干净的年轻页面或将应用程序
+推出以进行交换。
+
+The use of wait_iff_congested() is not suited to kswapd as it will only
+stall if the underlying BDI is really congested or a direct reclaimer
+was unable to write to the underlying BDI.  kswapd bypasses the BDI
+congestion as it sets PF_SWAPWRITE but even if this was taken into
+account then it would cause direct reclaimers to stall on writeback
+which is not desirable.
+
+使用wait_iff_congested（）不适合kswapd，因为只有在基础BDI实际拥塞或
+直接回收器无法写入基础BDI时，kswapd才会暂停。 kswapd会在设置PF_SWAPWRITE
+时绕过BDI拥塞，但是即使考虑了这一点，也会导致直接回收器在回写时停止，
+这是不希望的。
+
+This patch sets a ZONE_WRITEBACK flag if direct reclaim or kswapd is
+encountering too many pages under writeback.  If this flag is set and
+kswapd encounters a PageReclaim page under writeback then it'll assume
+that the LRU lists are being recycled too quickly before IO can complete
+and block waiting for some IO to complete.
+
+如果直接回收或kswapd在写回下遇到太多页面，则此修补程序将设置ZONE_WRITEBACK
+标志。 如果设置了此标志，并且kswapd在写回下遇到PageReclaim页面，则将假定LRU
+列表的回收速度太快，无法完成IO，并阻止等待某些IO完成。
+
+Signed-off-by: Mel Gorman <mgorman@suse.de>
+Reviewed-by: Michal Hocko <mhocko@suse.cz>
+Acked-by: Rik van Riel <riel@redhat.com>
+Cc: Johannes Weiner <hannes@cmpxchg.org>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Jiri Slaby <jslaby@suse.cz>
+Cc: Valdis Kletnieks <Valdis.Kletnieks@vt.edu>
+Tested-by: Zlatko Calusic <zcalusic@bitsync.net>
+Cc: dormando <dormando@rydia.net>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+
+diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
+index 2aaf72f7e345..fce64afba042 100644
+--- a/include/linux/mmzone.h
++++ b/include/linux/mmzone.h
+@@ -499,6 +499,9 @@ typedef enum {
+ 					 * many dirty file pages at the tail
+ 					 * of the LRU.
+ 					 */
++	ZONE_WRITEBACK,			/* reclaim scanning has recently found
++					 * many pages under writeback
++					 */
+ } zone_flags_t;
+ 
+ static inline void zone_set_flag(struct zone *zone, zone_flags_t flag)
+@@ -526,6 +529,11 @@ static inline int zone_is_reclaim_dirty(const struct zone *zone)
+ 	return test_bit(ZONE_TAIL_LRU_DIRTY, &zone->flags);
+ }
+ 
++static inline int zone_is_reclaim_writeback(const struct zone *zone)
++{
++	return test_bit(ZONE_WRITEBACK, &zone->flags);
++}
++
+ static inline int zone_is_reclaim_locked(const struct zone *zone)
+ {
+ 	return test_bit(ZONE_RECLAIM_LOCKED, &zone->flags);
+diff --git a/mm/vmscan.c b/mm/vmscan.c
+index d6c916d808ba..1109de0c35bf 100644
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -724,25 +724,55 @@ static unsigned long shrink_page_list(struct list_head *page_list,
+ 		may_enter_fs = (sc->gfp_mask & __GFP_FS) ||
+ 			(PageSwapCache(page) && (sc->gfp_mask & __GFP_IO));
+ 
++		/*
++		 * If a page at the tail of the LRU is under writeback, there
++		 * are three cases to consider.
++		 *
++		 * 1) If reclaim is encountering an excessive number of pages
++		 *    under writeback and this page is both under writeback and
++		 *    PageReclaim then it indicates that pages are being queued
++		 *    for IO but are being recycled through the LRU before the
++		 *    IO can complete. Waiting on the page itself risks an
++		 *    indefinite stall if it is impossible to writeback the
++		 *    page due to IO error or disconnected storage so instead
++		 *    block for HZ/10 or until some IO completes then clear the
++		 *    ZONE_WRITEBACK flag to recheck if the condition exists.
+              如果回收在写回下遇到过多的页面，并且此页面在写回和PageReclaim
+              下，则表明页面正在排队等待IO，但在IO可以完成之前LRU已经进行了
+              回收操作。如果由于IO错误或存储断开连接而无法写回页面，则等待页
+              面本身可能会导致无限期的停顿，因此请阻塞HZ10或直到某些IO完成后
+              再清除ZONE_WRITEBACK标志以重新检查条件是否存在。
++		 *
++		 * 2) Global reclaim encounters a page, memcg encounters a
++		 *    page that is not marked for immediate reclaim or
++		 *    the caller does not have __GFP_IO. In this case mark
++		 *    the page for immediate reclaim and continue scanning.
+             全局回收遇到一个页面，memcg遇到一个未标记为立即回收的页面，
+             或者调用者没有__GFP_IO。在这种情况下，请将页面标记为可立即
+             回收并继续扫描。
++		 *
++		 *    __GFP_IO is checked  because a loop driver thread might
++		 *    enter reclaim, and deadlock if it waits on a page for
++		 *    which it is needed to do the write (loop masks off
++		 *    __GFP_IO|__GFP_FS for this reason); but more thought
++		 *    would probably show more reasons.
+              检查__GFP_IO是因为loop driver thread 驱动程序线程可能进
+              入回收状态，如果它在需要进行写操作的页面上等待则死锁
+              （因此，循环屏蔽__GFP_IO|__GFP_FS）；但更多的思考可能
+              会显示更多的原因。
+
++		 *    Don't require __GFP_FS, since we're not going into the
++		 *    FS, just waiting on its writeback completion. Worryingly,
++		 *    ext4 gfs2 and xfs allocate pages with
++		 *    grab_cache_page_write_begin(,,AOP_FLAG_NOFS), so testing
++		 *    may_enter_fs here is liable to OOM on them.
+
+              不需要__GFP_FS，因为我们不打算使用FS，只需等待其写回完成即可。
+              令人担忧的是，ext4 gfs2和xfs分配了具有grap_cache_page_write_begin（,,
+              AOP_FLAG_NOFS）的页面，因此在此处测试may_enter_fs可能会
+              使它们变得OOM。
++		 * 3) memcg encounters a page that is not already marked
++		 *    PageReclaim. memcg does not have any dirty pages
++		 *    throttling so we could easily OOM just because too many
++		 *    pages are in writeback and there is nothing else to
++		 *    reclaim. Wait for the writeback to complete.
++		 */
+            memcg遇到尚未标记为PageReclaim的页面。memcg没有任何脏页限制，
+            因此我们可以轻松地OOM，因为有太多页处于写回状态并且没有其他可
+            回收的了。等待写回完成。
+ 		if (PageWriteback(page)) {
+-			/*
+-			 * memcg doesn't have any dirty pages throttling so we
+-			 * could easily OOM just because too many pages are in
+-			 * writeback and there is nothing else to reclaim.
+-			 *
+-			 * Check __GFP_IO, certainly because a loop driver
+-			 * thread might enter reclaim, and deadlock if it waits
+-			 * on a page for which it is needed to do the write
+-			 * (loop masks off __GFP_IO|__GFP_FS for this reason);
+-			 * but more thought would probably show more reasons.
+-			 *
+-			 * Don't require __GFP_FS, since we're not going into
+-			 * the FS, just waiting on its writeback completion.
+-			 * Worryingly, ext4 gfs2 and xfs allocate pages with
+-			 * grab_cache_page_write_begin(,,AOP_FLAG_NOFS), so
+-			 * testing may_enter_fs here is liable to OOM on them.
+-			 */
+-			if (global_reclaim(sc) ||
++			/* Case 1 above */
++			if (current_is_kswapd() &&   //kswapd不想一直等
++			    PageReclaim(page) &&
++			    zone_is_reclaim_writeback(zone)) {
++				unlock_page(page);
++				congestion_wait(BLK_RW_ASYNC, HZ/10);
++				zone_clear_flag(zone, ZONE_WRITEBACK);
++				goto keep;
++
++			/* Case 2 above */
++			} else if (global_reclaim(sc) ||
+ 			    !PageReclaim(page) || !(sc->gfp_mask & __GFP_IO)) {
+ 				/*
+ 				 * This is slightly racy - end_page_writeback()
+@@ -757,9 +787,13 @@ static unsigned long shrink_page_list(struct list_head *page_list,
+ 				 */
+ 				SetPageReclaim(page);
+ 				nr_writeback++;
++
+ 				goto keep_locked;
++
++			/* Case 3 above */
++			} else {
++				wait_on_page_writeback(page);
+ 			}
+-			wait_on_page_writeback(page);
+ 		}
+ 
+ 		if (!force_reclaim)
+@@ -1374,8 +1408,10 @@ shrink_inactive_list(unsigned long nr_to_scan, struct lruvec *lruvec,
+ 	 *                     isolated page is PageWriteback
+ 	 */
+ 	if (nr_writeback && nr_writeback >=
+-			(nr_taken >> (DEF_PRIORITY - sc->priority)))
++			(nr_taken >> (DEF_PRIORITY - sc->priority))) {          //writeback页太多了
+ 		wait_iff_congested(zone, BLK_RW_ASYNC, HZ/10);
++		zone_set_flag(zone, ZONE_WRITEBACK);
++	}
+ 
+ 	/*
+ 	 * Similarly, if many dirty pages are encountered that are not
+@@ -2669,8 +2705,8 @@ static bool prepare_kswapd_sleep(pg_data_t *pgdat, int order, long remaining,
+  * the high watermark.
+  *
+  * Returns true if kswapd scanned at least the requested number of pages to
+- * reclaim. This is used to determine if the scanning priority needs to be
+- * raised.
++ * reclaim or if the lack of progress was due to pages under writeback.
++ * This is used to determine if the scanning priority needs to be raised.
+  */
+ static bool kswapd_shrink_zone(struct zone *zone,
+ 			       struct scan_control *sc,
+@@ -2697,6 +2733,8 @@ static bool kswapd_shrink_zone(struct zone *zone,
+ 	if (nr_slab == 0 && !zone_reclaimable(zone))
+ 		zone->all_unreclaimable = 1;
+ 
++	zone_clear_flag(zone, ZONE_WRITEBACK);                  //清空
++
+ 	return sc->nr_scanned >= sc->nr_to_reclaim;
+ }
+ 

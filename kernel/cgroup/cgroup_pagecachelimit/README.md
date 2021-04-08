@@ -33,5 +33,12 @@ rss:436736KB rss_huge:0KB shmem:0KB mapped_file:0KB dirty:1695936KB writeback:63
 swap:0KB inactive_anon:0KB active_anon:423936KB inactive_file:447296KB active_file:1225728KB 
 unevictable:0KB
 
+
+## 相关代码
+
+### dirty 回写
+static void balance_dirty_pages(struct bdi_writeback *wb,
+                unsigned long pages_dirtied);
+
 ### 相关链接
 https://lkml.org/lkml/2014/6/16/142

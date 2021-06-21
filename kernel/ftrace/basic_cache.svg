@@ -1,0 +1,169 @@
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" xmlns:v="http://schemas.microsoft.com/visio/2003/SVGExtensions/" width="410.50368" height="242.09184" viewBox="0 0 307.878 181.569" xml:space="preserve" color-interpolation-filters="sRGB" class="st13" version="1.1">
+	
+
+	<style type="text/css">
+	<![CDATA[
+		.st1 {fill:#ebf1de;stroke:#000000;stroke-width:0.24}
+		.st2 {fill:none;stroke:none;stroke-linecap:butt;stroke-width:0.5}
+		.st3 {fill:#000000;font-family:Arial,Helvetica,sans-serif;font-size:0.666664em}
+		.st4 {fill:#fffafa;stroke:#000000;stroke-width:0.24}
+		.st5 {fill:#7395bf;stroke:#000000;stroke-width:0.24}
+		.st6 {marker-end:url(#mrkr4-22);marker-start:url(#mrkr4-20);stroke:#000000;stroke-width:0.24}
+		.st7 {fill:#000000;fill-opacity:1;stroke:#000000;stroke-opacity:1;stroke-width:0.11764705882353}
+		.st8 {fill:#fdefe3;stroke:#000000;stroke-width:0.24}
+		.st9 {fill:#d9d9d9;stroke:#000000;stroke-width:0.24}
+		.st10 {marker-end:url(#mrkr4-22);marker-start:url(#mrkr4-20);stroke:#000000;stroke-linecap:butt;stroke-width:0.24}
+		.st11 {marker-end:url(#mrkr4-90);stroke:#000000;stroke-linecap:butt;stroke-width:0.5}
+		.st12 {fill:#000000;fill-opacity:1;stroke:#000000;stroke-opacity:1;stroke-width:0.21739130434783}
+		.st13 {fill:none;fill-rule:evenodd;font-size:12px;overflow:visible;stroke-linecap:square;stroke-miterlimit:3}
+	]]>
+	</style>
+
+	<defs id="Markers">
+		<g id="lend4">
+			<path d="M 2 1 L -0 0 L 2 -1 L 2 1 " style="stroke:none" />
+		</g>
+		<marker overflow="visible" id="mrkr4-20" class="st7" orient="auto">
+			<use xlink:href="#lend4" transform="scale(8.5) " />
+		</marker>
+		<marker overflow="visible" id="mrkr4-22" class="st7" orient="auto">
+			<use xlink:href="#lend4" transform="scale(-8.5,-8.5) " />
+		</marker>
+		<marker overflow="visible" id="mrkr4-90" class="st12" orient="auto">
+			<use xlink:href="#lend4" transform="scale(-4.6,-4.6) " />
+		</marker>
+	</defs>
+	<g>
+		<title>Page-1</title>
+		
+		
+		<g id="shape22-1" transform="translate(12.9959,-73.6121)">
+			<title>Sheet.22</title>
+			
+			<rect x="0" y="73.8521" width="205.512" height="107.717" rx="5.66929" ry="5.66929" class="st1" />
+		</g>
+		<g id="shape21-3" transform="translate(183.075,-167.155)">
+			<title>Sheet.21</title>
+			<desc>Cluster</desc>
+			
+			
+			<rect x="0" y="175.899" width="36.8504" height="5.66929" class="st2" />
+			<text x="5.76" y="181.13" class="st3">Cluster</text>		</g>
+		<g id="shape20-6" transform="translate(0.24,-62.2735)">
+			<title>Sheet.20</title>
+			
+			<rect x="0" y="73.8521" width="206.929" height="107.717" rx="5.66929" ry="5.66929" class="st1" />
+		</g>
+		<g id="shape3-8" transform="translate(0.24,-0.24)">
+			<title>Sheet.3</title>
+			<desc>Bus</desc>
+			
+			
+			<rect x="0" y="168.813" width="307.398" height="12.7559" rx="5.66929" ry="5.66929" class="st4" />
+			<text x="146.81" y="177.59" class="st3">Bus</text>		</g>
+		<g id="shape4-11" transform="translate(228.201,-29.0865)">
+			<title>Sheet.4</title>
+			<desc>Main Memory</desc>
+			
+			
+			<rect x="0" y="29.3265" width="79.3701" height="152.242" rx="5.66929" ry="5.66929" class="st5" />
+			<text x="15.46" y="107.85" class="st3">Main Memory</text>		</g>
+		<g id="shape7-14" transform="translate(260.799,-29.0865)">
+			<title>Dynamic connector.7</title>
+			<path d="M7.09 185.29 L7.09 185.65 L7.09 193.58" class="st6" />
+		</g>
+		<g id="shape9-23" transform="translate(0.24,-31.1811)">
+			<title>Sheet.9</title>
+			<desc>External Level 3 Cache</desc>
+			
+			
+			<rect x="0" y="158.891" width="218.268" height="22.6772" rx="5.66929" ry="5.66929" class="st8" />
+			<text x="67.78" y="172.63" class="st3">External Level 3 Cache</text>		</g>
+		<g id="shape11-26" transform="translate(95.2006,-31.1811)">
+			<title>Dynamic connector.11</title>
+			<path d="M7.09 185.29 L7.09 185.65 L7.09 195.67" class="st6" />
+		</g>
+		<g id="group2-33" transform="translate(5.90929,-67.0491)">
+			<title>Sheet.2</title>
+			<g id="shape12-34">
+				<title>Sheet.12</title>
+				
+				<rect x="0" y="94.7419" width="96.378" height="86.8267" rx="5.66929" ry="5.66929" class="st9" />
+			</g>
+			<g id="shape13-36" transform="translate(56.6929,-3.72831)">
+				<title>Sheet.13</title>
+				<desc>Core 0</desc>
+				
+				
+				<rect x="0" y="175.899" width="36.8504" height="5.66929" class="st2" />
+				<text x="6.42" y="181.13" class="st3">Core 0</text>			</g>
+			<g id="shape15-39" transform="translate(2.83465,-58.2639)">
+				<title>Sheet.15</title>
+				<desc>Internal Level 1 Cache</desc>
+				
+				
+				<rect x="0" y="158.891" width="90.7087" height="22.6772" rx="5.66929" ry="5.66929" class="st8" />
+				<text x="5.33" y="172.63" class="st3">Internal Level 1 Cache</text>			</g>
+			<g id="shape16-42" transform="translate(41.1024,-59.3426)">
+				<title>Dynamic connector.16</title>
+				<path d="M7.09 186.37 L7.09 186.73 L7.09 190.58" class="st6" />
+			</g>
+		</g>
+		<g id="group17-49" transform="translate(105.122,-67.0491)">
+			<title>Sheet.17</title>
+			<g id="shape1-50">
+				<title>Sheet.1</title>
+				
+				<rect x="0" y="94.7419" width="96.378" height="86.8267" rx="5.66929" ry="5.66929" class="st9" />
+			</g>
+			<g id="shape5-52" transform="translate(2.83465,-57.3702)">
+				<title>Sheet.5</title>
+				<desc>Internal Level 1 Cache</desc>
+				
+				
+				<rect x="0" y="158.891" width="89.7597" height="22.6772" rx="5.66929" ry="5.66929" class="st8" />
+				<text x="4.85" y="172.63" class="st3">Internal Level 1 Cache</text>			</g>
+			<g id="shape6-55" transform="translate(41.1024,-58.4489)">
+				<title>Dynamic connector</title>
+				<path d="M7.09 186.37 L7.09 186.73 L7.09 190.58" class="st6" />
+			</g>
+			<g id="shape8-62" transform="translate(64.2479,-2.83465)">
+				<title>Sheet.8</title>
+				<desc>Core 1</desc>
+				
+				
+				<rect x="0" y="175.899" width="30.7127" height="5.66929" class="st2" />
+				<text x="3.35" y="181.13" class="st3">Core 1</text>			</g>
+		</g>
+		<g id="shape14-65" transform="translate(8.74394,-79.2814)">
+			<title>Sheet.14</title>
+			<desc>Internal Level 2 Cache</desc>
+			
+			
+			<rect x="0" y="147.553" width="189.921" height="34.0157" rx="5.66929" ry="5.66929" class="st8" />
+			<text x="54.94" y="166.96" class="st3">Internal Level 2 Cache</text>		</g>
+		<g id="shape18-68" transform="translate(235.667,102.287) rotate(90)">
+			<title>Sheet.18</title>
+			<path d="M3.72 181.57 L4.08 181.57 L21.34 181.57" class="st10" />
+		</g>
+		<g id="shape19-75" transform="translate(334.879,102.287) rotate(90)">
+			<title>Sheet.19</title>
+			<path d="M3.72 181.57 L4.08 181.57 L21.34 181.57" class="st10" />
+		</g>
+		<g id="shape10-82" transform="translate(167.484,-158.651)">
+			<title>Sheet.10</title>
+			<desc>Cluster</desc>
+			
+			
+			<rect x="0" y="175.899" width="36.8504" height="5.66929" class="st2" />
+			<text x="5.76" y="181.13" class="st3">Cluster</text>		</g>
+		<g id="shape23-85" transform="translate(346.218,119.295) rotate(90)">
+			<title>Sheet.23</title>
+			<path d="M0 181.57 L3.82 181.57" class="st11" />
+		</g>
+		<g id="shape24-91" transform="translate(247.005,119.295) rotate(90)">
+			<title>Sheet.24</title>
+			<path d="M0 181.57 L3.82 181.57" class="st11" />
+		</g>
+	</g>
+</svg>

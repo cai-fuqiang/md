@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- 由 Microsoft Visio, SVG Export 生成 ftrace_function_tracer_modify_end.svg 页-1 -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:ev="http://www.w3.org/2001/xml-events"
+		xmlns:v="http://schemas.microsoft.com/visio/2003/SVGExtensions/" width="3.25333in" height="2.62833in"
+		viewBox="0 0 234.24 189.24" xml:space="preserve" color-interpolation-filters="sRGB" class="st10">
+	<title>UML 2.5</title>
+	<desc>A template for all diagrams of UML 2.5 and earlier versions.
+For help and latest version of the template
+please visit http://softwarestencils.com. 
+Template version: 27. December 2013. 
+Known issues: The &#34;hand-drawn&#34; themes and the &#34;shady&#34; theme may have &#34;desctructive&#34; effect on some shapes.</desc>
+	<v:documentProperties v:langID="1033" v:metric="true" v:viewMarkup="false"/>
+
+	<style type="text/css">
+	<![CDATA[
+		.st1 {fill:#ffffff}
+		.st2 {stroke:#000000;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.24;visibility:hidden}
+		.st3 {fill:#000000;font-family:Calibri;font-size:0.666664em}
+		.st4 {font-family:Microsoft Sans Serif;font-size:1em}
+		.st5 {font-size:1em}
+		.st6 {stroke:#000000;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.24}
+		.st7 {fill:#000000;font-family:Calibri;font-size:0.666664em;font-weight:bold}
+		.st8 {fill:#000000;fill-opacity:1;stroke:#000000;stroke-opacity:1;stroke-width:0.08695652173913}
+		.st9 {marker-end:url(#mrkr12-81);stroke:#000000;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.24}
+		.st10 {fill:none;fill-rule:evenodd;font-size:12px;overflow:visible;stroke-linecap:square;stroke-miterlimit:3}
+	]]>
+	</style>
+
+	<defs id="Markers">
+		<g id="lend12">
+			<path d="M 3 1 L 0 0 L 3 -1 " style="stroke-linecap:round;stroke-linejoin:round;fill:none"/>
+		</g>
+		<marker id="mrkr12-81" class="st8" v:arrowType="12" v:arrowSize="2" orient="auto" markerUnits="strokeWidth"
+				overflow="visible">
+			<use xlink:href="#lend12" transform="scale(-11.5,-11.5) "/>
+		</marker>
+	</defs>
+	<g v:mID="0" v:index="1" v:groupContext="foregroundPage">
+		<title>页-1</title>
+		<v:pageProperties v:drawingScale="1" v:pageScale="1" v:drawingUnits="19" v:shadowOffsetX="9" v:shadowOffsetY="-9"/>
+		<g id="group1-1" transform="translate(0.12,-108.12)" v:mID="1" v:groupContext="group">
+			<v:userDefs>
+				<v:ud v:nameU="F" v:val="VT0(1):26"/>
+				<v:ud v:nameU="Format" v:val="VT0(0):26"/>
+				<v:ud v:nameU="ActiveObject" v:prompt="0,0626" v:val="VT0(0):26"/>
+			</v:userDefs>
+			<title>Class</title>
+			<g id="shape2-2" v:mID="2" v:groupContext="shape" transform="translate(103.5,0)">
+				<title>工作表.2</title>
+				<path d="M0 189.24 L0 108.24 L0 189.24 Z" class="st1"/>
+			</g>
+			<g id="shape3-5" v:mID="3" v:groupContext="shape">
+				<title>工作表.3</title>
+				<path d="M103.5 189.24 L0 189.24 L103.5 189.24 Z" class="st1"/>
+			</g>
+			<g id="shape4-8" v:mID="4" v:groupContext="shape">
+				<title>工作表.4</title>
+				<path d="M103.5 189.24 L0 189.24 L103.5 189.24 Z" class="st1"/>
+			</g>
+			<g id="shape5-11" v:mID="5" v:groupContext="shape">
+				<title>工作表.5</title>
+				<desc>stp x29, x30, [sp,#-304]! … bl ftrace_caller ...</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:verticalAlign="0"/>
+				<v:textRect cx="51.75" cy="162.24" width="103.5" height="54"/>
+				<rect x="0" y="135.24" width="103.5" height="54" class="st1"/>
+				<rect x="0" y="135.24" width="103.5" height="54" class="st2"/>
+				<text x="4" y="146.63" class="st3" v:langID="1033"><v:paragraph/><v:tabList/>stp     x29, x30, [sp,#-304]!<v:newlineChar/><tspan
+							x="4" dy="1.208em" class="st4" v:langID="2052">…<v:newlineChar/></tspan><tspan x="4" dy="1.223em"
+							class="st5">bl  ftrace</tspan>_caller<v:newlineChar/><tspan x="4" dy="1.208em" class="st4"
+							v:langID="2052">...</tspan></text>			</g>
+			<g id="shape6-18" v:mID="6" v:groupContext="shape" transform="translate(0,-54)">
+				<title>工作表.6</title>
+				<desc>printk</desc>
+				<v:userDefs>
+					<v:ud v:nameU="TabSize" v:val="VT0(0.125):0"/>
+				</v:userDefs>
+				<v:textBlock v:margins="rect(4,4,4,4)"/>
+				<v:textRect cx="51.75" cy="175.74" width="103.5" height="27"/>
+				<path d="M103.5 189.24 L103.5 162.24 L0 162.24 L0 189.24 L103.5 189.24 ZM0 243.24 L0 162.24 L0 243.24 ZM103.5 162.24
+							 L103.5 243.24 L103.5 162.24 Z" class="st1"/>
+				<path d="M103.5 243.24 L103.5 162.24" class="st6"/>
+				<path d="M0 243.24 L0 162.24" class="st6"/>
+				<path d="M0 162.24 L103.5 162.24" class="st6"/>
+				<path d="M0 189.24 L103.5 189.24" class="st6"/>
+				<path d="M0 243.24 L103.5 243.24" class="st6"/>
+				<text x="41.75" y="178.14" class="st7" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>printk</text>			</g>
+		</g>
+		<g id="group8-26" transform="translate(130.62,-2.37)" v:mID="8" v:groupContext="group">
+			<v:userDefs>
+				<v:ud v:nameU="F" v:val="VT0(1):26"/>
+				<v:ud v:nameU="Format" v:val="VT0(0):26"/>
+				<v:ud v:nameU="ActiveObject" v:prompt="0,0626" v:val="VT0(0):26"/>
+			</v:userDefs>
+			<title>Class.8</title>
+			<g id="shape9-27" v:mID="9" v:groupContext="shape" transform="translate(103.5,0)">
+				<title>工作表.9</title>
+				<path d="M0 189.24 L0 108.24 L0 189.24 Z" class="st1"/>
+			</g>
+			<g id="shape10-30" v:mID="10" v:groupContext="shape">
+				<title>工作表.10</title>
+				<path d="M103.5 189.24 L0 189.24 L103.5 189.24 Z" class="st1"/>
+			</g>
+			<g id="shape11-33" v:mID="11" v:groupContext="shape">
+				<title>工作表.11</title>
+				<path d="M103.5 189.24 L0 189.24 L103.5 189.24 Z" class="st1"/>
+			</g>
+			<g id="shape12-36" v:mID="12" v:groupContext="shape">
+				<title>工作表.12</title>
+				<desc>stp x29, x30, [sp,#-16]! … bl ftrace_ops_no_ops ...</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:verticalAlign="0"/>
+				<v:textRect cx="51.75" cy="162.24" width="103.5" height="54"/>
+				<rect x="0" y="135.24" width="103.5" height="54" class="st1"/>
+				<rect x="0" y="135.24" width="103.5" height="54" class="st2"/>
+				<text x="4" y="146.63" class="st3" v:langID="1033"><v:paragraph/><v:tabList/>stp     x29, x30, [sp,#-16]!<v:newlineChar/><tspan
+							x="4" dy="1.208em" class="st4" v:langID="2052">…<v:newlineChar/></tspan><tspan x="4" dy="1.223em"
+							class="st5">bl  ftrace</tspan>_ops_no_op<tspan class="st4" v:langID="2052">s<v:newlineChar/></tspan><tspan
+							x="4" dy="1.208em" class="st4" v:langID="2052">...</tspan></text>			</g>
+			<g id="shape13-44" v:mID="13" v:groupContext="shape" transform="translate(0,-54)">
+				<title>工作表.13</title>
+				<desc>ftrace_caller</desc>
+				<v:userDefs>
+					<v:ud v:nameU="TabSize" v:val="VT0(0.125):0"/>
+				</v:userDefs>
+				<v:textBlock v:margins="rect(4,4,4,4)"/>
+				<v:textRect cx="51.75" cy="175.74" width="103.5" height="27"/>
+				<path d="M103.5 189.24 L103.5 162.24 L0 162.24 L0 189.24 L103.5 189.24 ZM0 243.24 L0 162.24 L0 243.24 ZM103.5 162.24
+							 L103.5 243.24 L103.5 162.24 Z" class="st1"/>
+				<path d="M103.5 243.24 L103.5 162.24" class="st6"/>
+				<path d="M0 243.24 L0 162.24" class="st6"/>
+				<path d="M0 162.24 L103.5 162.24" class="st6"/>
+				<path d="M0 189.24 L103.5 189.24" class="st6"/>
+				<path d="M0 243.24 L103.5 243.24" class="st6"/>
+				<text x="30.97" y="178.14" class="st7" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>ftrace_caller</text>			</g>
+		</g>
+		<g id="group14-52" transform="translate(0.12,-0.12)" v:mID="14" v:groupContext="group">
+			<v:userDefs>
+				<v:ud v:nameU="F" v:val="VT0(1):26"/>
+				<v:ud v:nameU="Format" v:val="VT0(0):26"/>
+				<v:ud v:nameU="ActiveObject" v:prompt="0,0626" v:val="VT0(0):26"/>
+			</v:userDefs>
+			<title>Class.14</title>
+			<g id="shape15-53" v:mID="15" v:groupContext="shape" transform="translate(103.5,0)">
+				<title>工作表.15</title>
+				<path d="M0 189.24 L0 108.24 L0 189.24 Z" class="st1"/>
+			</g>
+			<g id="shape16-56" v:mID="16" v:groupContext="shape">
+				<title>工作表.16</title>
+				<path d="M103.5 189.24 L0 189.24 L103.5 189.24 Z" class="st1"/>
+			</g>
+			<g id="shape17-59" v:mID="17" v:groupContext="shape">
+				<title>工作表.17</title>
+				<path d="M103.5 189.24 L0 189.24 L103.5 189.24 Z" class="st1"/>
+			</g>
+			<g id="shape18-62" v:mID="18" v:groupContext="shape">
+				<title>工作表.18</title>
+				<desc>stp x29, x30, [sp,#-288]! … bl ftrace_caller ...</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:verticalAlign="0"/>
+				<v:textRect cx="51.75" cy="162.24" width="103.5" height="54"/>
+				<rect x="0" y="135.24" width="103.5" height="54" class="st1"/>
+				<rect x="0" y="135.24" width="103.5" height="54" class="st2"/>
+				<text x="4" y="146.63" class="st3" v:langID="1033"><v:paragraph/><v:tabList/>stp     x29, x30, [sp,#-288]!<v:newlineChar/><tspan
+							x="4" dy="1.208em" class="st4" v:langID="2052">…<v:newlineChar/></tspan><tspan x="4" dy="1.223em"
+							class="st5">bl  ftrace</tspan>_caller<v:newlineChar/><tspan x="4" dy="1.208em" class="st4"
+							v:langID="2052">...</tspan></text>			</g>
+			<g id="shape19-69" v:mID="19" v:groupContext="shape" transform="translate(0,-54)">
+				<title>工作表.19</title>
+				<desc>do_fork</desc>
+				<v:userDefs>
+					<v:ud v:nameU="TabSize" v:val="VT0(0.125):0"/>
+				</v:userDefs>
+				<v:textBlock v:margins="rect(4,4,4,4)"/>
+				<v:textRect cx="51.75" cy="175.74" width="103.5" height="27"/>
+				<path d="M103.5 189.24 L103.5 162.24 L0 162.24 L0 189.24 L103.5 189.24 ZM0 243.24 L0 162.24 L0 243.24 ZM103.5 162.24
+							 L103.5 243.24 L103.5 162.24 Z" class="st1"/>
+				<path d="M103.5 243.24 L103.5 162.24" class="st6"/>
+				<path d="M0 243.24 L0 162.24" class="st6"/>
+				<path d="M0 162.24 L103.5 162.24" class="st6"/>
+				<path d="M0 189.24 L103.5 189.24" class="st6"/>
+				<path d="M0 243.24 L103.5 243.24" class="st6"/>
+				<text x="38.7" y="178.14" class="st7" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>do_fork</text>			</g>
+		</g>
+		<g id="group20-77" transform="translate(55.245,-132.87)" v:mID="20" v:groupContext="group">
+			<v:userDefs>
+				<v:ud v:nameU="BeginAngle" v:prompt="reserved for future use" v:val="VT0(2):26"/>
+				<v:ud v:nameU="EndAngle" v:prompt="reserved for future use" v:val="VT0(2):26"/>
+				<v:ud v:nameU="RealBeginX" v:val="VT0(0):32"/>
+				<v:ud v:nameU="RealBeginY" v:val="VT0(0):32"/>
+				<v:ud v:nameU="EndX" v:val="VT0(-5.5511151231258E-017):1"/>
+				<v:ud v:nameU="EndY" v:val="VT0(-0.125):1"/>
+				<v:ud v:nameU="Row_7" v:val="VT0(-1):1"/>
+				<v:ud v:nameU="BeginY" v:val="VT0(-0.125):1"/>
+				<v:ud v:nameU="EndY" v:prompt="" v:val="VT0(0):1"/>
+				<v:ud v:nameU="Row_7" v:prompt="" v:val="VT0(-1.046875):1"/>
+				<v:ud v:nameU="BeginY" v:prompt="" v:val="VT0(0.6875):1"/>
+			</v:userDefs>
+			<title>Transition, Edge</title>
+			<g id="shape21-78" v:mID="21" v:groupContext="shape" transform="translate(75.375,57.8767)">
+				<title>Straight Edge.28</title>
+				<desc>N</desc>
+				<v:userDefs>
+					<v:ud v:nameU="SetSize" v:val="VT0(0):26"/>
+				</v:userDefs>
+				<v:textBlock v:margins="rect(4,4,4,4)"/>
+				<v:textRect cx="8.37669" cy="180.863" width="14.98" height="17.6036"/>
+			</g>
+			<g id="shape22-82" v:mID="22" v:groupContext="shape" transform="translate(-16.7534,8.37669)">
+				<title>Straight Edge.29</title>
+				<desc>N</desc>
+				<v:userDefs>
+					<v:ud v:nameU="SetSize" v:val="VT0(0):26"/>
+				</v:userDefs>
+				<v:textBlock v:margins="rect(4,4,4,4)"/>
+				<v:textRect cx="8.37669" cy="180.863" width="14.98" height="17.6036"/>
+			</g>
+			<g id="shape20-85" v:mID="20" v:groupContext="groupContent">
+				<path d="M0 189.24 L37.13 189.24 A18 18 0 0 1 55.13 207.24 L55.13 228.62 A10.125 10.125 -180 0 0 65.25 238.74 L75.37
+							 238.74" class="st9"/>
+			</g>
+		</g>
+		<g id="group35-90" transform="translate(55.245,-24.87)" v:mID="35" v:groupContext="group">
+			<v:userDefs>
+				<v:ud v:nameU="BeginAngle" v:prompt="reserved for future use" v:val="VT0(2):26"/>
+				<v:ud v:nameU="EndAngle" v:prompt="reserved for future use" v:val="VT0(2):26"/>
+				<v:ud v:nameU="RealBeginX" v:val="VT0(0):32"/>
+				<v:ud v:nameU="RealBeginY" v:val="VT0(0):32"/>
+				<v:ud v:nameU="EndX" v:val="VT0(-5.5511151231258E-017):1"/>
+				<v:ud v:nameU="EndY" v:val="VT0(-0.125):1"/>
+				<v:ud v:nameU="Row_7" v:val="VT0(-1):1"/>
+				<v:ud v:nameU="BeginY" v:val="VT0(-0.125):1"/>
+				<v:ud v:nameU="EndY" v:prompt="" v:val="VT0(0):1"/>
+				<v:ud v:nameU="Row_7" v:prompt="" v:val="VT0(-1.046875):1"/>
+				<v:ud v:nameU="BeginY" v:prompt="" v:val="VT0(-0.8125):1"/>
+			</v:userDefs>
+			<title>Transition, Edge.35</title>
+			<g id="shape36-91" v:mID="36" v:groupContext="shape" transform="translate(75.375,-51.0118)">
+				<title>Straight Edge.28</title>
+				<desc>N</desc>
+				<v:userDefs>
+					<v:ud v:nameU="SetSize" v:val="VT0(0):26"/>
+				</v:userDefs>
+				<v:textBlock v:margins="rect(4,4,4,4)"/>
+				<v:textRect cx="7.48817" cy="181.752" width="14.98" height="17.6036"/>
+			</g>
+			<g id="shape37-94" v:mID="37" v:groupContext="shape" transform="translate(-14.9763,7.48817)">
+				<title>Straight Edge.29</title>
+				<desc>N</desc>
+				<v:userDefs>
+					<v:ud v:nameU="SetSize" v:val="VT0(0):26"/>
+				</v:userDefs>
+				<v:textBlock v:margins="rect(4,4,4,4)"/>
+				<v:textRect cx="7.48817" cy="181.752" width="14.98" height="17.6036"/>
+			</g>
+			<g id="shape35-97" v:mID="35" v:groupContext="groupContent">
+				<path d="M0 189.24 L37.13 189.24 A18 18 -180 0 0 55.13 171.24 L55.13 140.86 A10.125 10.125 0 0 1 65.25 130.74 L75.37
+							 130.74" class="st9"/>
+			</g>
+		</g>
+	</g>
+</svg>

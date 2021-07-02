@@ -166,6 +166,35 @@ Could not set property: Failed to activate service 'org.freedesktop.hostname1': 
 #4  0x0000aaaaac859e38 in main (argc=<optimized out>, argv=<optimized out>) at ../../bus/main.c:684
 ```
 
+```
+#0  bus_activation_activate_service (activation=activation@entry=0xaaaac5783250, connection=connection@entry=0xaaaac57ae770,
+    transaction=transaction@entry=0xaaaac5797160, auto_activation=auto_activation@entry=0, activation_message=activation_message@entry=0xaaaac57aeb80,
+        service_name=0xaaaac579b044 "org.freedesktop.PolicyKit1", error=error@entry=0xffffe3ff7228) at ../../bus/activation.c:1722
+#1  0x0000aaaaac8682e4 in bus_driver_handle_activate_service (connection=0xaaaac57ae770, transaction=0xaaaac5797160, message=0xaaaac57aeb80, error=0xffffe3ff7228)
+    at ../../bus/driver.c:1003
+#2  0x0000aaaaac869d2c in bus_driver_handle_message (connection=connection@entry=0xaaaac57ae770, transaction=transaction@entry=0xaaaac5797160,
+    message=message@entry=0xaaaac57aeb80, error=error@entry=0xffffe3ff7228) at ../../bus/driver.c:2757
+#3  0x0000aaaaac8668f0 in bus_dispatch (message=0xaaaac57aeb80, connection=0xaaaac57ae770) at ../../bus/dispatch.c:390
+#4  bus_dispatch_message_filter (connection=0xaaaac57ae770, message=0xaaaac57aeb80, user_data=<optimized out>) at ../../bus/dispatch.c:545
+#5  0x0000ffffb09a7304 in dbus_connection_dispatch (connection=connection@entry=0xaaaac57ae770) at ../../dbus/dbus-connection.c:4705
+#6  0x0000aaaaac871be0 in _dbus_loop_dispatch (loop=loop@entry=0xaaaac57705f0) at ../../dbus/dbus-mainloop.c:531
+#7  0x0000aaaaac871e20 in _dbus_loop_iterate (loop=loop@entry=0xaaaac57705f0, block=block@entry=1) at ../../dbus/dbus-mainloop.c:857
+#8  0x0000aaaaac872194 in _dbus_loop_run (loop=0xaaaac57705f0) at ../../dbus/dbus-mainloop.c:883
+#9  0x0000aaaaac859e38 in main (argc=<optimized out>, argv=<optimized out>) at ../../bus/main.c:684
+
+
+#0  bus_activation_activate_service (activation=0xaaaac5783250, connection=connection@entry=0xaaaac579c760, transaction=transaction@entry=0xaaaac57b65c0,
+    auto_activation=auto_activation@entry=1, activation_message=activation_message@entry=0xaaaac57b67a0,
+        service_name=service_name@entry=0xaaaac57b69d8 "org.freedesktop.hostname1", error=error@entry=0xffffe3ff7228) at ../../bus/activation.c:1722
+#1  0x0000aaaaac866a00 in bus_dispatch (message=0xaaaac57b67a0, connection=0xaaaac579c760) at ../../bus/dispatch.c:435
+#2  bus_dispatch_message_filter (connection=0xaaaac579c760, message=0xaaaac57b67a0, user_data=<optimized out>) at ../../bus/dispatch.c:545
+#3  0x0000ffffb09a7304 in dbus_connection_dispatch (connection=connection@entry=0xaaaac579c760) at ../../dbus/dbus-connection.c:4705
+#4  0x0000aaaaac871be0 in _dbus_loop_dispatch (loop=loop@entry=0xaaaac57705f0) at ../../dbus/dbus-mainloop.c:531
+#5  0x0000aaaaac871e20 in _dbus_loop_iterate (loop=loop@entry=0xaaaac57705f0, block=block@entry=1) at ../../dbus/dbus-mainloop.c:857
+#6  0x0000aaaaac872194 in _dbus_loop_run (loop=0xaaaac57705f0) at ../../dbus/dbus-mainloop.c:883
+#7  0x0000aaaaac859e38 in main (argc=<optimized out>, argv=<optimized out>) at ../../bus/main.c:684
+
+```
 
 ```
      0 dbus-daemon(3451):  -> bus_activation_activate_service
@@ -296,4 +325,48 @@ Could not set property: Failed to activate service 'org.freedesktop.hostname1': 
  13702 dbus-daemon(3451):                                      -> free_cancel_hooks
  13707 dbus-daemon(3451):                                      <- bus_transaction_execute_and_free
  13711 dbus-daemon(3451):                                    <- bus_activation_activate_service
+```
+
+
+```
+#0  0x0000ffffb073f804 in epoll_pwait () from /lib64/libc.so.6
+#1  0x0000aaaaac875ec0 in socket_set_epoll_poll (set=<optimized out>, revents=0xffffe3ff73f8, max_events=<optimized out>, timeout_ms=<optimized out>)
+    at ../../dbus/dbus-socket-set-epoll.c:300
+#2  0x0000aaaaac871d74 in _dbus_socket_set_poll (timeout_ms=<optimized out>, max_events=64, revents=0xffffe3ff73f8, self=<optimized out>)
+    at ../../dbus/dbus-socket-set.h:111
+#3  _dbus_loop_iterate (loop=loop@entry=0xaaaac57705f0, block=block@entry=1) at ../../dbus/dbus-mainloop.c:658
+#4  0x0000aaaaac872194 in _dbus_loop_run (loop=0xaaaac57705f0) at ../../dbus/dbus-mainloop.c:883
+#5  0x0000aaaaac859e38 in main (argc=<optimized out>, argv=<optimized out>) at ../../bus/main.c:684
+
+```
+
+
+```
+1.execname(systemd) pid(1) pp(process("/usr/lib/systemd/systemd").function("unit_get_status_message_format@src/core/unit.c:1352"))
+the type is 0
+ 0xaaaab66abc74 : unit_get_status_message_format+0x0/0xc4 [/usr/lib/systemd/systemd]
+ 0xaaaab66af9a0 : unit_status_emit_starting_stopping_reloading+0x30/0x78 [/usr/lib/systemd/systemd]
+ 0xaaaab66b5f44 : job_perform_on_unit+0xa8/0xf0 [/usr/lib/systemd/systemd]
+ 0xaaaab66b7bdc : job_run_and_invalidate+0x284/0x3f8 [/usr/lib/systemd/systemd]
+ 0xaaaab6607ce4 : manager_dispatch_run_queue+0x40/0x198 [/usr/lib/systemd/systemd]
+ 0xaaaab66a8c54 : source_dispatch+0x13c/0x344 [/usr/lib/systemd/systemd]
+ 0xaaaab66a9bcc : sd_event_dispatch+0x6c/0x1c8 [/usr/lib/systemd/systemd]
+ 0xaaaab660fa9c : manager_loop+0x4e8/0x650 [/usr/lib/systemd/systemd]
+ 0xaaaab6603d5c : main+0x19ac/0x3e18 [/usr/lib/systemd/systemd]
+ 0xffffa90c1714 [/usr/lib64/libc-2.17.so+0x21714/0x190000]
+1.execname(systemd) pid(1) pp(process("/usr/lib/systemd/systemd").function("job_get_status_message_format@src/core/job.c:642"))
+the type is 0
+ 0xaaaab66b55f4 : job_get_status_message_format+0x0/0x15c [/usr/lib/systemd/systemd]
+ 0xaaaab66b57f4 : job_log_status_message+0xa4/0x608 [/usr/lib/systemd/systemd]
+ 0xaaaab66b716c : job_finish_and_invalidate+0x334/0x6bc [/usr/lib/systemd/systemd]
+ 0xaaaab66b4164 : unit_notify+0x314/0xa78 [/usr/lib/systemd/systemd]
+ 0xaaaab661fc4c : service_set_state+0x3bc/0x46c [/usr/lib/systemd/systemd]
+ 0xaaaab6623500 : service_bus_name_owner_change+0xf4/0x398 [/usr/lib/systemd/systemd]
+ 0xaaaab660cde8 : manager_dispatch_bus_name_owner_changed+0x50/0x9c [/usr/lib/systemd/systemd]
+ 0xaaaab6636cac : signal_name_owner_changed+0x80/0x118 [/usr/lib/systemd/systemd]
+ 0xaaaab66d4724 : bus_match_run+0x3d0/0x64c [/usr/lib/systemd/systemd]
+ 0xaaaab66d4778 : bus_match_run+0x424/0x64c [/usr/lib/systemd/systemd]
+ 0xaaaab66d4778 : bus_match_run+0x424/0x64c [/usr/lib/systemd/systemd]
+ 0xaaaab66d4418 : bus_match_run+0xc4/0x64c [/usr/lib/systemd/systemd]
+
 ```

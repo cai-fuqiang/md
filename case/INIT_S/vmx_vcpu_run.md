@@ -1,3 +1,4 @@
+```
 /usr/src/debug/kernel-3.10.0-693.el7/linux-3.10.0-693.el7.x86_64/arch/x86/kvm/vmx.c: 8509
 0xffffffffc079e8c0 <vmx_vcpu_run>:	nopl   0x0(%rax,%rax,1) [FTRACE NOP]
 0xffffffffc079e8c5 <vmx_vcpu_run+5>:	push   %rbp
@@ -562,3 +563,5 @@
 0xffffffffc079effc <vmx_vcpu_run+1852>:	and    $0x80000000,%edi
 0xffffffffc079f002 <vmx_vcpu_run+1858>:	mov    %rax,0x3098(%r15)
 0xffffffffc079f009 <vmx_vcpu_run+1865>:	jmpq   0xffffffffc079ec31 <vmx_vcpu_run+881>
+
+```

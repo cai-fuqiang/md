@@ -82,3 +82,6 @@ crash> x/1xg 0xffff88003e5ebce8
 int kvm_mmu_load(struct kvm_vcpu *vcpu)
 ```
 
+经过推导(推导过程略)第一个参数的地址为`ffff88043ea73280`:
+`0x348`这个参数的
+

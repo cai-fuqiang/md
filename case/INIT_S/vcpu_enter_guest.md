@@ -1,3 +1,4 @@
+```
 0xffffffffc0991e70 <vcpu_enter_guest>:	nopl   0x0(%rax,%rax,1) [FTRACE NOP]
 0xffffffffc0991e75 <vcpu_enter_guest+5>:	push   %rbp
 0xffffffffc0991e76 <vcpu_enter_guest+6>:	mov    %rsp,%rbp
@@ -967,3 +968,5 @@
 0xffffffffc0992fbc <vcpu_enter_guest+4428>:	mov    0x290(%rbx),%rsi
 0xffffffffc0992fc3 <vcpu_enter_guest+4435>:	jne    0xffffffffc09921fc <vcpu_enter_guest+908>
 0xffffffffc0992fc9 <vcpu_enter_guest+4441>:	jmp    0xffffffffc0992f8a <vcpu_enter_guest+4378>
+
+```

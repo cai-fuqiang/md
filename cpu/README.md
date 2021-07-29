@@ -111,3 +111,8 @@ architectural event来说，他对应的UMASK value都定义了一个特定的 m
 events的一个子集．Pre-defined architectural events在下图中被列出．支持的 
 pre-defined architectural events在CPUID.OAH:EBX中被枚举.
 ![Umask_event_select](pic/Umask_event_select.png)
+
+
+
+# 相关commit
+https://patchwork.kernel.org/project/kvm/patch/1457031201-31723-1-git-send-email-rkrcmar@redhat.com/

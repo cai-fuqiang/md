@@ -112,7 +112,17 @@ events的一个子集．Pre-defined architectural events在下图中被列出．
 pre-defined architectural events在CPUID.OAH:EBX中被枚举.
 ![Umask_event_select](pic/Umask_event_select.png)
 
-
+# PEBS
+处理器中关于性能监控事件的显著增强包括:
+* 四个一般目的的performance counters，IA32_PMCx，和该计数器相关的配置MSRs，
+IA32_PREFVTSELx，和全局配置寄存器MSR，支持简单控制这四个计数器．这四个计数器
+中的每一个计数器可以支持 processors event base sampling (PEBS) 并且`thread-
+qualification`的 architecturl和non-architectural的 performance events. IA32_PMCx
+硬件支持宽度有增强. CPUID.OAH:EAX[23:16]中指明为48bits. intel microarchitecture 
+code Nehalem 已经有了增强包括新的数据格式用来捕获额外的信息，例如 load latency.
+* Load latency sampling 功能. 如果使用load-latency 功能基于 intel microarchitecture
+Nehalem 的memory load 操作的平均延迟可以被采样. 该字段测量延迟从load's first dispatch
+到内存子系统的最终数据写回. 
 
 # 相关commit
 https://patchwork.kernel.org/project/kvm/patch/1457031201-31723-1-git-send-email-rkrcmar@redhat.com/

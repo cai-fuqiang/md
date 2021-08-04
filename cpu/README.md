@@ -112,6 +112,10 @@ events的一个子集．Pre-defined architectural events在下图中被列出．
 pre-defined architectural events在CPUID.OAH:EBX中被枚举.
 ![Umask_event_select](pic/Umask_event_select.png)
 
+# version 2
+在 performance monitoring version 2 中一些增强的features如下:
+* Fixed-function 性能计数寄存器和相关的控制寄存器－－
+
 # PEBS
 处理器中关于性能监控事件的显著增强包括:
 * 四个一般目的的performance counters，IA32_PMCx，和该计数器相关的配置MSRs，
@@ -122,7 +126,10 @@ qualification`的 architecturl和non-architectural的 performance events. IA32_P
 code Nehalem 已经有了增强包括新的数据格式用来捕获额外的信息，例如 load latency.
 * Load latency sampling 功能. 如果使用load-latency 功能基于 intel microarchitecture
 Nehalem 的memory load 操作的平均延迟可以被采样. 该字段测量延迟从load's first dispatch
-到内存子系统的最终数据写回. 
+到内存子系统的最终数据写回. 这个功能被报告用于retired demand load 操作和 in core cycles
+(用于计算re-dispatchs). 这个功能使用需要和PEBS功能结合.
+* off-core 响应计数功能．处理器中的该功能允许对某些
+
 
 # 相关commit
 https://patchwork.kernel.org/project/kvm/patch/1457031201-31723-1-git-send-email-rkrcmar@redhat.com/

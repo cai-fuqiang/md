@@ -428,3 +428,147 @@ ret:
 2. 连接到pending->list上
 3. 将pending->signal->sig相关掩码置位
 4. 做一些通知操作，让合适的thread去处理该信号
+
+我们看下`complete_signal()`流程
+<details>
+<summary>complete_signal()</summary>
+
+```C/C++
+static void complete_signal(int sig, struct task_struct *p, enum pid_type type)
+{
+	struct signal_struct *signal = p->signal;
+	struct task_struct *t;
+
+	/*
+	 * Now find a thread we can wake up to take the signal off the queue.
+	 *
+	 * If the main thread wants the signal, it gets first crack.
+	 * Probably the least surprising to the average bear.
+	 */
+     /*
+      * wants_signal()查看这个线程是否适合接收信号 -----(1)
+      */
+	if (wants_signal(sig, p))
+		t = p;
+    //如果不是的话，直接return
+	else if ((type == PIDTYPE_PID) || thread_group_empty(p))
+		/*
+		 * There is just one thread and it does not need to be woken.
+		 * It will dequeue unblocked signals before it runs again.
+		 */
+		return;
+	else {
+		/*
+		 * Otherwise try to find a suitable thread.
+		 */
+        //如果不是PIDTYPE_PID
+		t = signal->curr_target;
+		while (!wants_signal(sig, t)) {
+			t = next_thread(t);
+			if (t == signal->curr_target)
+				/*
+				 * No thread needs to be woken.
+				 * Any eligible threads will see
+				 * the signal in the queue soon.
+				 */
+                //找了一圈没有找到
+				return;
+		}
+		signal->curr_target = t;
+	}
+
+	/*
+	 * Found a killable thread.  If the signal will be fatal,
+	 * then start taking the whole group down immediately.
+	 */
+    /*
+     * 这里的意思感觉是，当遇到比较严重的信号，例如SIGKILL, SIGSEGV
+     * 这种信号是需要进程exit的，也就是被kill，对于多线程而言，子线程
+     * 也需要被kill，而对于子线程而言，父线程如果是肯定exit的，而子线程
+     * 也无条件exit，所以直接发送的kill信号
+     */
+	if (sig_fatal(p, sig) &&
+	    !(signal->flags & SIGNAL_GROUP_EXIT) &&
+	    !sigismember(&t->real_blocked, sig) &&
+	    (sig == SIGKILL || !p->ptrace)) {
+		/*
+		 * This signal will be fatal to the whole group.
+		 */
+		if (!sig_kernel_coredump(sig)) {
+			/*
+			 * Start a group exit and wake everybody up.
+			 * This way we don't have other threads
+			 * running and doing things after a slower
+			 * thread has the fatal signal pending.
+			 */
+			signal->flags = SIGNAL_GROUP_EXIT;
+			signal->group_exit_code = sig;
+			signal->group_stop_count = 0;
+			t = p;
+			do {
+				task_clear_jobctl_pending(t, JOBCTL_PENDING_MASK);
+				sigaddset(&t->pending.signal, SIGKILL);
+                //发的是kill信号
+				signal_wake_up(t, 1);       
+			} while_each_thread(p, t);
+			return;
+		}
+	}
+
+	/*
+	 * The signal is already in the shared-pending queue.
+	 * Tell the chosen thread to wake up and dequeue it.
+	 */
+	signal_wake_up(t, sig == SIGKILL);
+	return;
+}
+```
+</details>
+
+1. `wants_signal()` 先看下这个接口的代码
+<details>
+<summary>wants_signal()</summary>
+
+```C/C++
+/*
+ * Test if P wants to take SIG.  After we've checked all threads with this,
+ * it's equivalent to finding no threads not blocking SIG.  Any threads not
+ * blocking SIG were ruled out because they are not running and already
+ * have pending signals.  Such threads will dequeue from the shared queue
+ * as soon as they're available, so putting the signal on the shared queue
+ * will be equivalent to sending it to one such thread.
+ */
+static inline bool wants_signal(int sig, struct task_struct *p)
+{
+    //表明之前有过接收到此信号，但是还没有处理
+	if (sigismember(&p->blocked, sig))
+		return false;
+
+    //该进程正在shutdown
+	if (p->flags & PF_EXITING)
+		return false;
+    //如果信号是SIGKILL
+	if (sig == SIGKILL)
+		return true;
+    //进程如果是被stop或者被trace
+	if (task_is_stopped_or_traced(p))
+		return false;
+    
+    //如果是当前进程，返回true
+    //如果不是当前进程，并且该进程并没有设置TIF_SIGPENDING标记
+    //表示需要该信号
+	return task_curr(p) || !signal_pending(p);
+}
+```
+<details>
+翻译前面的注释:
+这个接口的作用是：测试p thread是否想去接收SIG信号．在检查了所有的threads,
+相当于所有的thread都blocking SIG. 任何没有blocking SIG的thread会被排除因为
+他们没有运行并且已经pending signal. 一旦they are available, 这些thread 将会
+从shared queue将SIG dequeue, 所以将signal 放在shared queue上，相当于把信号
+发送给这些线程中的一个.
+
+上面的注视解释了第一个判断，假如说当前该信号已经blocked, 则返回false
+这里我们主要说下最后两个判断task_curr() || !signal_pending()
+能走到这里的信号，首先是没有blocked, 并且该线程没有shutdown, 并且没有被stop
+或者被trace,这种情况下首先判断是否是当前进程，如果是当前进程就返回true

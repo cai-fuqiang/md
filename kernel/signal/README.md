@@ -450,7 +450,7 @@ static void complete_signal(int sig, struct task_struct *p, enum pid_type type)
       */
 	if (wants_signal(sig, p))
 		t = p;
-    //如果不是的话，直接return
+    //如果不是的话，直接return                    -----(2)
 	else if ((type == PIDTYPE_PID) || thread_group_empty(p))
 		/*
 		 * There is just one thread and it does not need to be woken.
@@ -461,7 +461,7 @@ static void complete_signal(int sig, struct task_struct *p, enum pid_type type)
 		/*
 		 * Otherwise try to find a suitable thread.
 		 */
-        //如果不是PIDTYPE_PID
+        //如果不是PIDTYPE_PID                   ------(3)
 		t = signal->curr_target;
 		while (!wants_signal(sig, t)) {
 			t = next_thread(t);
@@ -487,6 +487,7 @@ static void complete_signal(int sig, struct task_struct *p, enum pid_type type)
      * 也需要被kill，而对于子线程而言，父线程如果是肯定exit的，而子线程
      * 也无条件exit，所以直接发送的kill信号
      */
+     //                                     --------(4)
 	if (sig_fatal(p, sig) &&
 	    !(signal->flags & SIGNAL_GROUP_EXIT) &&
 	    !sigismember(&t->real_blocked, sig) &&
@@ -560,7 +561,8 @@ static inline bool wants_signal(int sig, struct task_struct *p)
 	return task_curr(p) || !signal_pending(p);
 }
 ```
-<details>
+</details>
+
 翻译前面的注释:
 这个接口的作用是：测试p thread是否想去接收SIG信号．在检查了所有的threads,
 相当于所有的thread都blocking SIG. 任何没有blocking SIG的thread会被排除因为
@@ -571,4 +573,27 @@ static inline bool wants_signal(int sig, struct task_struct *p)
 上面的注视解释了第一个判断，假如说当前该信号已经blocked, 则返回false
 这里我们主要说下最后两个判断task_curr() || !signal_pending()
 能走到这里的信号，首先是没有blocked, 并且该线程没有shutdown, 并且没有被stop
-或者被trace,这种情况下首先判断是否是当前进程，如果是当前进程就返回true
+或者被trace,这种情况下首先判断是否是当前进程，如果是当前进程就返回true, 如果
+不是当前进程就查看下是否有pending的标记，如果没有pending的标记，则返回true，
+否则返回false. 
+这个我的理解是: 如果是当前进程的话，那无所谓，因为在返回用户态前夕，会进
+行信号的处理，直接返回true即可，如果当前线程已经是pending的状态，表示之前
+被wakeup过了,如果还是没有被处理，说明该线程可能因为某种原因，现在处理不了
+信号, 最好找到一个可以处理的线程，如果找不到的话，那也没有关系，因为该信号
+已经挂在了`share queue`上，又被通知过了，所以一旦该线程running了，会处理该
+信号。
+
+2. 如果type == PIDTYPE_PID, 或者thread_group is empty, 表示该信号只发给或
+者是只能发给(单线程)这个线程，所以就不找其他的了。
+3. 如果是其他的type, 那么就从thread_group 中找到一个合适的线程去发送，判断是否
+合适，还是通过`wants_signal()`去判断。
+4. 该处的代码，请见注释，这里主要看下第一个条件 `sig_fatal()`定义:
+```C/C++
+#define sig_fatal(t, signr) \
+	(!siginmask(signr, SIG_KERNEL_IGNORE_MASK|SIG_KERNEL_STOP_MASK) && \
+	(t)->sighand->action[(signr)-1].sa.sa_handler == SIG_DFL)
+```
+第一个条件表示，如果该信号不是忽略的，并且不是STOP的mask，则说明，该信号是默认是
+需要thread exit，第二个是说，如果信号处理handler是SIG_DFL，则返回true，这两个条件
+同时满足的话，则说明，该进程是铁定要exit了。
+

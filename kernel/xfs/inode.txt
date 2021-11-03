@@ -1,0 +1,192 @@
+```
+/												64
+var												12582977
+lib												4194382
+kubelet											1510180
+pods											5010277
+
+
+7d1d4604-2dc1-4afc-bc16-4218c64d33b0			113246421
+volumes											117440713
+
+
+3295b1f7-8e42-402f-8208-fb7fa1ad752e			138412302
+volumes											142606601
+kubernetes.io~empty-dir							180355280
+
+
+610c61be-02b0-4f56-b80a-06d7d094e902			155189514
+volumes											159383755
+kubernetes.io~empty-dir							230686870
+collector-data									234881166
+
+
+```
+
+```
+bu[3].name = "7d1d4604-2dc1-4afc-bc16-4218c64d33b0"
+bu[3].filetype = 2
+bu[3].tag = 0x120
+bu[4].freetag = 0xffff
+bu[4].length = 0x30
+bu[4].filetype = 1
+bu[4].tag = 0x150
+bu[5].inumber = 138412302
+bu[5].namelen = 36
+bu[5].name = "3295b1f7-8e42-402f-8208-fb7fa1ad752e"
+bu[5].filetype = 2
+bu[5].tag = 0x180
+bu[6].inumber = 155189514
+bu[6].namelen = 36
+bu[6].name = "610c61be-02b0-4f56-b80a-06d7d094e902"
+bu[6].filetype = 2
+bu[6].tag = 0x1b0
+bu[7].freetag = 0xffff
+bu[7].length = 0x90
+bu[7].filetype = 1
+bu[7].tag = 0x1e0
+bu[8].inumber = 293601367
+bu[8].namelen = 32
+bu[8].name = "8528e56e0c9abf00f48e7054a1476537"
+bu[8].filetype = 2
+bu[8].tag = 0x270
+bu[9].inumber = 113246427
+bu[9].namelen = 32
+bu[9].name = "145b7207f3771ff71c519739215cff9a"
+bu[9].filetype = 2
+bu[9].tag = 0x2a0
+bu[10].freetag = 0xffff
+bu[10].length = 0x30
+bu[10].filetype = 2
+bu[10].tag = 0x2d0
+bu[11].inumber = 226492655
+bu[11].namelen = 36
+bu[11].name = "e46aa8cb-6c90-440a-ac81-20a58cd5086b"
+bu[11].filetype = 2
+bu[11].tag = 0x300
+bu[12].freetag = 0xffff
+bu[12].length = 0x30
+bu[12].filetype = 3
+bu[12].tag = 0x330
+bu[13].inumber = 251658407
+bu[13].namelen = 36
+bu[13].name = "59fee1f6-fd24-427c-9cd6-992f66725bdf"
+bu[13].filetype = 2
+bu[13].tag = 0x360
+bu[14].freetag = 0xffff
+bu[14].length = 0x60
+bu[14].filetype = 3
+bu[14].tag = 0x390
+bu[15].inumber = 289407094
+bu[15].namelen = 36
+bu[15].name = "3a40b85d-0f94-406f-91e7-84b3f3c3cc9c"
+bu[15].filetype = 2
+bu[15].tag = 0x3f0
+bu[16].inumber = 285212847
+bu[16].namelen = 36
+bu[16].name = "1626bd28-706a-456d-9fa2-c604171495ec"
+bu[16].filetype = 2
+bu[16].tag = 0x420
+bu[17].inumber = 297795698
+bu[17].namelen = 36
+bu[17].name = "7d201ecb-01fe-48e6-9368-8d469e343772"
+bu[17].filetype = 2
+bu[17].tag = 0x450
+bu[18].inumber = 335568
+bu[18].namelen = 36
+bu[18].name = "0ec266fa-95d6-439c-9c2f-abc2a6740f3a"
+bu[18].filetype = 2
+bu[18].tag = 0x480
+bu[19].inumber = 12593240
+bu[19].namelen = 36
+bu[19].name = "08efe4e6-35bc-4ad0-a507-331f1167b699"
+bu[19].filetype = 2
+bu[19].tag = 0x4b0
+bu[20].inumber = 25166126
+bu[20].namelen = 36
+bu[20].name = "59442577-ee8f-4510-8a12-569ead709115"
+bu[20].filetype = 2
+bu[20].tag = 0x4e0
+bu[21].inumber = 37748985
+bu[21].namelen = 36
+bu[21].name = "9e75205f-60c8-46c8-881d-3b397b417935"
+bu[21].filetype = 2
+bu[21].tag = 0x510
+bu[22].inumber = 50331884
+bu[22].namelen = 36
+bu[22].name = "c5b7491f-2caf-4750-85e7-69e5fb7ac337"
+bu[22].filetype = 2
+bu[22].tag = 0x540
+bu[23].inumber = 58720509
+bu[23].namelen = 36
+bu[23].name = "7e9ef7e2-8a6a-467f-8267-6dee197617bb"
+bu[23].filetype = 2
+bu[23].tag = 0x570
+bu[24].inumber = 171966999
+bu[24].namelen = 36
+bu[24].name = "124414be-d268-4b26-873c-8c7e15ccff02"
+bu[24].filetype = 2
+bu[24].tag = 0x5a0
+bu[25].inumber = 218104010
+bu[25].namelen = 36
+bu[25].name = "149a38ad-c4e1-487d-a88b-d7a8b377c271"
+bu[25].filetype = 2
+bu[25].tag = 0x5d0
+bu[26].inumber = 33555365
+bu[26].namelen = 36
+bu[26].name = "05c1787b-30e1-47df-a5c6-975c4040ad55"
+bu[26].filetype = 2
+bu[26].tag = 0x600
+bu[27].freetag = 0xffff
+bu[27].length = 0x30
+bu[27].filetype = 6
+bu[27].tag = 0x630
+bu[28].inumber = 264242135
+bu[28].namelen = 36
+bu[28].name = "c6be5a93-a7bf-488f-8c95-8c326d9adb62"
+bu[28].filetype = 2
+bu[28].tag = 0x660
+bu[29].freetag = 0xffff
+bu[29].length = 0x90
+bu[29].filetype = 6
+bu[29].tag = 0x690
+bu[30].inumber = 264242137
+bu[30].namelen = 36
+bu[30].name = "20f2bb64-54de-4148-aae5-940a9416dc85"
+bu[30].filetype = 2
+bu[30].tag = 0x720
+bu[31].inumber = 276824274
+bu[31].namelen = 36
+bu[31].name = "6abbdd35-8ff2-46e3-9acd-5c1cb548840d"
+bu[31].filetype = 2
+bu[31].tag = 0x750
+bu[32].inumber = 92275594
+bu[32].namelen = 36
+bu[32].name = "fb6e3dba-3627-4827-a3fd-d246deaf96cb"
+bu[32].filetype = 2
+bu[32].tag = 0x780
+bu[33].inumber = 180355688
+bu[33].namelen = 36
+bu[33].name = "8de77606-936c-41ce-a426-5046aa1445d7"
+bu[33].filetype = 2
+bu[33].tag = 0x7b0
+bu[34].inumber = 150995240
+bu[34].namelen = 36
+bu[34].name = "929dfc4c-8d19-4545-8eb8-bac12f33a42c"
+bu[34].filetype = 2
+bu[34].tag = 0x7e0
+bu[35].inumber = 163585645
+bu[35].namelen = 36
+bu[35].name = "3b833fe9-860a-4369-b89a-679f8445881a"
+bu[35].filetype = 2
+bu[35].tag = 0x810
+bu[36].inumber = 176161414
+bu[36].namelen = 36
+bu[36].name = "4ba38a10-6cea-4961-a00b-89649673b238"
+bu[36].filetype = 2
+bu[36].tag = 0x840
+bu[37].freetag = 0xffff
+bu[37].length = 0x678
+bu[37].filetype = 8
+bu[37].tag = 0x870
+```

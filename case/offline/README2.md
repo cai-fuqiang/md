@@ -330,3 +330,52 @@ crash> dis __secondary_switched
 ```
 
 所以可以推测，访问secondary_data中的数据成员会造成异常.
+
+# 查看secondary cpu执行过长原因
+boot cpu调入
+```
+           <...>-16291 [015] .... 780932.836905: kvm_hvc_arm64: HVC at 0x4098e46c (r0: 0x34f5d91d, imm: 0x5)
+           <...>-16291 [015] .... 780932.836929: kvm_hvc_arm64: HVC at 0x4098e2f4 (r0: 0x34f5d91d, imm: 0x3)
+           <...>-16291 [015] .... 780932.836932: kvm_hvc_arm64: HVC at 0x4098e31c (r0: 0x34f5d91d, imm: 0x31)
+           <...>-16291 [015] .... 780932.836936: kvm_hvc_arm64: HVC at 0x4098e344 (r0: 0x34f5d91d, imm: 0x32)
+           <...>-16291 [015] .... 780932.836940: kvm_hvc_arm64: HVC at 0x4098e36c (r0: 0x34f5d91d, imm: 0x33)
+           <...>-16291 [015] .... 780932.836943: kvm_hvc_arm64: HVC at 0x4098e394 (r0: 0x34f5d91d, imm: 0x34)
+           <...>-16291 [015] .... 780932.836945: kvm_hvc_arm64: HVC at 0x4098e3b8 (r0: 0x34f5d91d, imm: 0x4)
+           <...>-16291 [015] .... 780932.836953: kvm_hvc_arm64: HVC at 0x4098e494 (r0: 0x34f5d91d, imm: 0x6)
+
+```
+secondary cpu调入
+```
+        qemu-kvm-16293 [054] .... 780939.185069: kvm_hvc_arm64: HVC at 0x4098e204 (r0: 0x00000e11, imm: 0x1)
+        qemu-kvm-16293 [054] .... 780939.185123: kvm_hvc_arm64: HVC at 0x4098e230 (r0: 0x34f5d91d, imm: 0x2)
+        qemu-kvm-16293 [054] .... 780939.185134: kvm_hvc_arm64: HVC at 0x4098e2f4 (r0: 0x34f5d91d, imm: 0x3)
+        qemu-kvm-16293 [054] .... 780939.185140: kvm_hvc_arm64: HVC at 0x4098e31c (r0: 0x34f5d91d, imm: 0x31)
+        qemu-kvm-16293 [054] .... 780939.185144: kvm_hvc_arm64: HVC at 0x4098e344 (r0: 0x34f5d91d, imm: 0x32)
+		-------------------这块花费的时间长-----------------------------------------------------------------
+        qemu-kvm-16293 [052] .... 780950.614029: kvm_hvc_arm64: HVC at 0x4098e36c (r0: 0x34f5d91d, imm: 0x33)
+        qemu-kvm-16293 [052] .... 780950.614052: kvm_hvc_arm64: HVC at 0x4098e394 (r0: 0x34f5d91d, imm: 0x34)
+        qemu-kvm-16293 [052] .... 780950.614054: kvm_hvc_arm64: HVC at 0x4098e3b8 (r0: 0x34f5d91d, imm: 0x4)
+        qemu-kvm-16293 [052] .... 780950.614064: kvm_hvc_arm64: HVC at 0x4098e258 (r0: 0x34f5d91d, imm: 0x1)
+```
+
+对应的代码:
+```
+my_hvc  0x32
+msr     sctlr_el1, x0
+my_hvc  0x33
+```
+
+host ftrace:
+```
+           <...>-25986 [042] ....  1310.015646: kvm_hvc_arm64: HVC at 0x4098e344 (r0: 0x34f5d91d, imm: 0x32)
+        qemu-kvm-25986 [042] ....  1312.142496: kvm_hvc_arm64: HVC at 0x4098e36c (r0: 0x34f5d91d, imm: 0x33)
+```
+
+host dmesg:
+```
+[ 1293.854904] stage2 flush vm begin
+[ 1293.868297] stage2 flush vm end
+[ 1310.015649] stage2 flush vm begin
+[ 1312.137469] stage2 flush vm end
+```
+

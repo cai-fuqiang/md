@@ -331,9 +331,155 @@ crash> dis __secondary_switched
 
 所以可以推测，访问secondary_data中的数据成员会造成异常.
 
-# 查看secondary cpu执行过长原因
-boot cpu调入
+# 调研secondary cpu启动过长原因
+由之前的调研可知，secondary cpu被 host kvm 将ip 置为`secondary entry`的物理地址,
+代码如下:
 ```
+ENTRY(secondary_entry)
+   bl el2_setup       // Drop to EL1
+   bl set_cpu_boot_mode_flag
+   b  secondary_startup
+ENDPROC(secondary_entry)
+
+secondary_startup:
+   /*
+    * Common entry point for secondary CPUs.
+    */
+   bl __cpu_secondary_check52bitva
+   bl __cpu_setup     // initialise processor
+   adrp   x1, swapper_pg_dir
+   bl __enable_mmu
+   ldr x8, =__secondary_switched
+   br x8
+ENDPROC(secondary_startup)
+
+__secondary_switched:
+    adr_l   x5, vectors
+    msr vbar_el1, x5
+    isb
+
+    adr_l   x0, secondary_data
+    ldr x1, [x0, #CPU_BOOT_STACK] <<=============(1)：　陷入异常
+    mov sp, x1
+    ldr x2, [x0, #CPU_BOOT_TASK]
+    msr sp_el0, x2
+    mov x29, #0
+    mov x30, #0
+    b   secondary_start_kernel
+ENDPROC(__secondary_switched)
+```
+从之前的调研可知，如果cpu offline, 最终会在(1)处陷入异常,
+而陷入异常后，因为这个时候sp还是0, 所以进入异常处理函数后，
+对堆栈的操作也是会再次陷入异常，从而导致一直死循环．走不到
+`secondary_start_kernel`，这个c函数中．
+
+在这个地方，由于流程较早，一些调试手段不可用，例如printk，而
+现在又需要一种可以获取时间间隔的方式，来测试里面的哪个子流程
+执行时间过长．
+
+因为这个地方是在虚拟机里面，所以guest不好获取的话，可以通过
+从host侧获取，方法就是通过在guest el1发生异常，陷入el2进入kvm
+的代码，再从kvm中增加调试信息．但是这里要注意的是：陷入el2的方式
+要尽量满足下面的需求:
+* 次数不能过于频繁，最好是一般情况下guest不会发生的
+* 可以trap el2 后不会对guest　state 造成影响，或者是造成影响后, 
+ 可以安全恢复guest上下文
+
+这里我选择的是hvc指令, 主要原因如下:
+* 该指令只在特定的时候guest会用到，次数并不多
+* hvc指令，需要用寄存器传参数，其中`r0`寄存器传入的是function num, 
+　function num传入的值不满足协议的话，host　会返回错误，但不会注入异常
+* 该指令在返回时，会去赋值`r0, r1, r2, r3`这四个寄存器，也比较好恢复
+现场
+
+另外，在host kvm　处理hvc指令异常处理流程中，还有现成的ftrace event
+可以使用，代码如下:
+
+```
+static int handle_hvc(struct kvm_vcpu *vcpu, struct kvm_run *run)
+{
+    int ret;
+
+    trace_kvm_hvc_arm64(*vcpu_pc(vcpu), vcpu_get_reg(vcpu, 0),
+            ¦   kvm_vcpu_hvc_get_imm(vcpu));
+    vcpu->stat.hvc_exit_stat++;
+
+    ret = kvm_hvc_call_handler(vcpu);
+    if (ret < 0) {
+        vcpu_set_reg(vcpu, 0, ~0UL);
+        return 1;
+    }
+
+    return ret;
+}
+```
+ftrace event `kvm_hvc_arm64`的定义为：
+```
+TRACE_EVENT(kvm_hvc_arm64,
+    TP_PROTO(unsigned long vcpu_pc, unsigned long r0, unsigned long imm),
+    TP_ARGS(vcpu_pc, r0, imm),
+
+    TP_STRUCT__entry(
+        __field(unsigned long, vcpu_pc)
+        __field(unsigned long, r0)
+        __field(unsigned long, imm)
+    ),
+
+    TP_fast_assign(
+        __entry->vcpu_pc = vcpu_pc;
+        __entry->r0 = r0;
+        __entry->imm = imm;
+    ),
+
+    TP_printk("HVC at 0x%08lx (r0: 0x%08lx, imm: 0x%lx)",
+        ¦ __entry->vcpu_pc, __entry->r0, __entry->imm)
+);
+```
+从上面的定义可知，该ftrace function 会打印触发异常的pc, r0，以及hvc指令需要的#imm
+
+修改代码，加入hvc指令，一步步缩小范围，最终修改代码如下，找到了执行时间慢的指令
+
+修改的代码如下:
+```
+.macro my_hvc, imm_p
+mov     x5, x0
+mov     x6, x1
+mov     x7, x2
+mov     x8, x3
+hvc     #\imm_p
+mov     x0, x5
+mov     x1, x6
+mov     x2, x7
+mov     x3, x8
+.endm
+
+ENTRY(__enable_mmu)
+    ...
+        my_hvc  3
+        msr     ttbr1_el1, x1                   // load TTBR1
+        my_hvc  0x31
+        isb
+        my_hvc  0x32
+        msr     sctlr_el1, x0
+        my_hvc  0x33
+        isb
+        my_hvc  0x34
+        my_hvc  4
+        /*
+         * Invalidate the local I-cache so that any instructions fetched
+         * speculatively from the PoC are discarded, since they may have
+         * been dynamically patched at the PoU.
+         */
+        ic      iallu
+        dsb     nsh
+        isb
+        ret
+ENDPROC(__enable_mmu)
+```
+
+获取ftrace event 信息,如下:
+```
+    //这是boot cpu调用__enable_mmu　产生的打印信息
            <...>-16291 [015] .... 780932.836905: kvm_hvc_arm64: HVC at 0x4098e46c (r0: 0x34f5d91d, imm: 0x5)
            <...>-16291 [015] .... 780932.836929: kvm_hvc_arm64: HVC at 0x4098e2f4 (r0: 0x34f5d91d, imm: 0x3)
            <...>-16291 [015] .... 780932.836932: kvm_hvc_arm64: HVC at 0x4098e31c (r0: 0x34f5d91d, imm: 0x31)
@@ -343,9 +489,7 @@ boot cpu调入
            <...>-16291 [015] .... 780932.836945: kvm_hvc_arm64: HVC at 0x4098e3b8 (r0: 0x34f5d91d, imm: 0x4)
            <...>-16291 [015] .... 780932.836953: kvm_hvc_arm64: HVC at 0x4098e494 (r0: 0x34f5d91d, imm: 0x6)
 
-```
-secondary cpu调入
-```
+    //下面是secondary cpu调用__enable_mmu产生的打印信息:
         qemu-kvm-16293 [054] .... 780939.185069: kvm_hvc_arm64: HVC at 0x4098e204 (r0: 0x00000e11, imm: 0x1)
         qemu-kvm-16293 [054] .... 780939.185123: kvm_hvc_arm64: HVC at 0x4098e230 (r0: 0x34f5d91d, imm: 0x2)
         qemu-kvm-16293 [054] .... 780939.185134: kvm_hvc_arm64: HVC at 0x4098e2f4 (r0: 0x34f5d91d, imm: 0x3)
@@ -357,12 +501,37 @@ secondary cpu调入
         qemu-kvm-16293 [052] .... 780950.614054: kvm_hvc_arm64: HVC at 0x4098e3b8 (r0: 0x34f5d91d, imm: 0x4)
         qemu-kvm-16293 [052] .... 780950.614064: kvm_hvc_arm64: HVC at 0x4098e258 (r0: 0x34f5d91d, imm: 0x1)
 ```
-
-对应的代码:
+可以看到boot cpu 调用时，并没有发生执行时间过长的问题，而secondary cpu在执行 `hvc #32`　和`hvc #33`指令中
+执行时间超过了1s, 该kernel代码为:
 ```
 my_hvc  0x32
 msr     sctlr_el1, x0
 my_hvc  0x33
+```
+关于该指令在armv8　man中的说明:
+![SYS_SCTLR_EL1](pic/sctlr_el1.png)
+可以看到是控制内存管理的主要系统寄存器．
+该指令的解码伪代码为:
+```
+if PSTATE.EL == EL0 then
+    UNDEFINED;
+
+elsif PSTATE.EL == EL1 then
+	if EL2Enabled() && HCR_EL2.TVM == '1' then
+		AArch64.SystemAccessTrap(EL2, 0x18);
+	elsif EL2Enabled() && (!HaveEL(EL3) || SCR_EL3.FGTEn == '1') && HFGWTR_EL2.SCTLR_EL1 == '1' then
+		AArch64.SystemAccessTrap(EL2, 0x18);
+	elsif EL2Enabled() && HCR_EL2.<NV2,NV1,NV> == '111' then
+		NVMem[0x110] = X[t];
+	else
+		SCTLR_EL1 = X[t];
+elsif PSTATE.EL == EL2 then
+	if HCR_EL2.E2H == '1' then
+		SCTLR_EL2 = X[t];
+else
+	SCTLR_EL1 = X[t];
+elsif PSTATE.EL == EL3 then
+	SCTLR_EL1 = X[t];
 ```
 
 host ftrace:
@@ -379,3 +548,5 @@ host dmesg:
 [ 1312.137469] stage2 flush vm end
 ```
 
+# kernel stream git commit 
+0ac398b171aacd0f0c132d989ec4efb5de94f34a

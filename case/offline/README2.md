@@ -511,7 +511,7 @@ my_hvc  0x33
 关于该指令在armv8　man中的说明:
 ![SYS_SCTLR_EL1](pic/sctlr_el1.png)
 可以看到是控制内存管理的主要系统寄存器．
-该指令的解码伪代码为:
+MSR 当前系统寄存器的指令解码伪代码为:
 ```
 if PSTATE.EL == EL0 then
     UNDEFINED;
@@ -533,6 +533,76 @@ else
 elsif PSTATE.EL == EL3 then
 	SCTLR_EL1 = X[t];
 ```
+可以看到当前异常级别为el1并且是在虚拟机中运行的时候，会trap到el2(kvm)，并且会注入一个`0x18`的值.
+
+
+## 查看kvm代码
+### 异常值宏定义
+```
+#define ESR_ELx_EC_SYS64    (0x18)
+```
+
+###　相关处理流程
+
+```C/C++
+int kvm_handle_sys_reg(struct kvm_vcpu *vcpu, struct kvm_run *run)
+{
+    struct sys_reg_params params;
+    unsigned long esr = kvm_vcpu_get_hsr(vcpu);
+    int Rt = kvm_vcpu_sys_get_rt(vcpu);
+    int ret;
+
+    trace_kvm_handle_sys_reg(esr);
+
+    params.is_aarch32 = false;
+    params.is_32bit = false;
+    params.Op0 = (esr >> 20) & 3;
+    params.Op1 = (esr >> 14) & 0x7;
+    params.CRn = (esr >> 10) & 0xf;
+    params.CRm = (esr >> 1) & 0xf;
+    params.Op2 = (esr >> 17) & 0x7;
+    params.regval = vcpu_get_reg(vcpu, Rt);
+    params.is_write = !(esr & 1);
+
+    ret = emulate_sys_reg(vcpu, &params);
+
+    if (!params.is_write)
+        vcpu_set_reg(vcpu, Rt, params.regval);
+    return ret;
+}
+```
+该函数会从esr中获取系统寄存器的值, 并且看下是否是写操作造成的异常，
+然后调用 `emulate_sys_reg` 去模拟该次的行为，如果不是写操作的话，恢复
+下该寄存器的值．
+
+```C/C++
+static int emulate_sys_reg(struct kvm_vcpu *vcpu,
+            ¦  struct sys_reg_params *params)
+{
+    size_t num;
+    const struct sys_reg_desc *table, *r;
+
+    table = get_target_table(vcpu->arch.target, true, &num);
+
+    /* Search target-specific then generic table. */
+    r = find_reg(params, table, num);
+    if (!r)
+        r = find_reg(params, sys_reg_descs, ARRAY_SIZE(sys_reg_descs));
+
+    if (likely(r)) {
+        perform_access(vcpu, params, r);
+    } else {
+        kvm_err("Unsupported guest sys_reg access at: %lx [%08lx]\n",
+            *vcpu_pc(vcpu), *vcpu_cpsr(vcpu));
+        print_sys_reg_instr(params);
+        kvm_inject_undefined(vcpu);
+    }
+    return 1;
+}
+```
+
+该函数会在sys_reg_descs 表中找到该寄存器的描述符，然后在调用perform_access
+
 
 host ftrace:
 ```

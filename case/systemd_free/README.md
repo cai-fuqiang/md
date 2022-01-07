@@ -104,7 +104,39 @@ $11 = 0xaaaac01b9260 "tmpfs"
 
 
 # 分析free出问题堆栈
+
 查看_int_free相关汇编代码
+```
+   0x0000ffff9c1ccf68 <+120>:   add     x24, x19, x20
+3942        }
+3943
+3944        nextchunk = chunk_at_offset(p, size);
+```
+
+```
+3968        nextsize = chunksize(nextchunk);
+   0x0000ffff9c1ccf88 <+152>:   and     x25, x0, #0xfffffffffffffff8
+
+3969        if (__builtin_expect (nextchunk->size <= 2 * SIZE_SZ, 0)
+   0x0000ffff9c1ccf84 <+148>:   cmp     x0, #0x10
+   0x0000ffff9c1ccf8c <+156>:   b.ls    0xffff9c1cdb04 <_int_free+3092>
+
+3970            || __builtin_expect (nextsize >= av->system_mem, 0))
+   0x0000ffff9c1ccf90 <+160>:   ldr     x0, [x21,#2176]
+   0x0000ffff9c1ccf94 <+164>:   cmp     x25, x0
+   0x0000ffff9c1ccf98 <+168>:   b.cs    0xffff9c1cdb04 <_int_free+3092>
+
+3971          {
+3972            errstr = "free(): invalid next size (normal)";
+   0x0000ffff9c1cdb04 <+3092>:  adrp    x20, 0xffff9c28a000
+   0x0000ffff9c1cdb08 <+3096>:  add     x19, x19, #0x10
+   0x0000ffff9c1cdb0c <+3100>:  add     x20, x20, #0x710
+   0x0000ffff9c1cdb10 <+3104>:  b       0xffff9c1cd590 <_int_free+1696>
+
+3973            goto errout;
+3974          }
+```
+
 ```
 3971          {
 3972            errstr = "free(): invalid next size (normal)";
@@ -116,6 +148,7 @@ $11 = 0xaaaac01b9260 "tmpfs"
 3974          }
 
 --------------------------------
+
 3840        errout:
 3841          if (have_lock || locked)
    0x0000ffff9c1cd590 <+1696>:	orr	w27, w27, w23
@@ -135,4 +168,10 @@ $11 = 0xaaaac01b9260 "tmpfs"
    0x0000ffff9c1cd6b8 <+1992>:	mov	x8, #0x62                  	// #98
    0x0000ffff9c1cd6bc <+1996>:	svc	#0x0
    0x0000ffff9c1cd6c0 <+2000>:	b	0xffff9c1cd598 <_int_free+1704>
+
+3843          malloc_printerr (check_action, errstr, chunk2mem(p), av);
+   0x0000ffff9c1cd598 <+1704>:  adrp    x0, 0xffff9c2d0000
+   0x0000ffff9c1cd59c <+1708>:  add     x0, x0, #0xe8
+   0x0000ffff9c1cd5a0 <+1712>:  ldr     w22, [x0,#88]
+
 ```

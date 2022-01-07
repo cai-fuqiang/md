@@ -1,0 +1,955 @@
+   0x0000ffff9c1ccef0 <+0>:     stp     x29, x30, [sp,#-176]!
+   0x0000ffff9c1ccef4 <+4>:     mov     x29, sp
+   0x0000ffff9c1ccef8 <+8>:     stp     x19, x20, [sp,#16]
+   //将x1存入x19    mchunkptr p
+   0x0000ffff9c1ccefc <+12>:    mov     x19, x1
+   //获取x1 + 8存入x1, 为p->size
+   0x0000ffff9c1ccf00 <+16>:    ldr     x1, [x1,#8]
+   0x0000ffff9c1ccf04 <+20>:    stp     x21, x22, [sp,#32]
+   //做与操作, x20为size
+   0x0000ffff9c1ccf08 <+24>:    and     x20, x1, #0xfffffffffffffff8
+   //x21寄存器为 mstate av
+   0x0000ffff9c1ccf0c <+28>:    mov     x21, x0
+   0x0000ffff9c1ccf10 <+32>:    neg     x0, x20
+   0x0000ffff9c1ccf14 <+36>:    stp     x23, x24, [sp,#48]
+   0x0000ffff9c1ccf18 <+40>:    stp     x25, x26, [sp,#64]
+   0x0000ffff9c1ccf1c <+44>:    stp     x27, x28, [sp,#80]
+   0x0000ffff9c1ccf20 <+48>:    cmp     x19, x0
+   0x0000ffff9c1ccf24 <+52>:    mov     w23, w2
+   0x0000ffff9c1ccf28 <+56>:    b.hi    0xffff9c1cda84 <_int_free+2964>
+   0x0000ffff9c1ccf2c <+60>:    and     x0, x19, #0xf
+   0x0000ffff9c1ccf30 <+64>:    cbnz    x0, 0xffff9c1cda84 <_int_free+2964>
+   0x0000ffff9c1ccf34 <+68>:    cmp     x20, #0x1f
+   0x0000ffff9c1ccf38 <+72>:    b.ls    0xffff9c1cdabc <_int_free+3020>
+   0x0000ffff9c1ccf3c <+76>:    tbnz    w1, #3, 0xffff9c1cdabc <_int_free+3020>
+    //获取x22, get_max_fast
+   0x0000ffff9c1ccf40 <+80>:    adrp    x22, 0xffff9c2d2000 <initial_quick+360>
+   0x0000ffff9c1ccf44 <+84>:    add     x0, x22, #0x578
+   0x0000ffff9c1ccf48 <+88>:    ldr     x0, [x0,#56]
+   //x0为0xffff9c2d25b0
+   0x0000ffff9c1ccf4c <+92>:    cmp     x20, x0
+   //size <= get_max_fast()
+   0x0000ffff9c1ccf50 <+96>:    b.ls    0xffff9c1cd220 <_int_free+816>
+   //chuck_is_mapped()  x1为size, 查看第1位(从０开始是否是1, 也就是是否是map)
+   0x0000ffff9c1ccf54 <+100>:   and     x1, x1, #0x2
+   //不满足则跳转
+   0x0000ffff9c1ccf58 <+104>:   cbnz    x1, 0xffff9c1cd47c <_int_free+1420>
+   //如果是0的分支
+   0x0000ffff9c1ccf5c <+108>:   mov     w27, w1
+   //比较w2(have_lock)
+   0x0000ffff9c1ccf60 <+112>:   cbz     w2, 0xffff9c1cd4e4 <_int_free+1524>
+   //have_lock == 0 会跳转，这个是跳转回来的流程
+   //x21为av, 这里去的是av->top
+   //(gdb) p ((mstate )(0))->top
+   //Cannot access memory at address 0x58
+   //(gdb) p 0x58
+   //$5 = 88
+   0x0000ffff9c1ccf64 <+116>:   ldr     x0, [x21,#88]
+   //x20为size, x19为p, 那么这里x24为nextchunk
+   0x0000ffff9c1ccf68 <+120>:   add     x24, x19, x20
+   //x19为p
+   0x0000ffff9c1ccf6c <+124>:   cmp     x19, x0
+   //相等则跳转
+   0x0000ffff9c1ccf70 <+128>:   b.eq    0xffff9c1cda98 <_int_free+2984>
+   //获取av->flags赋值到w2
+   0x0000ffff9c1ccf74 <+132>:   ldr     w2, [x21,#4]
+   //configuous(av->flags)
+   0x0000ffff9c1ccf78 <+136>:   tbz     w2, #1, 0xffff9c1cdad0 <_int_free+3040>
+   //x0赋值为nextchunk->size
+   0x0000ffff9c1ccf7c <+140>:   ldr     x0, [x24,#8]
+   //这里实际上是再看p->size & PREV_INUSE, 看下前面的chunk是不是alloced chunk
+   0x0000ffff9c1ccf80 <+144>:   tbz     w0, #0, 0xffff9c1cdaf4 <_int_free+3076>
+   //3969 : x0 为 nextchuck->size
+   0x0000ffff9c1ccf84 <+148>:   cmp     x0, #0x10
+   //x25为nextsize
+   //这时候的状态:x20为size, x19 为p, x24为nextchunk 
+   0x0000ffff9c1ccf88 <+152>:   and     x25, x0, #0xfffffffffffffff8
+   //小于等于16 跳转点为  errstr = "free(): invalid next size (normal)";
+   0x0000ffff9c1ccf8c <+156>:   b.ls    0xffff9c1cdb04 <_int_free+3092>
+   0x0000ffff9c1ccf90 <+160>:   ldr     x0, [x21,#2176]
+   //cmp nextsize and av->system_mem
+   0x0000ffff9c1ccf94 <+164>:   cmp     x25, x0
+   0x0000ffff9c1ccf98 <+168>:   b.cs    0xffff9c1cdb04 <_int_free+3092>
+   0x0000ffff9c1ccf9c <+172>:   add     x0, x22, #0x578
+   0x0000ffff9c1ccfa0 <+176>:   ldr     w1, [x0,#64]
+   0x0000ffff9c1ccfa4 <+180>:   cbnz    w1, 0xffff9c1cdb14 <_int_free+3108>
+   0x0000ffff9c1ccfa8 <+184>:   ldr     x0, [x19,#8]
+   0x0000ffff9c1ccfac <+188>:   tbnz    w0, #0, 0xffff9c1cd00c <_int_free+284>
+   0x0000ffff9c1ccfb0 <+192>:   ldr     x1, [x19]
+   0x0000ffff9c1ccfb4 <+196>:   sub     x19, x19, x1
+   0x0000ffff9c1ccfb8 <+200>:   ldr     x0, [x19,#8]
+   0x0000ffff9c1ccfbc <+204>:   add     x20, x20, x1
+   0x0000ffff9c1ccfc0 <+208>:   and     x0, x0, #0xfffffffffffffff8
+   0x0000ffff9c1ccfc4 <+212>:   ldr     x1, [x19,x0]
+   0x0000ffff9c1ccfc8 <+216>:   cmp     x0, x1
+   0x0000ffff9c1ccfcc <+220>:   b.ne    0xffff9c1cda60 <_int_free+2928>
+   0x0000ffff9c1ccfd0 <+224>:   ldr     x26, [x19,#16]
+   0x0000ffff9c1ccfd4 <+228>:   ldr     x0, [x19,#24]
+   0x0000ffff9c1ccfd8 <+232>:   ldr     x1, [x26,#24]
+   0x0000ffff9c1ccfdc <+236>:   cmp     x19, x1
+   0x0000ffff9c1ccfe0 <+240>:   b.ne    0xffff9c1cd97c <_int_free+2700>
+   0x0000ffff9c1ccfe4 <+244>:   ldr     x1, [x0,#16]
+   0x0000ffff9c1ccfe8 <+248>:   cmp     x19, x1
+   0x0000ffff9c1ccfec <+252>:   b.ne    0xffff9c1cd97c <_int_free+2700>
+   0x0000ffff9c1ccff0 <+256>:   ldr     x1, [x19,#8]
+   0x0000ffff9c1ccff4 <+260>:   str     x0, [x26,#24]
+   0x0000ffff9c1ccff8 <+264>:   str     x26, [x0,#16]
+   0x0000ffff9c1ccffc <+268>:   cmp     x1, #0x3ff
+   0x0000ffff9c1cd000 <+272>:   b.ls    0xffff9c1cd00c <_int_free+284>
+   0x0000ffff9c1cd004 <+276>:   ldr     x0, [x19,#32]
+   0x0000ffff9c1cd008 <+280>:   cbnz    x0, 0xffff9c1cd944 <_int_free+2644>
+   0x0000ffff9c1cd00c <+284>:   ldr     x0, [x21,#88]
+   0x0000ffff9c1cd010 <+288>:   cmp     x0, x24
+   0x0000ffff9c1cd014 <+292>:   b.eq    0xffff9c1cd560 <_int_free+1648>
+   0x0000ffff9c1cd018 <+296>:   add     x0, x24, x25
+   0x0000ffff9c1cd01c <+300>:   ldr     x0, [x0,#8]
+   0x0000ffff9c1cd020 <+304>:   tbz     w0, #0, 0xffff9c1cd33c <_int_free+1100>
+   0x0000ffff9c1cd024 <+308>:   ldr     x0, [x24,#8]
+   0x0000ffff9c1cd028 <+312>:   and     x0, x0, #0xfffffffffffffffe
+---Type <return> to continue, or q <return> to quit---
+   0x0000ffff9c1cd02c <+316>:   str     x0, [x24,#8]
+   0x0000ffff9c1cd030 <+320>:   add     x0, x21, #0x58
+   0x0000ffff9c1cd034 <+324>:   ldr     x2, [x0,#16]
+   0x0000ffff9c1cd038 <+328>:   ldr     x1, [x2,#24]
+   0x0000ffff9c1cd03c <+332>:   cmp     x0, x1
+   0x0000ffff9c1cd040 <+336>:   b.ne    0xffff9c1cd700 <_int_free+2064>
+   0x0000ffff9c1cd044 <+340>:   str     x2, [x19,#16]
+   0x0000ffff9c1cd048 <+344>:   str     x0, [x19,#24]
+   0x0000ffff9c1cd04c <+348>:   cmp     x20, #0x3ff
+   0x0000ffff9c1cd050 <+352>:   b.ls    0xffff9c1cd05c <_int_free+364>
+   0x0000ffff9c1cd054 <+356>:   str     xzr, [x19,#32]
+   0x0000ffff9c1cd058 <+360>:   str     xzr, [x19,#40]
+   0x0000ffff9c1cd05c <+364>:   str     x19, [x0,#16]
+   0x0000ffff9c1cd060 <+368>:   str     x19, [x2,#24]
+   0x0000ffff9c1cd064 <+372>:   orr     x0, x20, #0x1
+   0x0000ffff9c1cd068 <+376>:   str     x0, [x19,#8]
+   0x0000ffff9c1cd06c <+380>:   str     x20, [x19,x20]
+   0x0000ffff9c1cd070 <+384>:   mov     x0, #0xffff                     // #65535
+   0x0000ffff9c1cd074 <+388>:   cmp     x20, x0
+   0x0000ffff9c1cd078 <+392>:   b.ls    0xffff9c1cd448 <_int_free+1368>
+   0x0000ffff9c1cd07c <+396>:   ldr     w0, [x21,#4]
+   0x0000ffff9c1cd080 <+400>:   tbz     w0, #0, 0xffff9c1cd574 <_int_free+1668>
+   0x0000ffff9c1cd084 <+404>:   adrp    x0, 0xffff9c2d0000
+   0x0000ffff9c1cd088 <+408>:   add     x0, x0, #0x530
+   0x0000ffff9c1cd08c <+412>:   cmp     x21, x0
+   0x0000ffff9c1cd090 <+416>:   ldr     x0, [x21,#88]
+   0x0000ffff9c1cd094 <+420>:   b.eq    0xffff9c1cd530 <_int_free+1600>
+   0x0000ffff9c1cd098 <+424>:   and     x0, x0, #0xfffffffffc000000
+   0x0000ffff9c1cd09c <+428>:   mov     x5, x0
+   0x0000ffff9c1cd0a0 <+432>:   adrp    x1, 0xffff9c2cf000
+   0x0000ffff9c1cd0a4 <+436>:   ldr     x24, [x5],#32
+   0x0000ffff9c1cd0a8 <+440>:   adrp    x27, 0xffff9c2d0000
+   0x0000ffff9c1cd0ac <+444>:   ldr     x1, [x1,#3624]
+   0x0000ffff9c1cd0b0 <+448>:   add     x2, x27, #0xe8
+   0x0000ffff9c1cd0b4 <+452>:   ldr     x2, [x2,#8]
+   0x0000ffff9c1cd0b8 <+456>:   ldr     x1, [x1,#24]
+   0x0000ffff9c1cd0bc <+460>:   ldr     x19, [x24,#88]
+   0x0000ffff9c1cd0c0 <+464>:   add     x26, x2, x1
+   0x0000ffff9c1cd0c4 <+468>:   str     x2, [x29,#136]
+   0x0000ffff9c1cd0c8 <+472>:   str     x1, [x29,#128]
+---Type <return> to continue, or q <return> to quit---
+   0x0000ffff9c1cd0cc <+476>:   cmp     x5, x19
+   0x0000ffff9c1cd0d0 <+480>:   add     x26, x26, #0x20
+   0x0000ffff9c1cd0d4 <+484>:   b.ne    0xffff9c1cd394 <_int_free+1188>
+   0x0000ffff9c1cd0d8 <+488>:   adrp    x1, 0xffff9c28a000
+   0x0000ffff9c1cd0dc <+492>:   add     x1, x1, #0x6a8
+   0x0000ffff9c1cd0e0 <+496>:   str     x1, [x29,#120]
+   0x0000ffff9c1cd0e4 <+500>:   adrp    x1, 0xffff9c28a000
+   0x0000ffff9c1cd0e8 <+504>:   adrp    x25, 0xffff9c2d2000 <initial_quick+360>
+   0x0000ffff9c1cd0ec <+508>:   add     x1, x1, #0x6c8
+   0x0000ffff9c1cd0f0 <+512>:   add     x25, x25, #0x578
+   0x0000ffff9c1cd0f4 <+516>:   str     x1, [x29,#112]
+   0x0000ffff9c1cd0f8 <+520>:   b       0xffff9c1cd184 <_int_free+660>
+   0x0000ffff9c1cd0fc <+524>:   mov     x1, #0x4000000                  // #67108864
+   0x0000ffff9c1cd100 <+528>:   bl      0xffff9c22a930 <munmap>
+   0x0000ffff9c1cd104 <+532>:   ldr     x0, [x19,#8]
+   0x0000ffff9c1cd108 <+536>:   tbnz    w0, #0, 0xffff9c1cd164 <_int_free+628>
+   0x0000ffff9c1cd10c <+540>:   ldr     x0, [x19]
+   0x0000ffff9c1cd110 <+544>:   sub     x19, x19, x0
+   0x0000ffff9c1cd114 <+548>:   ldr     x0, [x19,#8]
+   0x0000ffff9c1cd118 <+552>:   and     x0, x0, #0xfffffffffffffff8
+   0x0000ffff9c1cd11c <+556>:   ldr     x1, [x19,x0]
+   0x0000ffff9c1cd120 <+560>:   cmp     x0, x1
+   0x0000ffff9c1cd124 <+564>:   b.ne    0xffff9c1cd790 <_int_free+2208>
+   0x0000ffff9c1cd128 <+568>:   ldr     x4, [x19,#16]
+   0x0000ffff9c1cd12c <+572>:   ldr     x0, [x19,#24]
+   0x0000ffff9c1cd130 <+576>:   ldr     x1, [x4,#24]
+   0x0000ffff9c1cd134 <+580>:   cmp     x19, x1
+   0x0000ffff9c1cd138 <+584>:   b.ne    0xffff9c1cd710 <_int_free+2080>
+   0x0000ffff9c1cd13c <+588>:   ldr     x1, [x0,#16]
+   0x0000ffff9c1cd140 <+592>:   cmp     x19, x1
+   0x0000ffff9c1cd144 <+596>:   b.ne    0xffff9c1cd710 <_int_free+2080>
+   0x0000ffff9c1cd148 <+600>:   ldr     x1, [x19,#8]
+   0x0000ffff9c1cd14c <+604>:   str     x0, [x4,#24]
+   0x0000ffff9c1cd150 <+608>:   str     x4, [x0,#16]
+   0x0000ffff9c1cd154 <+612>:   cmp     x1, #0x3ff
+   0x0000ffff9c1cd158 <+616>:   b.ls    0xffff9c1cd164 <_int_free+628>
+   0x0000ffff9c1cd15c <+620>:   ldr     x0, [x19,#32]
+   0x0000ffff9c1cd160 <+624>:   cbnz    x0, 0xffff9c1cd900 <_int_free+2576>
+   0x0000ffff9c1cd164 <+628>:   str     x19, [x24,#88]
+   0x0000ffff9c1cd168 <+632>:   orr     x4, x28, #0x1
+---Type <return> to continue, or q <return> to quit---
+   0x0000ffff9c1cd16c <+636>:   add     x0, x20, #0x20
+   0x0000ffff9c1cd170 <+640>:   str     x4, [x19,#8]
+   0x0000ffff9c1cd174 <+644>:   cmp     x19, x0
+   0x0000ffff9c1cd178 <+648>:   b.ne    0xffff9c1cd39c <_int_free+1196>
+   0x0000ffff9c1cd17c <+652>:   mov     x0, x20
+   0x0000ffff9c1cd180 <+656>:   mov     x5, x19
+   0x0000ffff9c1cd184 <+660>:   ldr     x20, [x0,#8]
+   0x0000ffff9c1cd188 <+664>:   ldr     x3, [x20,#16]
+   0x0000ffff9c1cd18c <+668>:   sub     x2, x3, #0x10
+   0x0000ffff9c1cd190 <+672>:   add     x4, x20, x2
+   0x0000ffff9c1cd194 <+676>:   and     x4, x4, #0xf
+   0x0000ffff9c1cd198 <+680>:   sub     x2, x2, x4
+   0x0000ffff9c1cd19c <+684>:   ldr     x1, [x20,x2]
+   0x0000ffff9c1cd1a0 <+688>:   add     x19, x20, x2
+   0x0000ffff9c1cd1a4 <+692>:   sub     x19, x19, x1
+   0x0000ffff9c1cd1a8 <+696>:   ldr     x2, [x19,#8]
+   0x0000ffff9c1cd1ac <+700>:   and     x1, x2, #0xfffffffffffffff8
+   0x0000ffff9c1cd1b0 <+704>:   add     x1, x1, #0x10
+   0x0000ffff9c1cd1b4 <+708>:   add     x4, x1, x4
+   0x0000ffff9c1cd1b8 <+712>:   mov     x28, x4
+   0x0000ffff9c1cd1bc <+716>:   tbnz    w2, #0, 0xffff9c1cd1c8 <_int_free+728>
+   0x0000ffff9c1cd1c0 <+720>:   ldr     x1, [x19]
+   0x0000ffff9c1cd1c4 <+724>:   add     x28, x4, x1
+   0x0000ffff9c1cd1c8 <+728>:   mov     x1, #0x4000000                  // #67108864
+   0x0000ffff9c1cd1cc <+732>:   sub     x3, x1, x3
+   0x0000ffff9c1cd1d0 <+736>:   add     x3, x3, x28
+   0x0000ffff9c1cd1d4 <+740>:   cmp     x3, x26
+   0x0000ffff9c1cd1d8 <+744>:   b.cc    0xffff9c1cd520 <_int_free+1584>
+   0x0000ffff9c1cd1dc <+748>:   add     x22, x22, #0x578
+   0x0000ffff9c1cd1e0 <+752>:   ldr     x1, [x0,#16]
+   0x0000ffff9c1cd1e4 <+756>:   ldr     x4, [x24,#2176]
+   0x0000ffff9c1cd1e8 <+760>:   ldr     x3, [x22,#32]
+   0x0000ffff9c1cd1ec <+764>:   sub     x4, x4, x1
+   0x0000ffff9c1cd1f0 <+768>:   sub     x2, x3, x1
+   0x0000ffff9c1cd1f4 <+772>:   str     x4, [x24,#2176]
+   0x0000ffff9c1cd1f8 <+776>:   str     x2, [x22,#32]
+   0x0000ffff9c1cd1fc <+780>:   nop
+   0x0000ffff9c1cd200 <+784>:   mov     x2, #0x4000000                  // #67108864
+   0x0000ffff9c1cd204 <+788>:   ldr     x1, [x25]
+   0x0000ffff9c1cd208 <+792>:   add     x2, x0, x2
+---Type <return> to continue, or q <return> to quit---
+   0x0000ffff9c1cd20c <+796>:   cmp     x1, x2
+   0x0000ffff9c1cd210 <+800>:   adrp    x22, 0xffff9c2d2000 <initial_quick+360>
+   0x0000ffff9c1cd214 <+804>:   b.ne    0xffff9c1cd0fc <_int_free+524>
+   0x0000ffff9c1cd218 <+808>:   str     xzr, [x25]
+   0x0000ffff9c1cd21c <+812>:   b       0xffff9c1cd0fc <_int_free+524>
+   0x0000ffff9c1cd220 <+816>:   add     x24, x19, x20
+   0x0000ffff9c1cd224 <+820>:   ldr     x0, [x24,#8]
+   0x0000ffff9c1cd228 <+824>:   cmp     x0, #0x10
+   0x0000ffff9c1cd22c <+828>:   b.ls    0xffff9c1cd680 <_int_free+1936>
+   0x0000ffff9c1cd230 <+832>:   ldr     x1, [x21,#2176]
+   0x0000ffff9c1cd234 <+836>:   and     x0, x0, #0xfffffffffffffff8
+   0x0000ffff9c1cd238 <+840>:   cmp     x0, x1
+   0x0000ffff9c1cd23c <+844>:   b.cs    0xffff9c1cd680 <_int_free+1936>
+   0x0000ffff9c1cd240 <+848>:   add     x22, x22, #0x578
+   0x0000ffff9c1cd244 <+852>:   ldr     w1, [x22,#64]
+   0x0000ffff9c1cd248 <+856>:   add     x10, x19, #0x10
+   0x0000ffff9c1cd24c <+860>:   cbnz    w1, 0xffff9c1cd6e0 <_int_free+2032>
+   0x0000ffff9c1cd250 <+864>:   add     x2, x21, #0x4
+   0x0000ffff9c1cd254 <+868>:   add     x9, x29, #0x90
+   0x0000ffff9c1cd258 <+872>:   ldr     w1, [x21,#4]
+   0x0000ffff9c1cd25c <+876>:   str     w1, [x29,#144]
+   0x0000ffff9c1cd260 <+880>:   and     w4, w1, #0xfffffffe
+   0x0000ffff9c1cd264 <+884>:   mov     w3, w1
+   0x0000ffff9c1cd268 <+888>:   ldaxr   w5, [x2]
+   0x0000ffff9c1cd26c <+892>:   cmp     w5, w3
+   0x0000ffff9c1cd270 <+896>:   b.ne    0xffff9c1cd27c <_int_free+908>
+   0x0000ffff9c1cd274 <+900>:   stxr    w0, w4, [x2]
+   0x0000ffff9c1cd278 <+904>:   cbnz    w0, 0xffff9c1cd268 <_int_free+888>
+   0x0000ffff9c1cd27c <+908>:   b.eq    0xffff9c1cd284 <_int_free+916>
+   0x0000ffff9c1cd280 <+912>:   str     w5, [x9]
+   0x0000ffff9c1cd284 <+916>:   ldr     w3, [x29,#144]
+   0x0000ffff9c1cd288 <+920>:   cmp     w1, w3
+   0x0000ffff9c1cd28c <+924>:   b.ne    0xffff9c1cd258 <_int_free+872>
+   0x0000ffff9c1cd290 <+928>:   lsr     w20, w20, #4
+   0x0000ffff9c1cd294 <+932>:   sub     w20, w20, #0x2
+   0x0000ffff9c1cd298 <+936>:   add     x5, x21, w20, uxtw #3
+   0x0000ffff9c1cd29c <+940>:   ldr     x4, [x5,#8]
+   0x0000ffff9c1cd2a0 <+944>:   add     x5, x5, #0x8
+   0x0000ffff9c1cd2a4 <+948>:   cmp     x19, x4
+   0x0000ffff9c1cd2a8 <+952>:   b.eq    0xffff9c1cd580 <_int_free+1680>
+---Type <return> to continue, or q <return> to quit---
+   0x0000ffff9c1cd2ac <+956>:   cmp     w23, wzr
+   0x0000ffff9c1cd2b0 <+960>:   cset    w8, ne
+   0x0000ffff9c1cd2b4 <+964>:   mov     w7, #0xffffffff                 // #-1
+   0x0000ffff9c1cd2b8 <+968>:   cbz     x4, 0xffff9c1cd2cc <_int_free+988>
+   0x0000ffff9c1cd2bc <+972>:   cbz     w8, 0xffff9c1cd2cc <_int_free+988>
+   0x0000ffff9c1cd2c0 <+976>:   ldr     x1, [x4,#8]
+   0x0000ffff9c1cd2c4 <+980>:   lsr     w1, w1, #4
+   0x0000ffff9c1cd2c8 <+984>:   sub     w7, w1, #0x2
+   0x0000ffff9c1cd2cc <+988>:   str     x4, [x19,#16]
+   0x0000ffff9c1cd2d0 <+992>:   str     x4, [x29,#144]
+   0x0000ffff9c1cd2d4 <+996>:   mov     x1, x4
+   0x0000ffff9c1cd2d8 <+1000>:  ldxr    x6, [x5]
+   0x0000ffff9c1cd2dc <+1004>:  cmp     x6, x1
+   0x0000ffff9c1cd2e0 <+1008>:  b.ne    0xffff9c1cd2ec <_int_free+1020>
+   0x0000ffff9c1cd2e4 <+1012>:  stlxr   w2, x19, [x5]
+   0x0000ffff9c1cd2e8 <+1016>:  cbnz    w2, 0xffff9c1cd2d8 <_int_free+1000>
+   0x0000ffff9c1cd2ec <+1020>:  b.eq    0xffff9c1cd2f4 <_int_free+1028>
+   0x0000ffff9c1cd2f0 <+1024>:  str     x6, [x9]
+   0x0000ffff9c1cd2f4 <+1028>:  ldr     x1, [x29,#144]
+   0x0000ffff9c1cd2f8 <+1032>:  cmp     x4, x1
+   0x0000ffff9c1cd2fc <+1036>:  b.eq    0xffff9c1cd310 <_int_free+1056>
+   0x0000ffff9c1cd300 <+1040>:  cmp     x19, x1
+   0x0000ffff9c1cd304 <+1044>:  b.eq    0xffff9c1cd580 <_int_free+1680>
+   0x0000ffff9c1cd308 <+1048>:  mov     x4, x1
+   0x0000ffff9c1cd30c <+1052>:  b       0xffff9c1cd2b8 <_int_free+968>
+   0x0000ffff9c1cd310 <+1056>:  cbz     x4, 0xffff9c1cd320 <_int_free+1072>
+   0x0000ffff9c1cd314 <+1060>:  cbz     w8, 0xffff9c1cd320 <_int_free+1072>
+   0x0000ffff9c1cd318 <+1064>:  cmp     w7, w20
+   0x0000ffff9c1cd31c <+1068>:  b.ne    0xffff9c1cdaa8 <_int_free+3000>
+   0x0000ffff9c1cd320 <+1072>:  ldp     x19, x20, [sp,#16]
+   0x0000ffff9c1cd324 <+1076>:  ldp     x21, x22, [sp,#32]
+   0x0000ffff9c1cd328 <+1080>:  ldp     x23, x24, [sp,#48]
+   0x0000ffff9c1cd32c <+1084>:  ldp     x25, x26, [sp,#64]
+   0x0000ffff9c1cd330 <+1088>:  ldp     x27, x28, [sp,#80]
+   0x0000ffff9c1cd334 <+1092>:  ldp     x29, x30, [sp],#176
+   0x0000ffff9c1cd338 <+1096>:  ret
+   0x0000ffff9c1cd33c <+1100>:  ldr     x0, [x24,#8]
+   0x0000ffff9c1cd340 <+1104>:  and     x0, x0, #0xfffffffffffffff8
+   0x0000ffff9c1cd344 <+1108>:  ldr     x1, [x24,x0]
+   0x0000ffff9c1cd348 <+1112>:  cmp     x0, x1
+---Type <return> to continue, or q <return> to quit---
+   0x0000ffff9c1cd34c <+1116>:  b.ne    0xffff9c1cd8dc <_int_free+2540>
+   0x0000ffff9c1cd350 <+1120>:  ldr     x26, [x24,#16]
+   0x0000ffff9c1cd354 <+1124>:  ldr     x0, [x24,#24]
+   0x0000ffff9c1cd358 <+1128>:  ldr     x1, [x26,#24]
+   0x0000ffff9c1cd35c <+1132>:  cmp     x24, x1
+   0x0000ffff9c1cd360 <+1136>:  b.ne    0xffff9c1cd7ec <_int_free+2300>
+   0x0000ffff9c1cd364 <+1140>:  ldr     x1, [x0,#16]
+   0x0000ffff9c1cd368 <+1144>:  cmp     x24, x1
+   0x0000ffff9c1cd36c <+1148>:  b.ne    0xffff9c1cd7ec <_int_free+2300>
+   0x0000ffff9c1cd370 <+1152>:  ldr     x1, [x24,#8]
+   0x0000ffff9c1cd374 <+1156>:  str     x0, [x26,#24]
+   0x0000ffff9c1cd378 <+1160>:  str     x26, [x0,#16]
+   0x0000ffff9c1cd37c <+1164>:  cmp     x1, #0x3ff
+   0x0000ffff9c1cd380 <+1168>:  b.ls    0xffff9c1cd38c <_int_free+1180>
+   0x0000ffff9c1cd384 <+1172>:  ldr     x0, [x24,#32]
+   0x0000ffff9c1cd388 <+1176>:  cbnz    x0, 0xffff9c1cd7b0 <_int_free+2240>
+   0x0000ffff9c1cd38c <+1180>:  add     x20, x20, x25
+   0x0000ffff9c1cd390 <+1184>:  b       0xffff9c1cd030 <_int_free+320>
+   0x0000ffff9c1cd394 <+1188>:  ldr     x4, [x19,#8]
+   0x0000ffff9c1cd398 <+1192>:  mov     x20, x0
+   0x0000ffff9c1cd39c <+1196>:  add     x26, x27, #0xe8
+   0x0000ffff9c1cd3a0 <+1200>:  ldr     x0, [x26]
+   0x0000ffff9c1cd3a4 <+1204>:  and     x25, x4, #0xfffffffffffffff8
+   0x0000ffff9c1cd3a8 <+1208>:  cmp     x25, x0
+   0x0000ffff9c1cd3ac <+1212>:  b.cc    0xffff9c1cd448 <_int_free+1368>
+   0x0000ffff9c1cd3b0 <+1216>:  subs    x0, x25, #0x21
+   0x0000ffff9c1cd3b4 <+1220>:  b.mi    0xffff9c1cd448 <_int_free+1368>
+   0x0000ffff9c1cd3b8 <+1224>:  ldr     x1, [x29,#136]
+   0x0000ffff9c1cd3bc <+1228>:  cmp     x1, x0
+   0x0000ffff9c1cd3c0 <+1232>:  b.cs    0xffff9c1cd448 <_int_free+1368>
+   0x0000ffff9c1cd3c4 <+1236>:  ldr     x2, [x29,#128]
+   0x0000ffff9c1cd3c8 <+1240>:  sub     x0, x0, x1
+   0x0000ffff9c1cd3cc <+1244>:  neg     x1, x2
+   0x0000ffff9c1cd3d0 <+1248>:  and     x28, x0, x1
+   0x0000ffff9c1cd3d4 <+1252>:  cbz     x28, 0xffff9c1cd448 <_int_free+1368>
+   0x0000ffff9c1cd3d8 <+1256>:  ldr     x0, [x20,#16]
+   0x0000ffff9c1cd3dc <+1260>:  sub     x0, x0, x28
+   0x0000ffff9c1cd3e0 <+1264>:  str     x0, [x29,#136]
+   0x0000ffff9c1cd3e4 <+1268>:  cmp     x0, #0x1f
+   0x0000ffff9c1cd3e8 <+1272>:  b.le    0xffff9c1cd448 <_int_free+1368>
+---Type <return> to continue, or q <return> to quit---
+   0x0000ffff9c1cd3ec <+1276>:  ldr     w0, [x26,#104]
+   0x0000ffff9c1cd3f0 <+1280>:  cmp     w0, wzr
+   0x0000ffff9c1cd3f4 <+1284>:  b.lt    0xffff9c1cdbb8 <_int_free+3272>
+   0x0000ffff9c1cd3f8 <+1288>:  cset    w0, ne
+   0x0000ffff9c1cd3fc <+1292>:  cbnz    w0, 0xffff9c1cdb24 <_int_free+3124>
+   0x0000ffff9c1cd400 <+1296>:  ldr     x1, [x29,#136]
+   0x0000ffff9c1cd404 <+1300>:  mov     w2, #0x4                        // #4
+   0x0000ffff9c1cd408 <+1304>:  add     x0, x20, x1
+   0x0000ffff9c1cd40c <+1308>:  mov     x1, x28
+   0x0000ffff9c1cd410 <+1312>:  bl      0xffff9c22a9d0 <madvise>
+   0x0000ffff9c1cd414 <+1316>:  ldr     x2, [x29,#136]
+   0x0000ffff9c1cd418 <+1320>:  str     x2, [x20,#16]
+   0x0000ffff9c1cd41c <+1324>:  nop
+   0x0000ffff9c1cd420 <+1328>:  ldr     x1, [x24,#2176]
+   0x0000ffff9c1cd424 <+1332>:  add     x22, x22, #0x578
+   0x0000ffff9c1cd428 <+1336>:  ldr     x0, [x22,#32]
+   0x0000ffff9c1cd42c <+1340>:  sub     x1, x1, x28
+   0x0000ffff9c1cd430 <+1344>:  sub     x25, x25, x28
+   0x0000ffff9c1cd434 <+1348>:  str     x1, [x24,#2176]
+   0x0000ffff9c1cd438 <+1352>:  sub     x0, x0, x28
+   0x0000ffff9c1cd43c <+1356>:  orr     x25, x25, #0x1
+   0x0000ffff9c1cd440 <+1360>:  str     x0, [x22,#32]
+   0x0000ffff9c1cd444 <+1364>:  str     x25, [x19,#8]
+   0x0000ffff9c1cd448 <+1368>:  cbnz    w23, 0xffff9c1cd320 <_int_free+1072>
+   0x0000ffff9c1cd44c <+1372>:  ldxr    w0, [x21]
+   0x0000ffff9c1cd450 <+1376>:  stlxr   w1, w23, [x21]
+   0x0000ffff9c1cd454 <+1380>:  cbnz    w1, 0xffff9c1cd44c <_int_free+1372>
+   0x0000ffff9c1cd458 <+1384>:  cmp     w0, #0x1
+   0x0000ffff9c1cd45c <+1388>:  b.le    0xffff9c1cd320 <_int_free+1072>
+   0x0000ffff9c1cd460 <+1392>:  mov     x0, x21
+   0x0000ffff9c1cd464 <+1396>:  mov     x1, #0x81                       // #129
+   0x0000ffff9c1cd468 <+1400>:  mov     x2, #0x1                        // #1
+   0x0000ffff9c1cd46c <+1404>:  mov     x3, #0x0                        // #0
+   0x0000ffff9c1cd470 <+1408>:  mov     x8, #0x62                       // #98
+   0x0000ffff9c1cd474 <+1412>:  svc     #0x0
+   0x0000ffff9c1cd478 <+1416>:  b       0xffff9c1cd320 <_int_free+1072>
+   0x0000ffff9c1cd47c <+1420>:  adrp    x0, 0xffff9c2cf000
+   0x0000ffff9c1cd480 <+1424>:  ldr     x0, [x0,#3624]
+   0x0000ffff9c1cd484 <+1428>:  ldr     x1, [x19]
+   0x0000ffff9c1cd488 <+1432>:  ldr     x2, [x0,#24]
+---Type <return> to continue, or q <return> to quit---
+   0x0000ffff9c1cd48c <+1436>:  sub     x0, x19, x1
+   0x0000ffff9c1cd490 <+1440>:  add     x1, x20, x1
+   0x0000ffff9c1cd494 <+1444>:  orr     x3, x0, x1
+   0x0000ffff9c1cd498 <+1448>:  sub     x2, x2, #0x1
+   0x0000ffff9c1cd49c <+1452>:  tst     x3, x2
+   0x0000ffff9c1cd4a0 <+1456>:  b.ne    0xffff9c1cd938 <_int_free+2632>
+   0x0000ffff9c1cd4a4 <+1460>:  adrp    x2, 0xffff9c2d0000
+   0x0000ffff9c1cd4a8 <+1464>:  add     x2, x2, #0xe8
+   0x0000ffff9c1cd4ac <+1468>:  ldr     w4, [x2,#40]
+   0x0000ffff9c1cd4b0 <+1472>:  ldr     x3, [x2,#56]
+   0x0000ffff9c1cd4b4 <+1476>:  sub     w4, w4, #0x1
+   0x0000ffff9c1cd4b8 <+1480>:  sub     x3, x3, x1
+   0x0000ffff9c1cd4bc <+1484>:  str     w4, [x2,#40]
+   0x0000ffff9c1cd4c0 <+1488>:  str     x3, [x2,#56]
+   0x0000ffff9c1cd4c4 <+1492>:  bl      0xffff9c22a930 <munmap>
+   0x0000ffff9c1cd4c8 <+1496>:  ldp     x19, x20, [sp,#16]
+   0x0000ffff9c1cd4cc <+1500>:  ldp     x21, x22, [sp,#32]
+   0x0000ffff9c1cd4d0 <+1504>:  ldp     x23, x24, [sp,#48]
+   0x0000ffff9c1cd4d4 <+1508>:  ldp     x25, x26, [sp,#64]
+   0x0000ffff9c1cd4d8 <+1512>:  ldp     x27, x28, [sp,#80]
+   0x0000ffff9c1cd4dc <+1516>:  ldp     x29, x30, [sp],#176
+   0x0000ffff9c1cd4e0 <+1520>:  ret
+   0x0000ffff9c1cd4e4 <+1524>:  str     w2, [x29,#144]
+   0x0000ffff9c1cd4e8 <+1528>:  mov     w0, #0x1                        // #1
+   0x0000ffff9c1cd4ec <+1532>:  ldaxr   w1, [x21]
+   0x0000ffff9c1cd4f0 <+1536>:  cmp     w1, wzr
+   0x0000ffff9c1cd4f4 <+1540>:  b.ne    0xffff9c1cd500 <_int_free+1552>
+   0x0000ffff9c1cd4f8 <+1544>:  stxr    w2, w0, [x21]
+   0x0000ffff9c1cd4fc <+1548>:  cbnz    w2, 0xffff9c1cd4ec <_int_free+1532>
+   0x0000ffff9c1cd500 <+1552>:  b.eq    0xffff9c1cd508 <_int_free+1560>
+   0x0000ffff9c1cd504 <+1556>:  str     w1, [x29,#144]
+   0x0000ffff9c1cd508 <+1560>:  ldr     w0, [x29,#144]
+   0x0000ffff9c1cd50c <+1564>:  mov     w27, #0x1                       // #1
+   0x0000ffff9c1cd510 <+1568>:  cbz     w0, 0xffff9c1ccf64 <_int_free+116>
+   0x0000ffff9c1cd514 <+1572>:  mov     x0, x21
+   0x0000ffff9c1cd518 <+1576>:  bl      0xffff9c23c9cc <__lll_lock_wait_private>
+   0x0000ffff9c1cd51c <+1580>:  b       0xffff9c1ccf64 <_int_free+116>
+   0x0000ffff9c1cd520 <+1584>:  ldr     x4, [x5,#8]
+   0x0000ffff9c1cd524 <+1588>:  mov     x19, x5
+   0x0000ffff9c1cd528 <+1592>:  mov     x20, x0
+---Type <return> to continue, or q <return> to quit---
+   0x0000ffff9c1cd52c <+1596>:  b       0xffff9c1cd39c <_int_free+1196>
+   0x0000ffff9c1cd530 <+1600>:  ldr     x2, [x0,#8]
+   0x0000ffff9c1cd534 <+1604>:  adrp    x0, 0xffff9c2d0000
+   0x0000ffff9c1cd538 <+1608>:  add     x0, x0, #0xe8
+   0x0000ffff9c1cd53c <+1612>:  ldr     x1, [x0]
+   0x0000ffff9c1cd540 <+1616>:  and     x2, x2, #0xfffffffffffffff8
+   0x0000ffff9c1cd544 <+1620>:  cmp     x2, x1
+   0x0000ffff9c1cd548 <+1624>:  b.cc    0xffff9c1cd448 <_int_free+1368>
+   0x0000ffff9c1cd54c <+1628>:  ldr     x0, [x0,#8]
+   0x0000ffff9c1cd550 <+1632>:  add     x1, x21, #0x58
+   0x0000ffff9c1cd554 <+1636>:  add     x2, x21, #0x880
+   0x0000ffff9c1cd558 <+1640>:  bl      0xffff9c1cba3c <systrim>
+   0x0000ffff9c1cd55c <+1644>:  b       0xffff9c1cd448 <_int_free+1368>
+   0x0000ffff9c1cd560 <+1648>:  add     x20, x20, x25
+   0x0000ffff9c1cd564 <+1652>:  orr     x0, x20, #0x1
+   0x0000ffff9c1cd568 <+1656>:  str     x0, [x19,#8]
+   0x0000ffff9c1cd56c <+1660>:  str     x19, [x21,#88]
+   0x0000ffff9c1cd570 <+1664>:  b       0xffff9c1cd070 <_int_free+384>
+   0x0000ffff9c1cd574 <+1668>:  mov     x0, x21
+   0x0000ffff9c1cd578 <+1672>:  bl      0xffff9c1cc5cc <malloc_consolidate>
+   0x0000ffff9c1cd57c <+1676>:  b       0xffff9c1cd084 <_int_free+404>
+   0x0000ffff9c1cd580 <+1680>:  adrp    x20, 0xffff9c28a000
+   0x0000ffff9c1cd584 <+1684>:  mov     x19, x10
+   0x0000ffff9c1cd588 <+1688>:  mov     w27, #0x0                       // #0
+   0x0000ffff9c1cd58c <+1692>:  add     x20, x20, #0x738
+   //跳转点:errout:
+   0x0000ffff9c1cd590 <+1696>:  orr     w27, w27, w23
+   //会跳转
+   0x0000ffff9c1cd594 <+1700>:  cbnz    w27, 0xffff9c1cd690 <_int_free+1952>
+
+   //跳转这个地方
+   0x0000ffff9c1cd598 <+1704>:  adrp    x0, 0xffff9c2d0000
+   0x0000ffff9c1cd59c <+1708>:  add     x0, x0, #0xe8
+   //通过adrp获取到check_action
+   0x0000ffff9c1cd5a0 <+1712>:  ldr     w22, [x0,#88]
+   0x0000ffff9c1cd5a4 <+1716>:  cbz     x21, 0xffff9c1cd5b4 <_int_free+1732>
+   0x0000ffff9c1cd5a8 <+1720>:  ldr     w0, [x21,#4]
+   0x0000ffff9c1cd5ac <+1724>:  orr     w0, w0, #0x4
+   0x0000ffff9c1cd5b0 <+1728>:  str     w0, [x21,#4]
+   0x0000ffff9c1cd5b4 <+1732>:  mov     w0, #0x5                        // #5
+   //action & 5, w22为action
+   0x0000ffff9c1cd5b8 <+1736>:  and     w0, w22, w0
+   //action & 5 == 5
+   0x0000ffff9c1cd5bc <+1740>:  cmp     w0, #0x5
+   //调用__libc_message
+   0x0000ffff9c1cd5c0 <+1744>:  b.eq    0xffff9c1cd6c4 <_int_free+2004>
+   //如果action & 1, 在这里action为3,所以满足, 在这里跳转
+   0x0000ffff9c1cd5c4 <+1748>:  tbnz    w22, #0, 0xffff9c1cd608 <_int_free+1816>
+   0x0000ffff9c1cd5c8 <+1752>:  tbnz    w22, #1, 0xffff9c1cd6dc <_int_free+2028>
+   0x0000ffff9c1cd5cc <+1756>:  cbz     w23, 0xffff9c1cd320 <_int_free+1072>
+   0x0000ffff9c1cd5d0 <+1760>:  str     wzr, [x29,#144]
+   0x0000ffff9c1cd5d4 <+1764>:  mov     w1, #0x1                        // #1
+   0x0000ffff9c1cd5d8 <+1768>:  ldaxr   w0, [x21]
+   0x0000ffff9c1cd5dc <+1772>:  cmp     w0, wzr
+   0x0000ffff9c1cd5e0 <+1776>:  b.ne    0xffff9c1cd5ec <_int_free+1788>
+   0x0000ffff9c1cd5e4 <+1780>:  stxr    w2, w1, [x21]
+   0x0000ffff9c1cd5e8 <+1784>:  cbnz    w2, 0xffff9c1cd5d8 <_int_free+1768>
+   0x0000ffff9c1cd5ec <+1788>:  b.eq    0xffff9c1cd5f4 <_int_free+1796>
+   0x0000ffff9c1cd5f0 <+1792>:  str     w0, [x29,#144]
+   0x0000ffff9c1cd5f4 <+1796>:  ldr     w0, [x29,#144]
+   0x0000ffff9c1cd5f8 <+1800>:  cbz     w0, 0xffff9c1cd320 <_int_free+1072>
+   0x0000ffff9c1cd5fc <+1804>:  mov     x0, x21
+   0x0000ffff9c1cd600 <+1808>:  bl      0xffff9c23c9cc <__lll_lock_wait_private>
+   0x0000ffff9c1cd604 <+1812>:  b       0xffff9c1cd320 <_int_free+1072>
+   //跳转点
+   //x19为x1, 为mchunkptr p
+   //将x19mov 到x0
+   0x0000ffff9c1cd608 <+1816>:  mov     x0, x19
+   //取得的为buf[sizeof(buf) -1], 的地址
+   0x0000ffff9c1cd60c <+1820>:  add     x1, x29, #0xa0
+   0x0000ffff9c1cd610 <+1824>:  mov     w2, #0x10                       // #16
+   0x0000ffff9c1cd614 <+1828>:  mov     w3, #0x0                        // #0
+   //在这变了x24
+   0x0000ffff9c1cd618 <+1832>:  add     x24, x29, #0x90
+   0x0000ffff9c1cd61c <+1836>:  strb    wzr, [x29,#160]
+   0x0000ffff9c1cd620 <+1840>:  bl      0xffff9c197528 <_itoa_word>
+   //if cp > buf
+   0x0000ffff9c1cd624 <+1844>:  cmp     x0, x24
+   //cp 为第四个参数
+   0x0000ffff9c1cd628 <+1848>:  mov     x4, x0
+   //如果小于等于跳转
+   0x0000ffff9c1cd62c <+1852>:  b.ls    0xffff9c1cd658 <_int_free+1896>
+   //大于的花走这个分支
+   0x0000ffff9c1cd630 <+1856>:  sub     x2, x0, x24
+   0x0000ffff9c1cd634 <+1860>:  sub     x0, x0, x2
+   0x0000ffff9c1cd638 <+1864>:  mov     w1, #0x30                       // #48
+   0x0000ffff9c1cd63c <+1868>:  sub     x19, x4, #0x1
+   0x0000ffff9c1cd640 <+1872>:  str     x4, [x29,#104]
+   0x0000ffff9c1cd644 <+1876>:  bl      0xffff9c1d84ec <__GI_memset>
+   0x0000ffff9c1cd648 <+1880>:  add     x0, x29, #0x8f
+   0x0000ffff9c1cd64c <+1884>:  ldr     x4, [x29,#104]
+   0x0000ffff9c1cd650 <+1888>:  sub     x19, x0, x19
+   0x0000ffff9c1cd654 <+1892>:  add     x4, x4, x19
+   //跳转到这个地方
+   0x0000ffff9c1cd658 <+1896>:  adrp    x0, 0xffff9c2d4000 <_res@GLIBC_2.17+40>
+   0x0000ffff9c1cd65c <+1900>:  ldr     x1, [x0,#3440]
+   //x22为action
+   0x0000ffff9c1cd660 <+1904>:  and     w0, w22, #0x2
+   //x2: __libc_argv[0] 
+   0x0000ffff9c1cd664 <+1908>:  ldr     x2, [x1] 
+   0x0000ffff9c1cd668 <+1912>:  cbz     x2, 0xffff9c1cd6f4 <_int_free+2052>
+   //x1为:  "*** Error in `%s': %s: 0x%s ***\n"
+   0x0000ffff9c1cd66c <+1916>:  adrp    x1, 0xffff9c28a000
+   0x0000ffff9c1cd670 <+1920>:  add     x1, x1, #0x620
+   //x20, x3为str
+   0x0000ffff9c1cd674 <+1924>:  mov     x3, x20
+   0x0000ffff9c1cd678 <+1928>:  bl      0xffff9c1c4d94 <__libc_message>         ==========
+   0x0000ffff9c1cd67c <+1932>:  b       0xffff9c1cd5cc <_int_free+1756>         ==========malloc_printerr
+   0x0000ffff9c1cd680 <+1936>:  cbz     w23, 0xffff9c1cdc84 <_int_free+3476>
+   0x0000ffff9c1cd684 <+1940>:  adrp    x20, 0xffff9c28a000
+   0x0000ffff9c1cd688 <+1944>:  add     x19, x19, #0x10
+   0x0000ffff9c1cd68c <+1948>:  add     x20, x20, #0x828
+   //跳转点
+   0x0000ffff9c1cd690 <+1952>:  mov     w1, #0x0                        // #0
+   0x0000ffff9c1cd694 <+1956>:  ldxr    w0, [x21]
+   0x0000ffff9c1cd698 <+1960>:  stlxr   w2, w1, [x21]
+   0x0000ffff9c1cd69c <+1964>:  cbnz    w2, 0xffff9c1cd694 <_int_free+1956>
+   0x0000ffff9c1cd6a0 <+1968>:  cmp     w0, #0x1
+   0x0000ffff9c1cd6a4 <+1972>:  b.le    0xffff9c1cd598 <_int_free+1704>
+   0x0000ffff9c1cd6a8 <+1976>:  mov     x0, x21
+   0x0000ffff9c1cd6ac <+1980>:  mov     x1, #0x81                       // #129
+   0x0000ffff9c1cd6b0 <+1984>:  mov     x2, #0x1                        // #1
+   0x0000ffff9c1cd6b4 <+1988>:  mov     x3, #0x0                        // #0
+   0x0000ffff9c1cd6b8 <+1992>:  mov     x8, #0x62                       // #98
+   0x0000ffff9c1cd6bc <+1996>:  svc     #0x0
+   //在这个地方会跳转
+   0x0000ffff9c1cd6c0 <+2000>:  b       0xffff9c1cd598 <_int_free+1704>
+   0x0000ffff9c1cd6c4 <+2004>:  adrp    x1, 0xffff9c28d000
+   0x0000ffff9c1cd6c8 <+2008>:  and     w0, w22, #0x2
+   0x0000ffff9c1cd6cc <+2012>:  add     x1, x1, #0x1e0
+   0x0000ffff9c1cd6d0 <+2016>:  mov     x2, x20
+   0x0000ffff9c1cd6d4 <+2020>:  bl      0xffff9c1c4d94 <__libc_message>
+   0x0000ffff9c1cd6d8 <+2024>:  b       0xffff9c1cd5cc <_int_free+1756>
+   0x0000ffff9c1cd6dc <+2028>:  bl      0xffff9c186784 <__GI_abort>
+   0x0000ffff9c1cd6e0 <+2032>:  mov     x0, x10
+   0x0000ffff9c1cd6e4 <+2036>:  sub     x2, x20, #0x10
+   0x0000ffff9c1cd6e8 <+2040>:  bl      0xffff9c1d84ec <__GI_memset>
+   0x0000ffff9c1cd6ec <+2044>:  mov     x10, x0
+   0x0000ffff9c1cd6f0 <+2048>:  b       0xffff9c1cd250 <_int_free+864>
+   //赋值"unknown"首地址
+   0x0000ffff9c1cd6f4 <+2052>:  adrp    x2, 0xffff9c28a000
+   0x0000ffff9c1cd6f8 <+2056>:  add     x2, x2, #0x608
+   0x0000ffff9c1cd6fc <+2060>:  b       0xffff9c1cd66c <_int_free+1916>
+   0x0000ffff9c1cd700 <+2064>:  adrp    x20, 0xffff9c28a000
+   0x0000ffff9c1cd704 <+2068>:  add     x19, x19, #0x10
+   0x0000ffff9c1cd708 <+2072>:  add     x20, x20, #0x7e8
+---Type <return> to continue, or q <return> to quit---
+   0x0000ffff9c1cd70c <+2076>:  b       0xffff9c1cd590 <_int_free+1696>
+   0x0000ffff9c1cd710 <+2080>:  mov     w1, #0x0                        // #0
+   0x0000ffff9c1cd714 <+2084>:  ldxr    w0, [x24]
+   0x0000ffff9c1cd718 <+2088>:  stlxr   w2, w1, [x24]
+   0x0000ffff9c1cd71c <+2092>:  cbnz    w2, 0xffff9c1cd714 <_int_free+2084>
+   0x0000ffff9c1cd720 <+2096>:  cmp     w0, #0x1
+   0x0000ffff9c1cd724 <+2100>:  b.le    0xffff9c1cd740 <_int_free+2128>
+   0x0000ffff9c1cd728 <+2104>:  mov     x0, x24
+   0x0000ffff9c1cd72c <+2108>:  mov     x1, #0x81                       // #129
+   0x0000ffff9c1cd730 <+2112>:  mov     x2, #0x1                        // #1
+   0x0000ffff9c1cd734 <+2116>:  mov     x3, #0x0                        // #0
+   0x0000ffff9c1cd738 <+2120>:  mov     x8, #0x62                       // #98
+   0x0000ffff9c1cd73c <+2124>:  svc     #0x0
+   0x0000ffff9c1cd740 <+2128>:  add     x0, x27, #0xe8
+   0x0000ffff9c1cd744 <+2132>:  ldr     x1, [x29,#120]
+   0x0000ffff9c1cd748 <+2136>:  ldr     w0, [x0,#88]
+   0x0000ffff9c1cd74c <+2140>:  mov     x2, x19
+   0x0000ffff9c1cd750 <+2144>:  mov     x3, x24
+   0x0000ffff9c1cd754 <+2148>:  bl      0xffff9c1cb940 <malloc_printerr>
+   0x0000ffff9c1cd758 <+2152>:  mov     w1, #0x1                        // #1
+   0x0000ffff9c1cd75c <+2156>:  str     wzr, [x29,#144]
+   0x0000ffff9c1cd760 <+2160>:  ldaxr   w0, [x24]
+   0x0000ffff9c1cd764 <+2164>:  cmp     w0, wzr
+   0x0000ffff9c1cd768 <+2168>:  b.ne    0xffff9c1cd774 <_int_free+2180>
+   0x0000ffff9c1cd76c <+2172>:  stxr    w2, w1, [x24]
+   0x0000ffff9c1cd770 <+2176>:  cbnz    w2, 0xffff9c1cd760 <_int_free+2160>
+   0x0000ffff9c1cd774 <+2180>:  b.eq    0xffff9c1cd77c <_int_free+2188>
+   0x0000ffff9c1cd778 <+2184>:  str     w0, [x29,#144]
+   0x0000ffff9c1cd77c <+2188>:  ldr     w0, [x29,#144]
+   0x0000ffff9c1cd780 <+2192>:  cbz     w0, 0xffff9c1cd164 <_int_free+628>
+   0x0000ffff9c1cd784 <+2196>:  mov     x0, x24
+   0x0000ffff9c1cd788 <+2200>:  bl      0xffff9c23c9cc <__lll_lock_wait_private>
+   0x0000ffff9c1cd78c <+2204>:  b       0xffff9c1cd164 <_int_free+628>
+   0x0000ffff9c1cd790 <+2208>:  add     x0, x27, #0xe8
+   0x0000ffff9c1cd794 <+2212>:  ldr     w0, [x0,#88]
+   0x0000ffff9c1cd798 <+2216>:  adrp    x1, 0xffff9c28a000
+   0x0000ffff9c1cd79c <+2220>:  add     x1, x1, #0x688
+   0x0000ffff9c1cd7a0 <+2224>:  mov     x2, x19
+   0x0000ffff9c1cd7a4 <+2228>:  mov     x3, x24
+   0x0000ffff9c1cd7a8 <+2232>:  bl      0xffff9c1cb940 <malloc_printerr>
+---Type <return> to continue, or q <return> to quit---
+   0x0000ffff9c1cd7ac <+2236>:  b       0xffff9c1cd128 <_int_free+568>
+   0x0000ffff9c1cd7b0 <+2240>:  ldr     x1, [x0,#40]
+   0x0000ffff9c1cd7b4 <+2244>:  cmp     x24, x1
+   0x0000ffff9c1cd7b8 <+2248>:  b.ne    0xffff9c1cd8a4 <_int_free+2484>
+   0x0000ffff9c1cd7bc <+2252>:  ldr     x1, [x24,#40]
+   0x0000ffff9c1cd7c0 <+2256>:  ldr     x1, [x1,#32]
+   0x0000ffff9c1cd7c4 <+2260>:  cmp     x24, x1
+   0x0000ffff9c1cd7c8 <+2264>:  b.ne    0xffff9c1cd8a4 <_int_free+2484>
+   0x0000ffff9c1cd7cc <+2268>:  ldr     x1, [x26,#32]
+   0x0000ffff9c1cd7d0 <+2272>:  cbz     x1, 0xffff9c1cd878 <_int_free+2440>
+   0x0000ffff9c1cd7d4 <+2276>:  ldr     x1, [x24,#40]
+   0x0000ffff9c1cd7d8 <+2280>:  add     x20, x20, x25
+   0x0000ffff9c1cd7dc <+2284>:  str     x1, [x0,#40]
+   0x0000ffff9c1cd7e0 <+2288>:  ldr     x1, [x24,#40]
+   0x0000ffff9c1cd7e4 <+2292>:  str     x0, [x1,#32]
+   0x0000ffff9c1cd7e8 <+2296>:  b       0xffff9c1cd030 <_int_free+320>
+   0x0000ffff9c1cd7ec <+2300>:  mov     w1, #0x0                        // #0
+   0x0000ffff9c1cd7f0 <+2304>:  ldxr    w0, [x21]
+   0x0000ffff9c1cd7f4 <+2308>:  stlxr   w2, w1, [x21]
+   0x0000ffff9c1cd7f8 <+2312>:  cbnz    w2, 0xffff9c1cd7f0 <_int_free+2304>
+   0x0000ffff9c1cd7fc <+2316>:  cmp     w0, #0x1
+   0x0000ffff9c1cd800 <+2320>:  b.le    0xffff9c1cd81c <_int_free+2348>
+   0x0000ffff9c1cd804 <+2324>:  mov     x0, x21
+   0x0000ffff9c1cd808 <+2328>:  mov     x1, #0x81                       // #129
+   0x0000ffff9c1cd80c <+2332>:  mov     x2, #0x1                        // #1
+   0x0000ffff9c1cd810 <+2336>:  mov     x3, #0x0                        // #0
+   0x0000ffff9c1cd814 <+2340>:  mov     x8, #0x62                       // #98
+   0x0000ffff9c1cd818 <+2344>:  svc     #0x0
+   0x0000ffff9c1cd81c <+2348>:  adrp    x0, 0xffff9c2d0000
+   0x0000ffff9c1cd820 <+2352>:  add     x0, x0, #0xe8
+   0x0000ffff9c1cd824 <+2356>:  ldr     w0, [x0,#88]
+   0x0000ffff9c1cd828 <+2360>:  adrp    x1, 0xffff9c28a000
+   0x0000ffff9c1cd82c <+2364>:  add     x1, x1, #0x6a8
+   0x0000ffff9c1cd830 <+2368>:  mov     x2, x24
+   0x0000ffff9c1cd834 <+2372>:  mov     x3, x21
+   0x0000ffff9c1cd838 <+2376>:  bl      0xffff9c1cb940 <malloc_printerr>
+   0x0000ffff9c1cd83c <+2380>:  mov     w1, #0x1                        // #1
+   0x0000ffff9c1cd840 <+2384>:  str     wzr, [x29,#144]
+   0x0000ffff9c1cd844 <+2388>:  ldaxr   w0, [x21]
+   0x0000ffff9c1cd848 <+2392>:  cmp     w0, wzr
+---Type <return> to continue, or q <return> to quit---
+   0x0000ffff9c1cd84c <+2396>:  b.ne    0xffff9c1cd858 <_int_free+2408>
+   0x0000ffff9c1cd850 <+2400>:  stxr    w2, w1, [x21]
+   0x0000ffff9c1cd854 <+2404>:  cbnz    w2, 0xffff9c1cd844 <_int_free+2388>
+   0x0000ffff9c1cd858 <+2408>:  b.eq    0xffff9c1cd860 <_int_free+2416>
+   0x0000ffff9c1cd85c <+2412>:  str     w0, [x29,#144]
+   0x0000ffff9c1cd860 <+2416>:  ldr     w0, [x29,#144]
+   0x0000ffff9c1cd864 <+2420>:  cbz     w0, 0xffff9c1cd38c <_int_free+1180>
+   0x0000ffff9c1cd868 <+2424>:  mov     x0, x21
+   0x0000ffff9c1cd86c <+2428>:  bl      0xffff9c23c9cc <__lll_lock_wait_private>
+   0x0000ffff9c1cd870 <+2432>:  add     x20, x20, x25
+   0x0000ffff9c1cd874 <+2436>:  b       0xffff9c1cd030 <_int_free+320>
+   0x0000ffff9c1cd878 <+2440>:  cmp     x24, x0
+   0x0000ffff9c1cd87c <+2444>:  b.eq    0xffff9c1cd8cc <_int_free+2524>
+   0x0000ffff9c1cd880 <+2448>:  str     x0, [x26,#32]
+   0x0000ffff9c1cd884 <+2452>:  ldr     x0, [x24,#40]
+   0x0000ffff9c1cd888 <+2456>:  ldr     x1, [x24,#32]
+   0x0000ffff9c1cd88c <+2460>:  str     x0, [x26,#40]
+   0x0000ffff9c1cd890 <+2464>:  str     x26, [x1,#40]
+   0x0000ffff9c1cd894 <+2468>:  ldr     x0, [x24,#40]
+   0x0000ffff9c1cd898 <+2472>:  add     x20, x20, x25
+   0x0000ffff9c1cd89c <+2476>:  str     x26, [x0,#32]
+   0x0000ffff9c1cd8a0 <+2480>:  b       0xffff9c1cd030 <_int_free+320>
+   0x0000ffff9c1cd8a4 <+2484>:  adrp    x0, 0xffff9c2d0000
+   0x0000ffff9c1cd8a8 <+2488>:  add     x0, x0, #0xe8
+   0x0000ffff9c1cd8ac <+2492>:  ldr     w0, [x0,#88]
+   0x0000ffff9c1cd8b0 <+2496>:  adrp    x1, 0xffff9c28a000
+   0x0000ffff9c1cd8b4 <+2500>:  add     x1, x1, #0x6c8
+   0x0000ffff9c1cd8b8 <+2504>:  mov     x2, x24
+   0x0000ffff9c1cd8bc <+2508>:  mov     x3, x21
+   0x0000ffff9c1cd8c0 <+2512>:  bl      0xffff9c1cb940 <malloc_printerr>
+   0x0000ffff9c1cd8c4 <+2516>:  ldr     x0, [x24,#32]
+   0x0000ffff9c1cd8c8 <+2520>:  b       0xffff9c1cd7cc <_int_free+2268>
+   0x0000ffff9c1cd8cc <+2524>:  str     x26, [x26,#40]
+   0x0000ffff9c1cd8d0 <+2528>:  str     x26, [x26,#32]
+   0x0000ffff9c1cd8d4 <+2532>:  add     x20, x20, x25
+   0x0000ffff9c1cd8d8 <+2536>:  b       0xffff9c1cd030 <_int_free+320>
+   0x0000ffff9c1cd8dc <+2540>:  adrp    x0, 0xffff9c2d0000
+   0x0000ffff9c1cd8e0 <+2544>:  add     x0, x0, #0xe8
+   0x0000ffff9c1cd8e4 <+2548>:  ldr     w0, [x0,#88]
+   0x0000ffff9c1cd8e8 <+2552>:  adrp    x1, 0xffff9c28a000
+---Type <return> to continue, or q <return> to quit---
+   0x0000ffff9c1cd8ec <+2556>:  add     x1, x1, #0x688
+   0x0000ffff9c1cd8f0 <+2560>:  mov     x2, x24
+   0x0000ffff9c1cd8f4 <+2564>:  mov     x3, x21
+   0x0000ffff9c1cd8f8 <+2568>:  bl      0xffff9c1cb940 <malloc_printerr>
+   0x0000ffff9c1cd8fc <+2572>:  b       0xffff9c1cd350 <_int_free+1120>
+   0x0000ffff9c1cd900 <+2576>:  ldr     x1, [x0,#40]
+   0x0000ffff9c1cd904 <+2580>:  cmp     x19, x1
+   0x0000ffff9c1cd908 <+2584>:  b.ne    0xffff9c1cdb84 <_int_free+3220>
+   0x0000ffff9c1cd90c <+2588>:  ldr     x1, [x19,#40]
+   0x0000ffff9c1cd910 <+2592>:  ldr     x1, [x1,#32]
+   0x0000ffff9c1cd914 <+2596>:  cmp     x19, x1
+   0x0000ffff9c1cd918 <+2600>:  b.ne    0xffff9c1cdb84 <_int_free+3220>
+   0x0000ffff9c1cd91c <+2604>:  ldr     x1, [x4,#32]
+   0x0000ffff9c1cd920 <+2608>:  cbz     x1, 0xffff9c1cdb5c <_int_free+3180>
+   0x0000ffff9c1cd924 <+2612>:  ldr     x1, [x19,#40]
+   0x0000ffff9c1cd928 <+2616>:  str     x1, [x0,#40]
+   0x0000ffff9c1cd92c <+2620>:  ldr     x1, [x19,#40]
+   0x0000ffff9c1cd930 <+2624>:  str     x0, [x1,#32]
+   0x0000ffff9c1cd934 <+2628>:  b       0xffff9c1cd164 <_int_free+628>
+   0x0000ffff9c1cd938 <+2632>:  mov     x0, x19
+   0x0000ffff9c1cd93c <+2636>:  bl      0xffff9c16fa24 <munmap_chunk>
+   0x0000ffff9c1cd940 <+2640>:  b       0xffff9c1cd320 <_int_free+1072>
+   0x0000ffff9c1cd944 <+2644>:  ldr     x1, [x0,#40]
+   0x0000ffff9c1cd948 <+2648>:  cmp     x19, x1
+   0x0000ffff9c1cd94c <+2652>:  b.ne    0xffff9c1cda2c <_int_free+2876>
+   0x0000ffff9c1cd950 <+2656>:  ldr     x1, [x19,#40]
+   0x0000ffff9c1cd954 <+2660>:  ldr     x1, [x1,#32]
+   0x0000ffff9c1cd958 <+2664>:  cmp     x19, x1
+   0x0000ffff9c1cd95c <+2668>:  b.ne    0xffff9c1cda2c <_int_free+2876>
+   0x0000ffff9c1cd960 <+2672>:  ldr     x1, [x26,#32]
+   0x0000ffff9c1cd964 <+2676>:  cbz     x1, 0xffff9c1cda04 <_int_free+2836>
+   0x0000ffff9c1cd968 <+2680>:  ldr     x1, [x19,#40]
+   0x0000ffff9c1cd96c <+2684>:  str     x1, [x0,#40]
+   0x0000ffff9c1cd970 <+2688>:  ldr     x1, [x19,#40]
+   0x0000ffff9c1cd974 <+2692>:  str     x0, [x1,#32]
+   0x0000ffff9c1cd978 <+2696>:  b       0xffff9c1cd00c <_int_free+284>
+   0x0000ffff9c1cd97c <+2700>:  mov     w1, #0x0                        // #0
+   0x0000ffff9c1cd980 <+2704>:  ldxr    w0, [x21]
+   0x0000ffff9c1cd984 <+2708>:  stlxr   w2, w1, [x21]
+   0x0000ffff9c1cd988 <+2712>:  cbnz    w2, 0xffff9c1cd980 <_int_free+2704>
+---Type <return> to continue, or q <return> to quit---
+   0x0000ffff9c1cd98c <+2716>:  cmp     w0, #0x1
+   0x0000ffff9c1cd990 <+2720>:  b.le    0xffff9c1cd9ac <_int_free+2748>
+   0x0000ffff9c1cd994 <+2724>:  mov     x0, x21
+   0x0000ffff9c1cd998 <+2728>:  mov     x1, #0x81                       // #129
+   0x0000ffff9c1cd99c <+2732>:  mov     x2, #0x1                        // #1
+   0x0000ffff9c1cd9a0 <+2736>:  mov     x3, #0x0                        // #0
+   0x0000ffff9c1cd9a4 <+2740>:  mov     x8, #0x62                       // #98
+   0x0000ffff9c1cd9a8 <+2744>:  svc     #0x0
+   0x0000ffff9c1cd9ac <+2748>:  adrp    x0, 0xffff9c2d0000
+   0x0000ffff9c1cd9b0 <+2752>:  add     x0, x0, #0xe8
+   0x0000ffff9c1cd9b4 <+2756>:  ldr     w0, [x0,#88]
+   0x0000ffff9c1cd9b8 <+2760>:  adrp    x1, 0xffff9c28a000
+   0x0000ffff9c1cd9bc <+2764>:  add     x1, x1, #0x6a8
+   0x0000ffff9c1cd9c0 <+2768>:  mov     x2, x19
+   0x0000ffff9c1cd9c4 <+2772>:  mov     x3, x21
+   0x0000ffff9c1cd9c8 <+2776>:  bl      0xffff9c1cb940 <malloc_printerr>
+   0x0000ffff9c1cd9cc <+2780>:  mov     w1, #0x1                        // #1
+   0x0000ffff9c1cd9d0 <+2784>:  str     wzr, [x29,#144]
+   0x0000ffff9c1cd9d4 <+2788>:  ldaxr   w0, [x21]
+   0x0000ffff9c1cd9d8 <+2792>:  cmp     w0, wzr
+   0x0000ffff9c1cd9dc <+2796>:  b.ne    0xffff9c1cd9e8 <_int_free+2808>
+   0x0000ffff9c1cd9e0 <+2800>:  stxr    w2, w1, [x21]
+   0x0000ffff9c1cd9e4 <+2804>:  cbnz    w2, 0xffff9c1cd9d4 <_int_free+2788>
+   0x0000ffff9c1cd9e8 <+2808>:  b.eq    0xffff9c1cd9f0 <_int_free+2816>
+   0x0000ffff9c1cd9ec <+2812>:  str     w0, [x29,#144]
+   0x0000ffff9c1cd9f0 <+2816>:  ldr     w0, [x29,#144]
+   0x0000ffff9c1cd9f4 <+2820>:  cbz     w0, 0xffff9c1cd00c <_int_free+284>
+   0x0000ffff9c1cd9f8 <+2824>:  mov     x0, x21
+   0x0000ffff9c1cd9fc <+2828>:  bl      0xffff9c23c9cc <__lll_lock_wait_private>
+   0x0000ffff9c1cda00 <+2832>:  b       0xffff9c1cd00c <_int_free+284>
+   0x0000ffff9c1cda04 <+2836>:  cmp     x19, x0
+   0x0000ffff9c1cda08 <+2840>:  b.eq    0xffff9c1cda54 <_int_free+2916>
+   0x0000ffff9c1cda0c <+2844>:  str     x0, [x26,#32]
+   0x0000ffff9c1cda10 <+2848>:  ldr     x0, [x19,#40]
+   0x0000ffff9c1cda14 <+2852>:  ldr     x1, [x19,#32]
+   0x0000ffff9c1cda18 <+2856>:  str     x0, [x26,#40]
+   0x0000ffff9c1cda1c <+2860>:  str     x26, [x1,#40]
+   0x0000ffff9c1cda20 <+2864>:  ldr     x0, [x19,#40]
+   0x0000ffff9c1cda24 <+2868>:  str     x26, [x0,#32]
+   0x0000ffff9c1cda28 <+2872>:  b       0xffff9c1cd00c <_int_free+284>
+---Type <return> to continue, or q <return> to quit---
+   0x0000ffff9c1cda2c <+2876>:  adrp    x0, 0xffff9c2d0000
+   0x0000ffff9c1cda30 <+2880>:  add     x0, x0, #0xe8
+   0x0000ffff9c1cda34 <+2884>:  ldr     w0, [x0,#88]
+   0x0000ffff9c1cda38 <+2888>:  adrp    x1, 0xffff9c28a000
+   0x0000ffff9c1cda3c <+2892>:  add     x1, x1, #0x6c8
+   0x0000ffff9c1cda40 <+2896>:  mov     x2, x19
+   0x0000ffff9c1cda44 <+2900>:  mov     x3, x21
+   0x0000ffff9c1cda48 <+2904>:  bl      0xffff9c1cb940 <malloc_printerr>
+   0x0000ffff9c1cda4c <+2908>:  ldr     x0, [x19,#32]
+   0x0000ffff9c1cda50 <+2912>:  b       0xffff9c1cd960 <_int_free+2672>
+   0x0000ffff9c1cda54 <+2916>:  str     x26, [x26,#40]
+   0x0000ffff9c1cda58 <+2920>:  str     x26, [x26,#32]
+   0x0000ffff9c1cda5c <+2924>:  b       0xffff9c1cd00c <_int_free+284>
+   0x0000ffff9c1cda60 <+2928>:  adrp    x0, 0xffff9c2d0000
+   0x0000ffff9c1cda64 <+2932>:  add     x0, x0, #0xe8
+   0x0000ffff9c1cda68 <+2936>:  ldr     w0, [x0,#88]
+   0x0000ffff9c1cda6c <+2940>:  adrp    x1, 0xffff9c28a000
+   0x0000ffff9c1cda70 <+2944>:  add     x1, x1, #0x688
+   0x0000ffff9c1cda74 <+2948>:  mov     x2, x19
+   0x0000ffff9c1cda78 <+2952>:  mov     x3, x21
+   0x0000ffff9c1cda7c <+2956>:  bl      0xffff9c1cb940 <malloc_printerr>
+   0x0000ffff9c1cda80 <+2960>:  b       0xffff9c1ccfd0 <_int_free+224>
+   0x0000ffff9c1cda84 <+2964>:  adrp    x20, 0xffff9c28a000
+   0x0000ffff9c1cda88 <+2968>:  add     x19, x19, #0x10
+   0x0000ffff9c1cda8c <+2972>:  mov     w27, #0x0                       // #0
+   0x0000ffff9c1cda90 <+2976>:  add     x20, x20, #0x6f8
+   0x0000ffff9c1cda94 <+2980>:  b       0xffff9c1cd590 <_int_free+1696>
+   0x0000ffff9c1cda98 <+2984>:  adrp    x20, 0xffff9c28a000
+   0x0000ffff9c1cda9c <+2988>:  add     x19, x19, #0x10
+   0x0000ffff9c1cdaa0 <+2992>:  add     x20, x20, #0x780
+   0x0000ffff9c1cdaa4 <+2996>:  b       0xffff9c1cd590 <_int_free+1696>
+   0x0000ffff9c1cdaa8 <+3000>:  adrp    x20, 0xffff9c28a000
+   0x0000ffff9c1cdaac <+3004>:  mov     x19, x10
+   0x0000ffff9c1cdab0 <+3008>:  mov     w27, #0x0                       // #0
+   0x0000ffff9c1cdab4 <+3012>:  add     x20, x20, #0x760
+   0x0000ffff9c1cdab8 <+3016>:  b       0xffff9c1cd590 <_int_free+1696>
+   0x0000ffff9c1cdabc <+3020>:  adrp    x20, 0xffff9c28a000
+   0x0000ffff9c1cdac0 <+3024>:  add     x19, x19, #0x10
+   0x0000ffff9c1cdac4 <+3028>:  mov     w27, #0x0                       // #0
+   0x0000ffff9c1cdac8 <+3032>:  add     x20, x20, #0x810
+---Type <return> to continue, or q <return> to quit---
+   0x0000ffff9c1cdacc <+3036>:  b       0xffff9c1cd590 <_int_free+1696>
+   0x0000ffff9c1cdad0 <+3040>:  ldr     x1, [x0,#8]
+   0x0000ffff9c1cdad4 <+3044>:  and     x1, x1, #0xfffffffffffffff8
+   0x0000ffff9c1cdad8 <+3048>:  add     x0, x0, x1
+   0x0000ffff9c1cdadc <+3052>:  cmp     x24, x0
+   0x0000ffff9c1cdae0 <+3056>:  b.cc    0xffff9c1ccf7c <_int_free+140>
+   0x0000ffff9c1cdae4 <+3060>:  adrp    x20, 0xffff9c28a000
+   0x0000ffff9c1cdae8 <+3064>:  add     x19, x19, #0x10
+   0x0000ffff9c1cdaec <+3068>:  add     x20, x20, #0x7a0
+   0x0000ffff9c1cdaf0 <+3072>:  b       0xffff9c1cd590 <_int_free+1696>
+   0x0000ffff9c1cdaf4 <+3076>:  adrp    x20, 0xffff9c28a000
+   0x0000ffff9c1cdaf8 <+3080>:  add     x19, x19, #0x10
+   0x0000ffff9c1cdafc <+3084>:  add     x20, x20, #0x7c0
+   0x0000ffff9c1cdb00 <+3088>:  b       0xffff9c1cd590 <_int_free+1696>
+   //x20 为"free(): invalid next size (normal)"
+   0x0000ffff9c1cdb04 <+3092>:  adrp    x20, 0xffff9c28a000
+   //这个时候，x19为p->size
+   0x0000ffff9c1cdb08 <+3096>:  add     x19, x19, #0x10
+   0x0000ffff9c1cdb0c <+3100>:  add     x20, x20, #0x710
+   //必跳转
+   0x0000ffff9c1cdb10 <+3104>:  b       0xffff9c1cd590 <_int_free+1696>
+   
+   0x0000ffff9c1cdb14 <+3108>:  add     x0, x19, #0x10
+   0x0000ffff9c1cdb18 <+3112>:  sub     x2, x20, #0x10
+   0x0000ffff9c1cdb1c <+3116>:  bl      0xffff9c1d84ec <__GI_memset>
+   0x0000ffff9c1cdb20 <+3120>:  b       0xffff9c1ccfa8 <_int_free+184>
+   0x0000ffff9c1cdb24 <+3124>:  ldr     x2, [x29,#136]
+   0x0000ffff9c1cdb28 <+3128>:  mov     x1, x28
+   0x0000ffff9c1cdb2c <+3132>:  add     x0, x20, x2
+   0x0000ffff9c1cdb30 <+3136>:  mov     w3, #0x32                       // #50
+   0x0000ffff9c1cdb34 <+3140>:  mov     w2, #0x0                        // #0
+   0x0000ffff9c1cdb38 <+3144>:  mov     w4, #0xffffffff                 // #-1
+   0x0000ffff9c1cdb3c <+3148>:  mov     x5, #0x0                        // #0
+   0x0000ffff9c1cdb40 <+3152>:  bl      0xffff9c22a8f4 <__mmap>
+   0x0000ffff9c1cdb44 <+3156>:  cmn     x0, #0x1
+   0x0000ffff9c1cdb48 <+3160>:  b.eq    0xffff9c1cd448 <_int_free+1368>
+   0x0000ffff9c1cdb4c <+3164>:  ldr     x0, [x29,#136]
+   0x0000ffff9c1cdb50 <+3168>:  str     x0, [x20,#24]
+   0x0000ffff9c1cdb54 <+3172>:  mov     x2, x0
+   0x0000ffff9c1cdb58 <+3176>:  b       0xffff9c1cd418 <_int_free+1320>
+   0x0000ffff9c1cdb5c <+3180>:  cmp     x19, x0
+   0x0000ffff9c1cdb60 <+3184>:  b.eq    0xffff9c1cdbac <_int_free+3260>
+   0x0000ffff9c1cdb64 <+3188>:  str     x0, [x4,#32]
+   0x0000ffff9c1cdb68 <+3192>:  ldr     x0, [x19,#40]
+   0x0000ffff9c1cdb6c <+3196>:  ldr     x1, [x19,#32]
+   0x0000ffff9c1cdb70 <+3200>:  str     x0, [x4,#40]
+   0x0000ffff9c1cdb74 <+3204>:  str     x4, [x1,#40]
+   0x0000ffff9c1cdb78 <+3208>:  ldr     x0, [x19,#40]
+   0x0000ffff9c1cdb7c <+3212>:  str     x4, [x0,#32]
+   0x0000ffff9c1cdb80 <+3216>:  b       0xffff9c1cd164 <_int_free+628>
+   0x0000ffff9c1cdb84 <+3220>:  add     x0, x27, #0xe8
+   0x0000ffff9c1cdb88 <+3224>:  ldr     w0, [x0,#88]
+   0x0000ffff9c1cdb8c <+3228>:  ldr     x1, [x29,#112]
+   0x0000ffff9c1cdb90 <+3232>:  mov     x2, x19
+   0x0000ffff9c1cdb94 <+3236>:  mov     x3, x24
+   0x0000ffff9c1cdb98 <+3240>:  str     x4, [x29,#104]
+   0x0000ffff9c1cdb9c <+3244>:  bl      0xffff9c1cb940 <malloc_printerr>
+   0x0000ffff9c1cdba0 <+3248>:  ldr     x0, [x19,#32]
+   0x0000ffff9c1cdba4 <+3252>:  ldr     x4, [x29,#104]
+   0x0000ffff9c1cdba8 <+3256>:  b       0xffff9c1cd91c <_int_free+2604>
+   0x0000ffff9c1cdbac <+3260>:  str     x4, [x4,#40]
+   0x0000ffff9c1cdbb0 <+3264>:  str     x4, [x4,#32]
+   0x0000ffff9c1cdbb4 <+3268>:  b       0xffff9c1cd164 <_int_free+628>
+   0x0000ffff9c1cdbb8 <+3272>:  adrp    x0, 0xffff9c2cf000
+   0x0000ffff9c1cdbbc <+3276>:  ldr     x0, [x0,#3560]
+   0x0000ffff9c1cdbc0 <+3280>:  ldr     w0, [x0]
+   0x0000ffff9c1cdbc4 <+3284>:  str     w0, [x26,#104]
+   0x0000ffff9c1cdbc8 <+3288>:  cbnz    w0, 0xffff9c1cdc40 <_int_free+3408>
+   0x0000ffff9c1cdbcc <+3292>:  adrp    x1, 0xffff9c28a000
+   0x0000ffff9c1cdbd0 <+3296>:  mov     x0, #0xffffffffffffff9c         // #-100
+   0x0000ffff9c1cdbd4 <+3300>:  add     x1, x1, #0x850
+   0x0000ffff9c1cdbd8 <+3304>:  mov     x2, #0x80000                    // #524288
+   0x0000ffff9c1cdbdc <+3308>:  mov     x8, #0x38                       // #56
+   0x0000ffff9c1cdbe0 <+3312>:  svc     #0x0
+   0x0000ffff9c1cdbe4 <+3316>:  cmn     x0, #0x1, lsl #12
+   0x0000ffff9c1cdbe8 <+3320>:  b.hi    0xffff9c1cdc48 <_int_free+3416>
+   0x0000ffff9c1cdbec <+3324>:  tbnz    w0, #31, 0xffff9c1cdc7c <_int_free+3468>
+   0x0000ffff9c1cdbf0 <+3328>:  sxtw    x26, w0
+   0x0000ffff9c1cdbf4 <+3332>:  mov     x0, x26
+   0x0000ffff9c1cdbf8 <+3336>:  add     x1, x29, #0x90
+   0x0000ffff9c1cdbfc <+3340>:  mov     x2, #0x1                        // #1
+   0x0000ffff9c1cdc00 <+3344>:  mov     x8, #0x3f                       // #63
+   0x0000ffff9c1cdc04 <+3348>:  svc     #0x0
+   0x0000ffff9c1cdc08 <+3352>:  cmn     x0, #0x1, lsl #12
+---Type <return> to continue, or q <return> to quit---
+   0x0000ffff9c1cdc0c <+3356>:  b.hi    0xffff9c1cdc64 <_int_free+3444>
+   0x0000ffff9c1cdc10 <+3360>:  cmp     x0, xzr
+   0x0000ffff9c1cdc14 <+3364>:  b.le    0xffff9c1cdc24 <_int_free+3380>
+   0x0000ffff9c1cdc18 <+3368>:  ldrb    w0, [x29,#144]
+   0x0000ffff9c1cdc1c <+3372>:  cmp     w0, #0x32
+   0x0000ffff9c1cdc20 <+3376>:  b.eq    0xffff9c1cdd08 <_int_free+3608>
+   0x0000ffff9c1cdc24 <+3380>:  mov     w0, #0x0                        // #0
+   0x0000ffff9c1cdc28 <+3384>:  add     x27, x27, #0xe8
+   0x0000ffff9c1cdc2c <+3388>:  str     w0, [x27,#104]
+   0x0000ffff9c1cdc30 <+3392>:  mov     x8, #0x39                       // #57
+   0x0000ffff9c1cdc34 <+3396>:  mov     x0, x26
+   0x0000ffff9c1cdc38 <+3400>:  svc     #0x0
+   0x0000ffff9c1cdc3c <+3404>:  ldr     w0, [x27,#104]
+   0x0000ffff9c1cdc40 <+3408>:  cmp     w0, wzr
+   0x0000ffff9c1cdc44 <+3412>:  b       0xffff9c1cd3f8 <_int_free+1288>
+   0x0000ffff9c1cdc48 <+3416>:  adrp    x2, 0xffff9c2cf000
+   0x0000ffff9c1cdc4c <+3420>:  ldr     x2, [x2,#3640]
+   0x0000ffff9c1cdc50 <+3424>:  neg     w0, w0
+   0x0000ffff9c1cdc54 <+3428>:  mrs     x1, tpidr_el0
+   0x0000ffff9c1cdc58 <+3432>:  str     w0, [x1,x2]
+   0x0000ffff9c1cdc5c <+3436>:  ldr     w0, [x26,#104]
+   0x0000ffff9c1cdc60 <+3440>:  b       0xffff9c1cdc40 <_int_free+3408>
+   0x0000ffff9c1cdc64 <+3444>:  adrp    x2, 0xffff9c2cf000
+   0x0000ffff9c1cdc68 <+3448>:  ldr     x2, [x2,#3640]
+   0x0000ffff9c1cdc6c <+3452>:  neg     w1, w0
+   0x0000ffff9c1cdc70 <+3456>:  mrs     x0, tpidr_el0
+   0x0000ffff9c1cdc74 <+3460>:  str     w1, [x0,x2]
+   0x0000ffff9c1cdc78 <+3464>:  b       0xffff9c1cdc24 <_int_free+3380>
+   0x0000ffff9c1cdc7c <+3468>:  ldr     w0, [x26,#104]
+   0x0000ffff9c1cdc80 <+3472>:  b       0xffff9c1cdc40 <_int_free+3408>
+   0x0000ffff9c1cdc84 <+3476>:  str     w23, [x29,#144]
+   0x0000ffff9c1cdc88 <+3480>:  mov     w1, #0x1                        // #1
+   0x0000ffff9c1cdc8c <+3484>:  ldaxr   w0, [x21]
+   0x0000ffff9c1cdc90 <+3488>:  cmp     w0, wzr
+   0x0000ffff9c1cdc94 <+3492>:  b.ne    0xffff9c1cdca0 <_int_free+3504>
+   0x0000ffff9c1cdc98 <+3496>:  stxr    w2, w1, [x21]
+   0x0000ffff9c1cdc9c <+3500>:  cbnz    w2, 0xffff9c1cdc8c <_int_free+3484>
+   0x0000ffff9c1cdca0 <+3504>:  b.eq    0xffff9c1cdca8 <_int_free+3512>
+   0x0000ffff9c1cdca4 <+3508>:  str     w0, [x29,#144]
+   0x0000ffff9c1cdca8 <+3512>:  ldr     w0, [x29,#144]

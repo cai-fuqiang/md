@@ -147,10 +147,10 @@ errout:
 ## malloc链表分析
 
 ### free chunk
-![image](./free_chunk.webp)<br />
+![image](./pic/free_chunk.webp)<br />
 
 ### malloc chunk
-![image](./alloced_chunk.webp)<br />
+![image](./pic/alloced_chunk.webp)<br />
 
 可以看出，每一个malloc申请的内存都是由一个chunk包裹着。
 这里比较重要的成员为: `mchunk_size`，该`size`代表本chunk的大小

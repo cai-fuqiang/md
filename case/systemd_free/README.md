@@ -641,3 +641,130 @@ x25: nextsize
 * 问题出现在内核态: x25寄存器取得后，由于某种原因进入到内核态，
     当内核态返回用户态前，加载x25寄存器出错。而加载得x25寄存器是从kernel堆栈获取，
     所以可能出现了堆栈越界
+
+
+# 第二次coredump分析
+
+## 问题堆栈
+
+```
+#0  0x0000ffffa2735488 in kill () at ../sysdeps/unix/syscall-template.S:81
+#1  0x0000aaaaab2d747c in crash (sig=11) at src/core/main.c:172
+#2  <signal handler called>
+#3  mount_dispatch_io (source=<optimized out>, fd=<optimized out>, revents=<optimized out>, userdata=0xaaaab2d10d80) at src/core/mount.c:1788
+#4  0x0000aaaaab378d2c in source_dispatch (s=s@entry=0xaaaab2d1fca0) at src/libsystemd/sd-event/sd-event.c:2115
+#5  0x0000aaaaab379bcc in sd_event_dispatch (e=0xaaaab2d11440) at src/libsystemd/sd-event/sd-event.c:2472
+#6  0x0000aaaaab379d94 in sd_event_run (e=<optimized out>, timeout=<optimized out>) at src/libsystemd/sd-event/sd-event.c:2501
+#7  0x0000aaaaab2dfa9c in manager_loop (m=0xaaaab2d10d80) at src/core/manager.c:2316
+#8  0x0000aaaaab2d3d5c in main (argc=5, argv=0xffffd7f1b3b8) at src/core/main.c:1783
+```
+可以看到是收到了signal 11 ( SIGSEGV) 信号导致systemd挂死，该信号表明用户态进程发生了段错误。
+
+查看frame 3, 和systemd代码
+
+```
+(gdb) bt full
+#3  mount_dispatch_io (source=<optimized out>, fd=<optimized out>, revents=<optimized out>, userdata=0xaaaab2d10d80) at src/core/mount.c:1788
+        mount = 0x0
+        around = 0xaaaab2db7e80
+        gone = 0x0
+        m = 0xaaaab2d10d80
+        what = <optimized out>
+        i = {idx = 1, next_key = 0xaaaab31534f0}
+        u = 0xaaaab3208d90
+        r = <optimized out>
+        __PRETTY_FUNCTION__ = "mount_dispatch_io"
+        __func__ = "mount_dispatch_io"
+
+(gdb) l mount.c:1788
+1783            manager_dispatch_load_queue(m);
+1784
+1785            LIST_FOREACH(units_by_type, u, m->units_by_type[UNIT_MOUNT]) {
+1786                    Mount *mount = MOUNT(u);
+1787
+1788                    if (!mount->is_mounted) {
+1789
+1790                            /* A mount point is not around right now. It
+1791                             * might be gone, or might never have
+1792                             * existed. */
+```
+可以看到`1788 : if(!mount->is_mounted)`该命令会访问mount变量指向的内存，而该地址是0，所以导致
+段错误，查看MOUNT()定义:
+
+```
+#define DEFINE_CAST(UPPERCASE, MixedCase)                               \
+        static inline MixedCase* UPPERCASE(Unit *u) {                   \
+                if (_unlikely_(!u || u->type != UNIT_##UPPERCASE))      \
+                        return NULL;                                    \
+                                                                        \
+                return (MixedCase*) u;                                  \
+        }
+
+...
+DEFINE_CAST(MOUNT, Mount);
+```
+
+可以看到，该处会判断`u-type` 是否等于`UNIT_MOUNT`, 如果不等于则返回`NULL`.
+
+通过gdb查看`u->type`
+```
+(gdb) p ((Unit *)0xaaaab3208d90)->type
+$19 = -1568142808
+```
+
+查看该Unit其他成员:
+
+```
+(gdb) p *((Unit *)0xaaaab3208d90)
+$20 = {manager = 0xffffa2880a28 <main_arena+1272>, type = -1568142808, load_state = 65535, merged_into = 0xaaaab3208d80, id = 0xaaaab3208d80 "", instance = 0x0, names = 0xaaaab2e16070, dependencies = {0xaaaab3089100, 0x0 <repeats 11 times>, 0xaaaab316c130, 0x0, 0xaaaab319a4b0, 0xaaaab2f0d050, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+    0xaaaab30beb90, 0x0}, requires_mounts_for = 0xaaaab2f7c210, description = 0xaaaab2f28920 "/run/containerd/io.containerd.runtime.v2.task/k8s.io/c7156ef172ec4533d99bfbe773d10e7f5d12178b32fff2e7dc981c72ea670b9d/rootfs", documentation = 0x0, fragment_path = 0x0, source_path = 0xaaaab30a0c10 "/proc/self/mountinfo",
+  dropin_paths = 0xaaaab2eea1d0, fragment_mtime = 0, source_mtime = 0, dropin_mtime = 1640822087351675, job = 0x0, nop_job = 0x0, job_timeout = 0, job_timeout_action = EMERGENCY_ACTION_NONE, job_timeout_reboot_arg = 0x0, refs_by_target = 0x0, conditions = 0x0, asserts = 0x0, condition_timestamp = {realtime = 0, monotonic = 0},
+  assert_timestamp = {realtime = 0, monotonic = 0}, inactive_exit_timestamp = {realtime = 1640822087358381, monotonic = 175484572}, active_enter_timestamp = {realtime = 1640822087358381, monotonic = 175484572}, active_exit_timestamp = {realtime = 0, monotonic = 0}, inactive_enter_timestamp = {realtime = 0, monotonic = 0}, slice = {
+    source = 0xaaaab3208d90, target = 0xaaaab2d2bcb0, refs_by_target_next = 0xaaaab3209658, refs_by_target_prev = 0xaaaab3208878}, units_by_type_next = 0xaaaab32086a0, units_by_type_prev = 0xaaaab3209480, has_requires_mounts_for_next = 0x0, has_requires_mounts_for_prev = 0x0, load_queue_next = 0x0, load_queue_prev = 0x0,
+  dbus_queue_next = 0x0, dbus_queue_prev = 0x0, cleanup_queue_next = 0x0, cleanup_queue_prev = 0x0, gc_queue_next = 0x0, gc_queue_prev = 0x0, cgroup_queue_next = 0x0, cgroup_queue_prev = 0x0, target_deps_queue_next = 0x0, target_deps_queue_prev = 0x0, stop_when_unneeded_queue_next = 0x0, stop_when_unneeded_queue_prev = 0x0, pids = 0x0,
+  sigchldgen = 0, gc_marker = 0, deserialized_job = -1, load_error = 0, check_unneeded_ratelimit = {interval = 10000000, begin = 0, burst = 16, num = 0}, unit_file_state = _UNIT_FILE_STATE_INVALID, unit_file_preset = -1,
+  cgroup_path = 0xaaaab303f470 "/system.slice/run-containerd-io.containerd.runtime.v2.task-k8s.io-c7156ef172ec4533d99bfbe773d10e7f5d12178b32fff2e7dc981c72ea670b9d-rootfs.mount", cgroup_realized_mask = _CGROUP_CONTROLLER_MASK_ALL, cgroup_subtree_mask = 0, cgroup_members_mask = 0, on_failure_job_mode = JOB_REPLACE,
+  stop_when_unneeded = false, default_dependencies = true, refuse_manual_start = false, refuse_manual_stop = false, allow_isolate = false, ignore_on_isolate = true, ignore_on_snapshot = false, condition_result = false, assert_result = false, transient = false, in_load_queue = false, in_dbus_queue = false, in_cleanup_queue = false,
+  in_gc_queue = false, in_cgroup_queue = false, in_target_deps_queue = false, in_stop_when_unneeded_queue = false, sent_dbus_new_signal = true, no_gc = false, in_audit = false, on_console = false, cgroup_realized = true, cgroup_members_mask_valid = true, cgroup_subtree_mask_valid = true}
+```
+
+从打印来看，大部分成员值都是正确的。不过其相邻的:`manager`成员值貌似不对，**应该是发生了内存踩踏**
+
+
+## 分析该chunk
+
+通过gdb查看该chunk
+
+```
+$56 = {prev_size = 0, size = 1777, fd = 0xffffa2880a28 <main_arena+1272>, bk = 0xffffa2880a28 <main_arena+1272>, fd_nextsize = 0xaaaab3208d80, bk_nextsize = 0xaaaab3208d80}
+(gdb) p sizeof(main_arena)
+$57 = 2192
+
+```
+
+可以看到该chunk size为1777, 并且解析出fd 和bk都指向了main_arena中的地址, 所以很可能该chunk已经被free了，
+难道这是一个use-after-free的问题?
+
+## 通过gdb查看其他内容
+
+### 再次查看相关代码
+```
+(gdb) l src/core/mount.c:1788
+1783            manager_dispatch_load_queue(m);
+1784
+1785            LIST_FOREACH(units_by_type, u, m->units_by_type[UNIT_MOUNT]) {
+1786                    Mount *mount = MOUNT(u);
+1787
+1788                    if (!mount->is_mounted) {
+1789
+1790                            /* A mount point is not around right now. It
+1791                             * might be gone, or might never have
+1792                             * existed. */
+```
+通过改代码可以看出，u 是通过LIST_FOREACH 取出的。
+
+`LIST_FOREACH`定义: 
+```
+#define LIST_FOREACH(name,i,head)                                       \
+        for ((i) = (head); (i); (i) = (i)->name##_next)
+```

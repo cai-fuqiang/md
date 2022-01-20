@@ -1,4 +1,5 @@
 # struct psci_ops
+
 ## 36 host
 ```
 crash> p psci_ops
@@ -116,3 +117,76 @@ crash> dis __arm_smccc_hvc
 0xffff0000100952b0 <__arm_smccc_hvc+36>:        str     x6, [x4,#8]
 0xffff0000100952b4 <__arm_smccc_hvc+40>:        ret
 ```
+
+# kvm hvc handle ftrace
+
+## code
+```
+TRACE_EVENT(kvm_hvc_arm64,
+    TP_PROTO(unsigned long vcpu_pc, unsigned long r0, unsigned long imm),
+    TP_ARGS(vcpu_pc, r0, imm),
+
+    TP_STRUCT__entry(
+        __field(unsigned long, vcpu_pc)
+        __field(unsigned long, r0)
+        __field(unsigned long, imm)
+    ),
+
+    TP_fast_assign(
+        __entry->vcpu_pc = vcpu_pc;
+        __entry->r0 = r0;
+        __entry->imm = imm;
+    ),
+
+    TP_printk("HVC at 0x%08lx (r0: 0x%08lx, imm: 0x%lx)",
+          __entry->vcpu_pc, __entry->r0, __entry->imm)
+);
+
+static int handle_hvc(struct kvm_vcpu *vcpu, struct kvm_run *run)
+{
+    int ret;
+
+    trace_kvm_hvc_arm64(*vcpu_pc(vcpu), vcpu_get_reg(vcpu, 0),
+                kvm_vcpu_hvc_get_imm(vcpu));
+    vcpu->stat.hvc_exit_stat++;
+
+    ret = kvm_hvc_call_handler(vcpu);
+    if (ret < 0) {
+        vcpu_set_reg(vcpu, 0, ~0UL);
+        return 1;
+    }
+
+    return ret;
+}
+```
+
+
+## offline
+GUEST OP:
+```
+[root@localhost cpu55]# echo 0 > /sys/devices/system/cpu/cpu55/offline
+[   41.861349 ] CPU55: shutdown
+[   41.861908 ] psci: CPU55 killed.
+```
+ftrace msg :
+```
+<...>-48303 [012] .... 1202598.231114: kvm_hvc_arm64: HVC at 0xffff000010095240 (r0: 0x84000002, imm: 0x0)		//__arm_smccc_hvc
+<...>-48318 [077] .... 1202598.231852: kvm_hvc_arm64: HVC at 0xffff000010095240 (r0: 0xc4000004, imm: 0x0)
+```
+## online
+
+GUEST OP:
+```
+[root@localhost cpu55]# echo 1 > /sys/devices/system/cpu/cpu55/offline
+[  187.023792] Detected VIPT I-cache on CPU55
+[  187.024405] GICv3: CPU55: found redistributor 307 region 0:0x0000000008780000
+[  187.025764] CPU55: Booted secondary processor 0x0000000307 [0x481fd010]
+```
+ftrace msg:
+```
+<...>-48319 [039] .... 1202743.393469: kvm_hvc_arm64: HVC at 0xffff000010095240 (r0: 0xc4000003, imm: 0x0)
+<...>-48303 [012] .... 1202743.393703: kvm_hvc_arm64: HVC at 0xffff000010090bd4 (r0: 0x80000001, imm: 0x0)
+<...>-48303 [012] .... 1202743.393712: kvm_hvc_arm64: HVC at 0xffff000010091008 (r0: 0x80000001, imm: 0x0)
+```
+
+

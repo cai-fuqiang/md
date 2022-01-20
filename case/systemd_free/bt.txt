@@ -1,0 +1,26 @@
+#0  0x0000ffff9c185488 in kill () at ../sysdeps/unix/syscall-template.S:81
+#1  0x0000aaaab152747c in crash (sig=6) at src/core/main.c:172
+#2  <signal handler called>
+#3  0x0000ffff9c185228 in __GI_raise (sig=sig@entry=6) at ../nptl/sysdeps/unix/sysv/linux/raise.c:55
+#4  0x0000ffff9c1868a0 in __GI_abort () at abort.c:90
+#5  0x0000ffff9c1c516c in __libc_message (do_abort=<optimized out>,
+    fmt=fmt@entry=0xffff9c28a620 "*** Error in `%s': %s: 0x%s ***\n")
+    at ../sysdeps/unix/sysv/linux/libc_fatal.c:196
+#6  0x0000ffff9c1cd67c in malloc_printerr (ar_ptr=0xffff9c2d0530 <main_arena>, ptr=<optimized out>,
+    str=0xffff9c28a710 "free(): invalid next size (normal)", action=3) at malloc.c:4967
+#7  _int_free (av=0xffff9c2d0530 <main_arena>, p=<optimized out>, have_lock=0) at malloc.c:3843
+#8  0x0000aaaab15e1620 in mount_setup_unit (set_flags=true, fstype=0xaaaabfecfcf0 "tmpfs",
+    options=<optimized out>,
+    where=0xaaaac002ce90 "/var/lib/kubelet/pods/03a4f6ea-d8c9-45b3-9b93-108244abb801/volumes/kubernetes.io~secret/ceph-bootstrap-mds-keyring", what=0xaaaac0208600 "tmpfs", m=0xaaaabfaf0d80)
+    at src/core/mount.c:1558
+#9  mount_load_proc_self_mountinfo (m=m@entry=0xaaaabfaf0d80, set_flags=set_flags@entry=true)
+    at src/core/mount.c:1628
+#10 0x0000aaaab15e1ca8 in mount_dispatch_io (source=<optimized out>, fd=<optimized out>,
+    revents=<optimized out>, userdata=0xaaaabfaf0d80) at src/core/mount.c:1771
+#11 0x0000aaaab15c8d2c in source_dispatch (s=s@entry=0xaaaabfaffc70)
+    at src/libsystemd/sd-event/sd-event.c:2115
+#12 0x0000aaaab15c9bcc in sd_event_dispatch (e=0xaaaabfaf1440) at src/libsystemd/sd-event/sd-event.c:2472
+#13 0x0000aaaab15c9d94 in sd_event_run (e=<optimized out>, timeout=<optimized out>)
+    at src/libsystemd/sd-event/sd-event.c:2501
+#14 0x0000aaaab152fa9c in manager_loop (m=0xaaaabfaf0d80) at src/core/manager.c:2316
+#15 0x0000aaaab1523d5c in main (argc=5, argv=0xffffcb8b06b8) at src/core/main.c:1783

@@ -1,0 +1,463 @@
+3815    static void
+3816    _int_free(mstate av, mchunkptr p, int have_lock)
+3817    {
+   0x0000ffff9c1ccef0 <+0>:     stp     x29, x30, [sp,#-176]!
+   0x0000ffff9c1ccef4 <+4>:     mov     x29, sp
+   0x0000ffff9c1ccef8 <+8>:     stp     x19, x20, [sp,#16]
+   0x0000ffff9c1ccefc <+12>:    mov     x19, x1
+   0x0000ffff9c1ccf04 <+20>:    stp     x21, x22, [sp,#32]
+   0x0000ffff9c1ccf0c <+28>:    mov     x21, x0
+   0x0000ffff9c1ccf14 <+36>:    stp     x23, x24, [sp,#48]
+   0x0000ffff9c1ccf18 <+40>:    stp     x25, x26, [sp,#64]
+   0x0000ffff9c1ccf1c <+44>:    stp     x27, x28, [sp,#80]
+   0x0000ffff9c1ccf24 <+52>:    mov     w23, w2
+
+3818      INTERNAL_SIZE_T size;        /* its size */
+3819      mfastbinptr*    fb;          /* associated fastbin */
+3820      mchunkptr       nextchunk;   /* next contiguous chunk */
+3821      INTERNAL_SIZE_T nextsize;    /* its size */
+3822      int             nextinuse;   /* true if nextchunk is used */
+3823      INTERNAL_SIZE_T prevsize;    /* size of previous contiguous chunk */
+3824      mchunkptr       bck;         /* misc temp for linking */
+3825      mchunkptr       fwd;         /* misc temp for linking */
+3826
+3827      const char *errstr = NULL;
+3828      int locked = 0;
+   0x0000ffff9c1ccf5c <+108>:   mov     w27, w1
+   0x0000ffff9c1cda8c <+2972>:  mov     w27, #0x0                       // #0
+   0x0000ffff9c1cdac4 <+3028>:  mov     w27, #0x0                       // #0
+
+3829
+3830      size = chunksize(p);
+---Type <return> to continue, or q <return> to quit---
+   0x0000ffff9c1ccf00 <+16>:    ldr     x1, [x1,#8]
+   0x0000ffff9c1ccf08 <+24>:    and     x20, x1, #0xfffffffffffffff8
+
+3831
+3832      /* Little security check which won't hurt performance: the
+3833         allocator never wrapps around at the end of the address space.
+3834         Therefore we can exclude some size values which might appear
+3835         here by accident or by "design" from some intruder.  */
+3836      if (__builtin_expect ((uintptr_t) p > (uintptr_t) -size, 0)
+   0x0000ffff9c1ccf10 <+32>:    neg     x0, x20
+   0x0000ffff9c1ccf20 <+48>:    cmp     x19, x0
+   0x0000ffff9c1ccf28 <+56>:    b.hi    0xffff9c1cda84 <_int_free+2964>
+
+3837          || __builtin_expect (misaligned_chunk (p), 0))
+   0x0000ffff9c1ccf2c <+60>:    and     x0, x19, #0xf
+   0x0000ffff9c1ccf30 <+64>:    cbnz    x0, 0xffff9c1cda84 <_int_free+2964>
+
+3838        {
+3839          errstr = "free(): invalid pointer";
+   0x0000ffff9c1cda84 <+2964>:  adrp    x20, 0xffff9c28a000
+   0x0000ffff9c1cda88 <+2968>:  add     x19, x19, #0x10
+   0x0000ffff9c1cda90 <+2976>:  add     x20, x20, #0x6f8
+   0x0000ffff9c1cda94 <+2980>:  b       0xffff9c1cd590 <_int_free+1696>
+
+3840        errout:
+3841          if (have_lock || locked)
+   0x0000ffff9c1cd590 <+1696>:  orr     w27, w27, w23
+   0x0000ffff9c1cd594 <+1700>:  cbnz    w27, 0xffff9c1cd690 <_int_free+1952>
+
+3842            (void)mutex_unlock(&av->mutex);
+   0x0000ffff9c1cd690 <+1952>:  mov     w1, #0x0                        // #0
+   0x0000ffff9c1cd694 <+1956>:  ldxr    w0, [x21]
+   0x0000ffff9c1cd698 <+1960>:  stlxr   w2, w1, [x21]
+   0x0000ffff9c1cd69c <+1964>:  cbnz    w2, 0xffff9c1cd694 <_int_free+1956>
+   0x0000ffff9c1cd6a0 <+1968>:  cmp     w0, #0x1
+   0x0000ffff9c1cd6a4 <+1972>:  b.le    0xffff9c1cd598 <_int_free+1704>
+   0x0000ffff9c1cd6a8 <+1976>:  mov     x0, x21
+   0x0000ffff9c1cd6ac <+1980>:  mov     x1, #0x81                       // #129
+   0x0000ffff9c1cd6b0 <+1984>:  mov     x2, #0x1                        // #1
+   0x0000ffff9c1cd6b4 <+1988>:  mov     x3, #0x0                        // #0
+   0x0000ffff9c1cd6b8 <+1992>:  mov     x8, #0x62                       // #98
+   0x0000ffff9c1cd6bc <+1996>:  svc     #0x0
+---Type <return> to continue, or q <return> to quit---
+   0x0000ffff9c1cd6c0 <+2000>:  b       0xffff9c1cd598 <_int_free+1704>
+
+3843          malloc_printerr (check_action, errstr, chunk2mem(p), av);
+   0x0000ffff9c1cd598 <+1704>:  adrp    x0, 0xffff9c2d0000
+   0x0000ffff9c1cd59c <+1708>:  add     x0, x0, #0xe8
+   0x0000ffff9c1cd5a0 <+1712>:  ldr     w22, [x0,#88]
+
+3844          if (have_lock)
+   0x0000ffff9c1cd5cc <+1756>:  cbz     w23, 0xffff9c1cd320 <_int_free+1072>
+
+3845            mutex_lock(&av->mutex);
+   0x0000ffff9c1cd5d0 <+1760>:  str     wzr, [x29,#144]
+   0x0000ffff9c1cd5d4 <+1764>:  mov     w1, #0x1                        // #1
+   0x0000ffff9c1cd5d8 <+1768>:  ldaxr   w0, [x21]
+   0x0000ffff9c1cd5dc <+1772>:  cmp     w0, wzr
+   0x0000ffff9c1cd5e0 <+1776>:  b.ne    0xffff9c1cd5ec <_int_free+1788>
+   0x0000ffff9c1cd5e4 <+1780>:  stxr    w2, w1, [x21]
+   0x0000ffff9c1cd5e8 <+1784>:  cbnz    w2, 0xffff9c1cd5d8 <_int_free+1768>
+   0x0000ffff9c1cd5ec <+1788>:  b.eq    0xffff9c1cd5f4 <_int_free+1796>
+   0x0000ffff9c1cd5f0 <+1792>:  str     w0, [x29,#144]
+   0x0000ffff9c1cd5f4 <+1796>:  ldr     w0, [x29,#144]
+   0x0000ffff9c1cd5f8 <+1800>:  cbz     w0, 0xffff9c1cd320 <_int_free+1072>
+   0x0000ffff9c1cd5fc <+1804>:  mov     x0, x21
+   0x0000ffff9c1cd600 <+1808>:  bl      0xffff9c23c9cc <__lll_lock_wait_private>
+   0x0000ffff9c1cd604 <+1812>:  b       0xffff9c1cd320 <_int_free+1072>
+
+3846          return;
+3847        }
+3848      /* We know that each chunk is at least MINSIZE bytes in size or a
+3849         multiple of MALLOC_ALIGNMENT.  */
+3850      if (__builtin_expect (size < MINSIZE || !aligned_OK (size), 0))
+   0x0000ffff9c1ccf34 <+68>:    cmp     x20, #0x1f
+   0x0000ffff9c1ccf38 <+72>:    b.ls    0xffff9c1cdabc <_int_free+3020>
+   0x0000ffff9c1ccf3c <+76>:    tbnz    w1, #3, 0xffff9c1cdabc <_int_free+3020>
+
+3851        {
+3852          errstr = "free(): invalid size";
+   0x0000ffff9c1cdabc <+3020>:  adrp    x20, 0xffff9c28a000
+   0x0000ffff9c1cdac0 <+3024>:  add     x19, x19, #0x10
+   0x0000ffff9c1cdac8 <+3032>:  add     x20, x20, #0x810
+   0x0000ffff9c1cdacc <+3036>:  b       0xffff9c1cd590 <_int_free+1696>
+
+---Type <return> to continue, or q <return> to quit---
+3853          goto errout;
+3854        }
+3855
+3856      check_inuse_chunk(av, p);
+3857
+3858      /*
+3859        If eligible, place chunk on a fastbin so it can be found
+3860        and used quickly in malloc.
+3861      */
+3862
+3863      if ((unsigned long)(size) <= (unsigned long)(get_max_fast ())
+   0x0000ffff9c1ccf40 <+80>:    adrp    x22, 0xffff9c2d2000 <initial_quick+360>
+   0x0000ffff9c1ccf44 <+84>:    add     x0, x22, #0x578
+   0x0000ffff9c1ccf48 <+88>:    ldr     x0, [x0,#56]
+   0x0000ffff9c1ccf4c <+92>:    cmp     x20, x0
+   0x0000ffff9c1ccf50 <+96>:    b.ls    0xffff9c1cd220 <_int_free+816>
+
+3864
+3865    #if TRIM_FASTBINS
+3866          /*
+3867            If TRIM_FASTBINS set, don't place chunks
+3868            bordering top into fastbins
+3869          */
+3870          && (chunk_at_offset(p, size) != av->top)
+3871    #endif
+3872          ) {
+3873
+3874        if (__builtin_expect (chunk_at_offset (p, size)->size <= 2 * SIZE_SZ, 0)
+   0x0000ffff9c1cd220 <+816>:   add     x24, x19, x20
+   0x0000ffff9c1cd224 <+820>:   ldr     x0, [x24,#8]
+   0x0000ffff9c1cd228 <+824>:   cmp     x0, #0x10
+   0x0000ffff9c1cd22c <+828>:   b.ls    0xffff9c1cd680 <_int_free+1936>
+
+3875            || __builtin_expect (chunksize (chunk_at_offset (p, size))
+   0x0000ffff9c1cd230 <+832>:   ldr     x1, [x21,#2176]
+   0x0000ffff9c1cd234 <+836>:   and     x0, x0, #0xfffffffffffffff8
+   0x0000ffff9c1cd238 <+840>:   cmp     x0, x1
+   0x0000ffff9c1cd23c <+844>:   b.cs    0xffff9c1cd680 <_int_free+1936>
+
+3876                                 >= av->system_mem, 0))
+3877          {
+3878            /* We might not have a lock at this point and concurrent modifications
+---Type <return> to continue, or q <return> to quit---
+3879               of system_mem might have let to a false positive.  Redo the test
+3880               after getting the lock.  */
+3881            if (have_lock
+   0x0000ffff9c1cd680 <+1936>:  cbz     w23, 0xffff9c1cdc84 <_int_free+3476>
+
+3882                || ({ assert (locked == 0);
+3883                      mutex_lock(&av->mutex);
+   0x0000ffff9c1cdc84 <+3476>:  str     w23, [x29,#144]
+   0x0000ffff9c1cdc88 <+3480>:  mov     w1, #0x1                        // #1
+   0x0000ffff9c1cdc8c <+3484>:  ldaxr   w0, [x21]
+   0x0000ffff9c1cdc90 <+3488>:  cmp     w0, wzr
+   0x0000ffff9c1cdc94 <+3492>:  b.ne    0xffff9c1cdca0 <_int_free+3504>
+   0x0000ffff9c1cdc98 <+3496>:  stxr    w2, w1, [x21]
+   0x0000ffff9c1cdc9c <+3500>:  cbnz    w2, 0xffff9c1cdc8c <_int_free+3484>
+   0x0000ffff9c1cdca0 <+3504>:  b.eq    0xffff9c1cdca8 <_int_free+3512>
+   0x0000ffff9c1cdca4 <+3508>:  str     w0, [x29,#144]
+   0x0000ffff9c1cdca8 <+3512>:  ldr     w0, [x29,#144]
+   0x0000ffff9c1cdcac <+3516>:  cbz     w0, 0xffff9c1cdcb8 <_int_free+3528>
+   0x0000ffff9c1cdcb0 <+3520>:  mov     x0, x21
+   0x0000ffff9c1cdcb4 <+3524>:  bl      0xffff9c23c9cc <__lll_lock_wait_private>
+
+3884                      locked = 1;
+3885                      chunk_at_offset (p, size)->size <= 2 * SIZE_SZ
+   0x0000ffff9c1cdcb8 <+3528>:  ldr     x0, [x24,#8]
+
+3886                        || chunksize (chunk_at_offset (p, size)) >= av->system_mem;
+   0x0000ffff9c1cdcbc <+3532>:  cmp     x0, #0x10
+   0x0000ffff9c1cdcc0 <+3536>:  b.ls    0xffff9c1cd684 <_int_free+1940>
+   0x0000ffff9c1cdcc4 <+3540>:  ldr     x1, [x21,#2176]
+   0x0000ffff9c1cdcc8 <+3544>:  and     x0, x0, #0xfffffffffffffff8
+   0x0000ffff9c1cdccc <+3548>:  cmp     x0, x1
+   0x0000ffff9c1cdcd0 <+3552>:  b.cs    0xffff9c1cd684 <_int_free+1940>
+
+3887                  }))
+3888              {
+3889                errstr = "free(): invalid next size (fast)";
+   0x0000ffff9c1cd684 <+1940>:  adrp    x20, 0xffff9c28a000
+   0x0000ffff9c1cd688 <+1944>:  add     x19, x19, #0x10
+   0x0000ffff9c1cd68c <+1948>:  add     x20, x20, #0x828
+
+3890                goto errout;
+3891              }
+---Type <return> to continue, or q <return> to quit---
+3892            if (! have_lock)
+3893              {
+3894                (void)mutex_unlock(&av->mutex);
+   0x0000ffff9c1cdcd4 <+3556>:  mov     w1, #0x0                        // #0
+   0x0000ffff9c1cdcd8 <+3560>:  ldxr    w0, [x21]
+   0x0000ffff9c1cdcdc <+3564>:  stlxr   w2, w1, [x21]
+   0x0000ffff9c1cdce0 <+3568>:  cbnz    w2, 0xffff9c1cdcd8 <_int_free+3560>
+   0x0000ffff9c1cdce4 <+3572>:  cmp     w0, #0x1
+   0x0000ffff9c1cdce8 <+3576>:  b.le    0xffff9c1cd240 <_int_free+848>
+   0x0000ffff9c1cdcec <+3580>:  mov     x0, x21
+   0x0000ffff9c1cdcf0 <+3584>:  mov     x1, #0x81                       // #129
+   0x0000ffff9c1cdcf4 <+3588>:  mov     x2, #0x1                        // #1
+   0x0000ffff9c1cdcf8 <+3592>:  mov     x3, #0x0                        // #0
+   0x0000ffff9c1cdcfc <+3596>:  mov     x8, #0x62                       // #98
+   0x0000ffff9c1cdd00 <+3600>:  svc     #0x0
+   0x0000ffff9c1cdd04 <+3604>:  b       0xffff9c1cd240 <_int_free+848>
+
+3895                locked = 0;
+3896              }
+3897          }
+3898
+3899        free_perturb (chunk2mem(p), size - 2 * SIZE_SZ);
+   0x0000ffff9c1cd248 <+856>:   add     x10, x19, #0x10
+
+3900
+3901        set_fastchunks(av);
+   0x0000ffff9c1cd250 <+864>:   add     x2, x21, #0x4
+   0x0000ffff9c1cd254 <+868>:   add     x9, x29, #0x90
+   0x0000ffff9c1cd258 <+872>:   ldr     w1, [x21,#4]
+   0x0000ffff9c1cd25c <+876>:   str     w1, [x29,#144]
+   0x0000ffff9c1cd260 <+880>:   and     w4, w1, #0xfffffffe
+   0x0000ffff9c1cd264 <+884>:   mov     w3, w1
+   0x0000ffff9c1cd268 <+888>:   ldaxr   w5, [x2]
+   0x0000ffff9c1cd26c <+892>:   cmp     w5, w3
+   0x0000ffff9c1cd270 <+896>:   b.ne    0xffff9c1cd27c <_int_free+908>
+   0x0000ffff9c1cd274 <+900>:   stxr    w0, w4, [x2]
+   0x0000ffff9c1cd278 <+904>:   cbnz    w0, 0xffff9c1cd268 <_int_free+888>
+   0x0000ffff9c1cd27c <+908>:   b.eq    0xffff9c1cd284 <_int_free+916>
+   0x0000ffff9c1cd280 <+912>:   str     w5, [x9]
+   0x0000ffff9c1cd284 <+916>:   ldr     w3, [x29,#144]
+   0x0000ffff9c1cd288 <+920>:   cmp     w1, w3
+   0x0000ffff9c1cd28c <+924>:   b.ne    0xffff9c1cd258 <_int_free+872>
+---Type <return> to continue, or q <return> to quit---
+
+3902        unsigned int idx = fastbin_index(size);
+   0x0000ffff9c1cd290 <+928>:   lsr     w20, w20, #4
+   0x0000ffff9c1cd294 <+932>:   sub     w20, w20, #0x2
+
+3903        fb = &fastbin (av, idx);
+   0x0000ffff9c1cd298 <+936>:   add     x5, x21, w20, uxtw #3
+   0x0000ffff9c1cd2a0 <+944>:   add     x5, x5, #0x8
+
+3904
+3905        /* Atomically link P to its fastbin: P->FD = *FB; *FB = P;  */
+3906        mchunkptr old = *fb, old2;
+   0x0000ffff9c1cd29c <+940>:   ldr     x4, [x5,#8]
+
+3907        unsigned int old_idx = ~0u;
+   0x0000ffff9c1cd2b4 <+964>:   mov     w7, #0xffffffff                 // #-1
+
+3908        do
+3909          {
+3910            /* Check that the top of the bin is not the record we are going to add
+3911               (i.e., double free).  */
+3912            if (__builtin_expect (old == p, 0))
+   0x0000ffff9c1cd2a4 <+948>:   cmp     x19, x4
+   0x0000ffff9c1cd2a8 <+952>:   b.eq    0xffff9c1cd580 <_int_free+1680>
+   0x0000ffff9c1cd2ac <+956>:   cmp     w23, wzr
+   0x0000ffff9c1cd2b0 <+960>:   cset    w8, ne
+   0x0000ffff9c1cd300 <+1040>:  cmp     x19, x1
+   0x0000ffff9c1cd304 <+1044>:  b.eq    0xffff9c1cd580 <_int_free+1680>
+   0x0000ffff9c1cd308 <+1048>:  mov     x4, x1
+   0x0000ffff9c1cd30c <+1052>:  b       0xffff9c1cd2b8 <_int_free+968>
+
+3913              {
+3914                errstr = "double free or corruption (fasttop)";
+   0x0000ffff9c1cd580 <+1680>:  adrp    x20, 0xffff9c28a000
+   0x0000ffff9c1cd584 <+1684>:  mov     x19, x10
+   0x0000ffff9c1cd588 <+1688>:  mov     w27, #0x0                       // #0
+   0x0000ffff9c1cd58c <+1692>:  add     x20, x20, #0x738
+
+3915                goto errout;
+3916              }
+3917            /* Check that size of fastbin chunk at the top is the same as
+3918               size of the chunk that we are adding.  We can dereference OLD
+---Type <return> to continue, or q <return> to quit---
+3919               only if we have the lock, otherwise it might have already been
+3920               deallocated.  See use of OLD_IDX below for the actual check.  */
+3921            if (have_lock && old != NULL)
+   0x0000ffff9c1cd2b8 <+968>:   cbz     x4, 0xffff9c1cd2cc <_int_free+988>
+   0x0000ffff9c1cd2bc <+972>:   cbz     w8, 0xffff9c1cd2cc <_int_free+988>
+
+3922              old_idx = fastbin_index(chunksize(old));
+   0x0000ffff9c1cd2c0 <+976>:   ldr     x1, [x4,#8]
+   0x0000ffff9c1cd2c4 <+980>:   lsr     w1, w1, #4
+   0x0000ffff9c1cd2c8 <+984>:   sub     w7, w1, #0x2
+
+3923            p->fd = old2 = old;
+   0x0000ffff9c1cd2cc <+988>:   str     x4, [x19,#16]
+
+3924          }
+3925        while ((old = catomic_compare_and_exchange_val_rel (fb, p, old2)) != old2);
+   0x0000ffff9c1cd2d0 <+992>:   str     x4, [x29,#144]
+   0x0000ffff9c1cd2d4 <+996>:   mov     x1, x4
+   0x0000ffff9c1cd2d8 <+1000>:  ldxr    x6, [x5]
+   0x0000ffff9c1cd2dc <+1004>:  cmp     x6, x1
+   0x0000ffff9c1cd2e0 <+1008>:  b.ne    0xffff9c1cd2ec <_int_free+1020>
+   0x0000ffff9c1cd2e4 <+1012>:  stlxr   w2, x19, [x5]
+   0x0000ffff9c1cd2e8 <+1016>:  cbnz    w2, 0xffff9c1cd2d8 <_int_free+1000>
+   0x0000ffff9c1cd2ec <+1020>:  b.eq    0xffff9c1cd2f4 <_int_free+1028>
+   0x0000ffff9c1cd2f0 <+1024>:  str     x6, [x9]
+   0x0000ffff9c1cd2f4 <+1028>:  ldr     x1, [x29,#144]
+   0x0000ffff9c1cd2f8 <+1032>:  cmp     x4, x1
+   0x0000ffff9c1cd2fc <+1036>:  b.eq    0xffff9c1cd310 <_int_free+1056>
+
+3926
+3927        if (have_lock && old != NULL && __builtin_expect (old_idx != idx, 0))
+   0x0000ffff9c1cd310 <+1056>:  cbz     x4, 0xffff9c1cd320 <_int_free+1072>
+   0x0000ffff9c1cd314 <+1060>:  cbz     w8, 0xffff9c1cd320 <_int_free+1072>
+   0x0000ffff9c1cd318 <+1064>:  cmp     w7, w20
+   0x0000ffff9c1cd31c <+1068>:  b.ne    0xffff9c1cdaa8 <_int_free+3000>
+
+3928          {
+3929            errstr = "invalid fastbin entry (free)";
+   0x0000ffff9c1cdaa8 <+3000>:  adrp    x20, 0xffff9c28a000
+   0x0000ffff9c1cdaac <+3004>:  mov     x19, x10
+   0x0000ffff9c1cdab0 <+3008>:  mov     w27, #0x0                       // #0
+   0x0000ffff9c1cdab4 <+3012>:  add     x20, x20, #0x760
+---Type <return> to continue, or q <return> to quit---
+   0x0000ffff9c1cdab8 <+3016>:  b       0xffff9c1cd590 <_int_free+1696>
+
+3930            goto errout;
+3931          }
+3932      }
+3933
+3934      /*
+3935        Consolidate other non-mmapped chunks as they arrive.
+3936      */
+3937
+3938      else if (!chunk_is_mmapped(p)) {
+   0x0000ffff9c1ccf54 <+100>:   and     x1, x1, #0x2
+   0x0000ffff9c1ccf58 <+104>:   cbnz    x1, 0xffff9c1cd47c <_int_free+1420>
+
+3939        if (! have_lock) {
+   0x0000ffff9c1ccf60 <+112>:   cbz     w2, 0xffff9c1cd4e4 <_int_free+1524>
+
+3940          (void)mutex_lock(&av->mutex);
+   0x0000ffff9c1cd4e4 <+1524>:  str     w2, [x29,#144]
+   0x0000ffff9c1cd4e8 <+1528>:  mov     w0, #0x1                        // #1
+   0x0000ffff9c1cd4ec <+1532>:  ldaxr   w1, [x21]
+   0x0000ffff9c1cd4f0 <+1536>:  cmp     w1, wzr
+   0x0000ffff9c1cd4f4 <+1540>:  b.ne    0xffff9c1cd500 <_int_free+1552>
+   0x0000ffff9c1cd4f8 <+1544>:  stxr    w2, w0, [x21]
+   0x0000ffff9c1cd4fc <+1548>:  cbnz    w2, 0xffff9c1cd4ec <_int_free+1532>
+   0x0000ffff9c1cd500 <+1552>:  b.eq    0xffff9c1cd508 <_int_free+1560>
+   0x0000ffff9c1cd504 <+1556>:  str     w1, [x29,#144]
+   0x0000ffff9c1cd508 <+1560>:  ldr     w0, [x29,#144]
+   0x0000ffff9c1cd510 <+1568>:  cbz     w0, 0xffff9c1ccf64 <_int_free+116>
+   0x0000ffff9c1cd514 <+1572>:  mov     x0, x21
+   0x0000ffff9c1cd518 <+1576>:  bl      0xffff9c23c9cc <__lll_lock_wait_private>
+   0x0000ffff9c1cd51c <+1580>:  b       0xffff9c1ccf64 <_int_free+116>
+   0x0000ffff9c1cd520 <+1584>:  ldr     x4, [x5,#8]
+
+3941          locked = 1;
+   0x0000ffff9c1cd50c <+1564>:  mov     w27, #0x1                       // #1
+
+3942        }
+3943
+3944        nextchunk = chunk_at_offset(p, size);
+   0x0000ffff9c1ccf68 <+120>:   add     x24, x19, x20
+
+---Type <return> to continue, or q <return> to quit---
+3945
+3946        /* Lightweight tests: check whether the block is already the
+3947           top block.  */
+3948        if (__builtin_expect (p == av->top, 0))
+   0x0000ffff9c1ccf64 <+116>:   ldr     x0, [x21,#88]
+   0x0000ffff9c1ccf6c <+124>:   cmp     x19, x0
+   0x0000ffff9c1ccf70 <+128>:   b.eq    0xffff9c1cda98 <_int_free+2984>
+
+3949          {
+3950            errstr = "double free or corruption (top)";
+   0x0000ffff9c1cda98 <+2984>:  adrp    x20, 0xffff9c28a000
+   0x0000ffff9c1cda9c <+2988>:  add     x19, x19, #0x10
+   0x0000ffff9c1cdaa0 <+2992>:  add     x20, x20, #0x780
+   0x0000ffff9c1cdaa4 <+2996>:  b       0xffff9c1cd590 <_int_free+1696>
+
+3951            goto errout;
+3952          }
+3953        /* Or whether the next chunk is beyond the boundaries of the arena.  */
+3954        if (__builtin_expect (contiguous (av)
+   0x0000ffff9c1ccf74 <+132>:   ldr     w2, [x21,#4]
+   0x0000ffff9c1ccf78 <+136>:   tbz     w2, #1, 0xffff9c1cdad0 <_int_free+3040>
+   0x0000ffff9c1cdadc <+3052>:  cmp     x24, x0
+   0x0000ffff9c1cdae0 <+3056>:  b.cc    0xffff9c1ccf7c <_int_free+140>
+
+3955                              && (char *) nextchunk
+3956                              >= ((char *) av->top + chunksize(av->top)), 0))
+   0x0000ffff9c1cdad0 <+3040>:  ldr     x1, [x0,#8]
+   0x0000ffff9c1cdad4 <+3044>:  and     x1, x1, #0xfffffffffffffff8
+   0x0000ffff9c1cdad8 <+3048>:  add     x0, x0, x1
+
+3957          {
+3958            errstr = "double free or corruption (out)";
+   0x0000ffff9c1cdae4 <+3060>:  adrp    x20, 0xffff9c28a000
+   0x0000ffff9c1cdae8 <+3064>:  add     x19, x19, #0x10
+   0x0000ffff9c1cdaec <+3068>:  add     x20, x20, #0x7a0
+   0x0000ffff9c1cdaf0 <+3072>:  b       0xffff9c1cd590 <_int_free+1696>
+
+3959            goto errout;
+3960          }
+3961        /* Or whether the block is actually not marked used.  */
+3962        if (__builtin_expect (!prev_inuse(nextchunk), 0))
+   0x0000ffff9c1ccf7c <+140>:   ldr     x0, [x24,#8]
+---Type <return> to continue, or q <return> to quit---
+   0x0000ffff9c1ccf80 <+144>:   tbz     w0, #0, 0xffff9c1cdaf4 <_int_free+3076>
+
+3963          {
+3964            errstr = "double free or corruption (!prev)";
+   0x0000ffff9c1cdaf4 <+3076>:  adrp    x20, 0xffff9c28a000
+   0x0000ffff9c1cdaf8 <+3080>:  add     x19, x19, #0x10
+   0x0000ffff9c1cdafc <+3084>:  add     x20, x20, #0x7c0
+   0x0000ffff9c1cdb00 <+3088>:  b       0xffff9c1cd590 <_int_free+1696>
+
+3965            goto errout;
+3966          }
+3967
+3968        nextsize = chunksize(nextchunk);
+   0x0000ffff9c1ccf88 <+152>:   and     x25, x0, #0xfffffffffffffff8
+
+3969        if (__builtin_expect (nextchunk->size <= 2 * SIZE_SZ, 0)
+   0x0000ffff9c1ccf84 <+148>:   cmp     x0, #0x10
+   0x0000ffff9c1ccf8c <+156>:   b.ls    0xffff9c1cdb04 <_int_free+3092>
+
+3970            || __builtin_expect (nextsize >= av->system_mem, 0))
+   0x0000ffff9c1ccf90 <+160>:   ldr     x0, [x21,#2176]
+   0x0000ffff9c1ccf94 <+164>:   cmp     x25, x0
+   0x0000ffff9c1ccf98 <+168>:   b.cs    0xffff9c1cdb04 <_int_free+3092>
+
+3971          {
+3972            errstr = "free(): invalid next size (normal)";
+   0x0000ffff9c1cdb04 <+3092>:  adrp    x20, 0xffff9c28a000
+   0x0000ffff9c1cdb08 <+3096>:  add     x19, x19, #0x10
+   0x0000ffff9c1cdb0c <+3100>:  add     x20, x20, #0x710
+   0x0000ffff9c1cdb10 <+3104>:  b       0xffff9c1cd590 <_int_free+1696>
+
+3973            goto errout;
+3974          }
+3975
+3976        free_perturb (chunk2mem(p), size - 2 * SIZE_SZ);
+3977
+3978        /* consolidate backward */
+3979        if (!prev_inuse(p)) {
+   0x0000ffff9c1ccfa8 <+184>:   ldr     x0, [x19,#8]
+   0x0000ffff9c1ccfac <+188>:   tbnz    w0, #0, 0xffff9c1cd00c <_int_free+284>
+
+3980          prevsize = p->prev_size;
+---Type <return> to continue, or q <return> to quit---jkj
+

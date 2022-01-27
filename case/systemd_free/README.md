@@ -768,3 +768,76 @@ $57 = 2192
 #define LIST_FOREACH(name,i,head)                                       \
         for ((i) = (head); (i); (i) = (i)->name##_next)
 ```
+
+# 查看其余的三个coredump
+其余的三个coredump均为coaster-agent
+```
+[root@node-3 coredump]# ls |grep core.coas
+-rw-------  1 root 89522176 Jan 27 11:06 core.coaster-agent.3369.node-1.domain.tld.1641608611
+-rw-------  1 root 87097344 Jan 27 11:06 core.coaster-agent.64650.node-1.domain.tld.1641048787
+-rw-------  1 root 88801280 Jan 27 11:06 core.coaster-agent.6952.node-1.domain.tld.1641017647
+```
+
+`coaster-agent`是一个python脚本:
+```
+[root@node-3 coredump]# whereis coaster-agent
+coaster-agent: /usr/bin/coaster-agent
+[root@node-3 coredump]# file /usr/bin/coaster-agent
+/usr/bin/coaster-agent: Python script, ASCII text executable
+```
+
+通过查找资料得知，可以通过下载`python-debuginfo`包调试coredump
+
+查看python版本:
+
+```
+[root@node-3 coredump]# yum list python
+warning: Macro %el6 needs whitespace before body
+Loaded plugins: fastestmirror
+Loading mirror speeds from cached hostfile
+ * epel: mirrors.bfsu.edu.cn
+Installed Packages
+python.aarch64                                            2.7.5-86.el7.centos.es                                            @anaconda/6
+```
+
+安装python-debuginfo包后，执行gdb调试.
+
+# 查看堆栈
+
+## core.coaster-agent.3369.node-1.domain.tld.1641608611
+```
+#0  0x0000ffffaa9b5228 in __GI_raise (sig=sig@entry=6) at ../nptl/sysdeps/unix/sysv/linux/raise.c:55
+#1  0x0000ffffaa9b68a0 in __GI_abort () at abort.c:90
+#2  0x0000ffffaa9f516c in __libc_message (do_abort=<optimized out>, fmt=fmt@entry=0xffffaaaba620 "*** Error in `%s': %s: 0x%s ***\n")
+    at ../sysdeps/unix/sysv/linux/libc_fatal.c:196
+#3  0x0000ffffaa9fd67c in malloc_printerr (ar_ptr=0xffffaab00530 <main_arena>, ptr=<optimized out>,
+    str=0xffffaaaba6f8 "free(): invalid pointer", action=3) at malloc.c:4967
+#4  _int_free (av=0xffffaab00530 <main_arena>, p=<optimized out>, have_lock=0) at malloc.c:3843
+#5  0x0000ffffaacf1a08 in dict_dealloc (mp=0xffff9bd084b0) at /usr/src/debug/Python-2.7.5/Objects/dictobject.c:1027
+```
+## core.coaster-agent.6952.node-1.domain.tld.1641017647
+```
+#0  0x0000ffff937f5228 in __GI_raise (sig=sig@entry=6) at ../nptl/sysdeps/unix/sysv/linux/raise.c:55
+#1  0x0000ffff937f68a0 in __GI_abort () at abort.c:90
+#2  0x0000ffff9383516c in __libc_message (do_abort=<optimized out>, fmt=fmt@entry=0xffff938fa620 "*** Error in `%s': %s: 0x%s ***\n")
+    at ../sysdeps/unix/sysv/linux/libc_fatal.c:196
+#3  0x0000ffff9383ccfc in malloc_printerr (ar_ptr=0xffff93940530 <main_arena>, ptr=0x18c99400,
+    str=0xffff938fa688 "corrupted size vs. prev_size", action=3) at malloc.c:4967
+#4  malloc_consolidate (av=av@entry=0xffff93940530 <main_arena>) at malloc.c:4161
+```
+## core.coaster-agent.64650.node-1.domain.tld.1641048787
+```
+#0  __GI_strlen (str=0x0) at strlen.c:78
+#1  0x0000ffffad2a4168 in PyString_FromFormatV (format=format@entry=0xffffad33c408 "'%.200s' object has no attribute '__getitem__'",
+    vargs=...) at /usr/src/debug/Python-2.7.5/Objects/stringobject.c:241
+#2  0x0000ffffad300500 in PyErr_Format (exception=<type at remote 0xffffad3b8e40>,
+    format=format@entry=0xffffad33c408 "'%.200s' object has no attribute '__getitem__'")
+    at /usr/src/debug/Python-2.7.5/Python/errors.c:550
+#3  0x0000ffffad25b6d0 in type_error (obj=<unknown at remote 0xffffa2559910>,
+    msg=0xffffad33c408 "'%.200s' object has no attribute '__getitem__'") at /usr/src/debug/Python-2.7.5/Objects/abstract.c:17
+```
+
+可以看到除第三个外，其余两个都和malloc/free相关(libc内存管理), 
+这个堆栈和`core.systemd.63108.node-1.domain.tld.1640145986`
+第一次coredump很像. 
+还需要进一步分析

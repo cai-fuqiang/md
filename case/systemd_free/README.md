@@ -844,6 +844,8 @@ python.aarch64                                            2.7.5-86.el7.centos.es
 
 # 通过gdb+python代码进一步调试
 ## core.coaster-agent.3369.node-1.domain.tld.1641608611
+
+### 堆栈初步分析
 查看调用_int_free之前的堆栈信息
 ```
 #5  0x0000ffffaacf1a08 in dict_dealloc (mp=0xffff9bd084b0) at /usr/src/debug/Python-2.7.5/Objects/dictobject.c:1027
@@ -854,9 +856,11 @@ python.aarch64                                            2.7.5-86.el7.centos.es
 dict_dealloc(register PyDictObject *mp)
 {
     register PyDictEntry *ep;
+	//x20
     Py_ssize_t fill = mp->ma_fill;
     PyObject_GC_UnTrack(mp);
     Py_TRASHCAN_SAFE_BEGIN(mp)
+	//x19为mp->ma_table
     for (ep = mp->ma_table; fill > 0; ep++) {
         if (ep->me_key) {
             --fill;
@@ -887,4 +891,193 @@ $9 = (freefunc) 0xffffaad857a0 <PyObject_GC_Del>
 ```
 
 查看`PyObject_GC_Del`定义:
+该定义有很多预编译分支，其中有分支可以定义为free
+通过反汇编查看
+```
+(gdb) disassemble dict_dealloc
+Dump of assembler code for function dict_dealloc:
+   0x0000ffffaacf1900 <+0>:     stp     x29, x30, [sp,#-48]!
+   0x0000ffffaacf1904 <+4>:     mov     x29, sp
+   0x0000ffffaacf1908 <+8>:     stp     x21, x22, [sp,#32]
+   0x0000ffffaacf190c <+12>:    stp     x19, x20, [sp,#16]
+   //x22存放mp
+   0x0000ffffaacf1910 <+16>:    mov     x22, x0
+   //x20存放mp->ma_fill
+   //Py_ssize_t fill = mp->ma_fill;
+   0x0000ffffaacf1914 <+20>:    ldr     x20, [x0,#16]
+   0x0000ffffaacf1918 <+24>:    bl      0xffffaacb11c0 <PyObject_GC_UnTrack@plt>
+   0x0000ffffaacf191c <+28>:    adrp    x0, 0xffffaae0f000
+   0x0000ffffaacf1920 <+32>:    ldr     x0, [x0,#2896]
+   0x0000ffffaacf1924 <+36>:    ldr     x21, [x0]
+   0x0000ffffaacf1928 <+40>:    cbz     x21, 0xffffaacf1940 <dict_dealloc+64>
+   0x0000ffffaacf192c <+44>:    ldr     w0, [x21,#152]
+   0x0000ffffaacf1930 <+48>:    cmp     w0, #0x31
+   0x0000ffffaacf1934 <+52>:    b.gt    0xffffaacf1a38 <dict_dealloc+312>
+   0x0000ffffaacf1938 <+56>:    add     w0, w0, #0x1
+   0x0000ffffaacf193c <+60>:    str     w0, [x21,#152]
+   //for (ep = mp->ma_table; fill > 0; ep++)
+   0x0000ffffaacf1940 <+64>:    cmp     x20, xzr
+   0x0000ffffaacf1944 <+68>:    ldr     x19, [x22,#40]
+   //大于
+   0x0000ffffaacf1948 <+72>:    b.gt    0xffffaacf1974 <dict_dealloc+116>
+   //小于等于，或者跳出循环的条件也走这个
+   0x0000ffffaacf194c <+76>:    b       0xffffaacf1a70 <dict_dealloc+368>
+   0x0000ffffaacf1950 <+80>:    ldr     x1, [x19,#16]
+   0x0000ffffaacf1954 <+84>:    cbz     x1, 0xffffaacf1968 <dict_dealloc+104>
+   0x0000ffffaacf1958 <+88>:    ldr     x2, [x1]
+   0x0000ffffaacf195c <+92>:    sub     x2, x2, #0x1
+   0x0000ffffaacf1960 <+96>:    str     x2, [x1]
+   0x0000ffffaacf1964 <+100>:   cbz     x2, 0xffffaacf19a4 <dict_dealloc+164>
+   0x0000ffffaacf1968 <+104>:   cmp     x20, xzr
+   0x0000ffffaacf196c <+108>:   add     x19, x19, #0x18
+   0x0000ffffaacf1970 <+112>:   b.le    0xffffaacf19c0 <dict_dealloc+192>
+   0x0000ffffaacf1974 <+116>:   ldr     x1, [x19,#8]
+   0x0000ffffaacf1978 <+120>:   cbz     x1, 0xffffaacf1968 <dict_dealloc+104>
+   0x0000ffffaacf197c <+124>:   ldr     x2, [x1]
+   0x0000ffffaacf1980 <+128>:   sub     x20, x20, #0x1
+   0x0000ffffaacf1984 <+132>:   sub     x2, x2, #0x1
+   0x0000ffffaacf1988 <+136>:   str     x2, [x1]
+   0x0000ffffaacf198c <+140>:   cbnz    x2, 0xffffaacf1950 <dict_dealloc+80>
+   0x0000ffffaacf1990 <+144>:   ldr     x0, [x19,#8]
+   0x0000ffffaacf1994 <+148>:   ldr     x1, [x0,#8]
+   0x0000ffffaacf1998 <+152>:   ldr     x1, [x1,#48]
+   0x0000ffffaacf199c <+156>:   blr     x1
+   0x0000ffffaacf19a0 <+160>:   b       0xffffaacf1950 <dict_dealloc+80>
+   0x0000ffffaacf19a4 <+164>:   ldr     x0, [x19,#16]
+   0x0000ffffaacf19a8 <+168>:   add     x19, x19, #0x18
+   0x0000ffffaacf19ac <+172>:   ldr     x1, [x0,#8]
+   0x0000ffffaacf19b0 <+176>:   ldr     x1, [x1,#48]
+---Type <return> to continue, or q <return> to quit---
+   0x0000ffffaacf19b4 <+180>:   blr     x1
+   0x0000ffffaacf19b8 <+184>:   cmp     x20, xzr
+   0x0000ffffaacf19bc <+188>:   b.gt    0xffffaacf1974 <dict_dealloc+116>
+   0x0000ffffaacf19c0 <+192>:   ldr     x0, [x22,#40]       //x22为x0, 为mp参数
 
+   //该位置x0为mp->ma_table, x1为mp->ma_smalltable
+   0x0000ffffaacf19c4 <+196>:   add     x1, x22, #0x38
+   //作比较
+   //if (mp->ma_table != mp->ma_smalltable)
+   0x0000ffffaacf19c8 <+200>:   cmp     x0, x1
+   //如果相等，跳转dict_dealloc+212
+   0x0000ffffaacf19cc <+204>:   b.eq    0xffffaacf19d4 <dict_dealloc+212>
+   0x0000ffffaacf19d0 <+208>:   bl      0xffffaacafc10 <free@plt>
+
+   //if (numfree < PyDict_MAXFREELIST && Py_TYPE(mp) == &PyDict_Type)
+   0x0000ffffaacf19d4 <+212>:   adrp    x2, 0xffffaae4b000
+   0x0000ffffaacf19d8 <+216>:   add     x2, x2, #0xcb0
+   0x0000ffffaacf19dc <+220>:   ldr     w1, [x2,#8]
+   //x0为PyObject->ob_type
+   0x0000ffffaacf19e0 <+224>:   ldr     x0, [x22,#8]
+   // 4f = 79
+   0x0000ffffaacf19e4 <+228>:   cmp     w1, #0x4f
+   //如果大于走下面
+   0x0000ffffaacf19e8 <+232>:   b.gt    0xffffaacf19fc <dict_dealloc+252>
+   0x0000ffffaacf19ec <+236>:   adrp    x3, 0xffffaae0f000
+
+   0x0000ffffaacf19f0 <+240>:   ldr     x3, [x3,#3504]
+   0x0000ffffaacf19f4 <+244>:   cmp     x0, x3
+   0x0000ffffaacf19f8 <+248>:   b.eq    0xffffaacf1a4c <dict_dealloc+332>
+   //该行为Py_TYPE(mp)->tp_free((PyObject *)mp);
+    //(gdb) p ((struct _typeobject *)0)->tp_free
+    //Cannot access memory at address 0x140
+    //0x140为320
+   0x0000ffffaacf19fc <+252>:   ldr     x1, [x0,#320]
+   0x0000ffffaacf1a00 <+256>:   mov     x0, x22
+    //该函数会跳转到tp_free
+   0x0000ffffaacf1a04 <+260>:   blr     x1
+   0x0000ffffaacf1a08 <+264>:   cbz     x21, 0xffffaacf1a28 <dict_dealloc+296>
+   0x0000ffffaacf1a0c <+268>:   ldr     w0, [x21,#152]
+   0x0000ffffaacf1a10 <+272>:   ldr     x1, [x21,#160]
+   0x0000ffffaacf1a14 <+276>:   sub     w0, w0, #0x1
+   0x0000ffffaacf1a18 <+280>:   str     w0, [x21,#152]
+   0x0000ffffaacf1a1c <+284>:   cbz     x1, 0xffffaacf1a28 <dict_dealloc+296>
+   0x0000ffffaacf1a20 <+288>:   cmp     w0, wzr
+   0x0000ffffaacf1a24 <+292>:   b.le    0xffffaacf1a60 <dict_dealloc+352>
+   0x0000ffffaacf1a28 <+296>:   ldp     x19, x20, [sp,#16]
+   0x0000ffffaacf1a2c <+300>:   ldp     x21, x22, [sp,#32]
+   0x0000ffffaacf1a30 <+304>:   ldp     x29, x30, [sp],#48
+   0x0000ffffaacf1a34 <+308>:   ret
+   0x0000ffffaacf1a38 <+312>:   mov     x0, x22
+   0x0000ffffaacf1a3c <+316>:   ldp     x19, x20, [sp,#16]
+   0x0000ffffaacf1a40 <+320>:   ldp     x21, x22, [sp,#32]
+   0x0000ffffaacf1a44 <+324>:   ldp     x29, x30, [sp],#48
+   0x0000ffffaacf1a48 <+328>:   b       0xffffaacafb40 <_PyTrash_thread_deposit_object@plt>
+   0x0000ffffaacf1a4c <+332>:   add     w3, w1, #0x1
+   0x0000ffffaacf1a50 <+336>:   add     x0, x2, #0x10
+   0x0000ffffaacf1a54 <+340>:   str     w3, [x2,#8]
+   0x0000ffffaacf1a58 <+344>:   str     x22, [x0,w1,sxtw #3]
+   0x0000ffffaacf1a5c <+348>:   b       0xffffaacf1a08 <dict_dealloc+264>
+   0x0000ffffaacf1a60 <+352>:   ldp     x19, x20, [sp,#16]
+   0x0000ffffaacf1a64 <+356>:   ldp     x21, x22, [sp,#32]
+   0x0000ffffaacf1a68 <+360>:   ldp     x29, x30, [sp],#48
+   0x0000ffffaacf1a6c <+364>:   b       0xffffaacb0c90 <_PyTrash_thread_destroy_chain@plt>
+    //为line: 1013, x19为mp->ma_table
+   0x0000ffffaacf1a70 <+368>:   mov     x0, x19
+   0x0000ffffaacf1a74 <+372>:   b       0xffffaacf19c4 <dict_dealloc+196>
+```
+通过gdb查看`tp_free`的值
+```
+(gdb) p ((PyObject *)0xffff9bd084b0)->ob_type->tp_free
+$19 = (freefunc) 0xffffaad857a0 <PyObject_GC_Del>
+```
+可以看到该函数指向了`PyObject_GC_Del`, 对该函数进行反汇编
+```
+   0x0000ffffaad857a0 <+0>:     ldr     x1, [x0,#-16]
+   0x0000ffffaad857a4 <+4>:     sub     x3, x0, #0x20
+   0x0000ffffaad857a8 <+8>:     cmn     x1, #0x2
+   0x0000ffffaad857ac <+12>:    b.eq    0xffffaad857cc <PyObject_GC_Del+44>
+   0x0000ffffaad857b0 <+16>:    ldr     x2, [x0,#-32]
+   0x0000ffffaad857b4 <+20>:    ldr     x1, [x0,#-24]
+   0x0000ffffaad857b8 <+24>:    str     x2, [x1]
+   0x0000ffffaad857bc <+28>:    ldr     x1, [x0,#-32]
+   0x0000ffffaad857c0 <+32>:    ldr     x2, [x0,#-24]
+   0x0000ffffaad857c4 <+36>:    str     x2, [x1,#8]
+   0x0000ffffaad857c8 <+40>:    str     xzr, [x0,#-32]
+   0x0000ffffaad857cc <+44>:    adrp    x1, 0xffffaae3f000 <PyTraceBack_Type+256>
+   0x0000ffffaad857d0 <+48>:    add     x1, x1, #0xce0
+   0x0000ffffaad857d4 <+52>:    ldr     w2, [x1,#36]
+   0x0000ffffaad857d8 <+56>:    cmp     w2, wzr
+   0x0000ffffaad857dc <+60>:    b.le    0xffffaad857e8 <PyObject_GC_Del+72>
+   0x0000ffffaad857e0 <+64>:    sub     w2, w2, #0x1
+   0x0000ffffaad857e4 <+68>:    str     w2, [x1,#36]
+   0x0000ffffaad857e8 <+72>:    mov     x0, x3
+   0x0000ffffaad857ec <+76>:    b       0xffffaacaeba0 <PyObject_Free@plt>
+```
+在最后会跳转到`PyObject_Free()`, 该函数较长，gdb也没有显示相关堆栈用于分析
+(也是很奇怪)
+
+### 对free() 堆栈详细分析
+
+glibc free()相关堆栈如下:
+```
+#0  0x0000ffffaa9b5228 in __GI_raise (sig=sig@entry=6) at ../nptl/sysdeps/unix/sysv/linux/raise.c:55
+#1  0x0000ffffaa9b68a0 in __GI_abort () at abort.c:90
+#2  0x0000ffffaa9f516c in __libc_message (do_abort=<optimized out>, fmt=fmt@entry=0xffffaaaba620 "*** Error in `%s': %s: 0x%s ***\n")
+    at ../sysdeps/unix/sysv/linux/libc_fatal.c:196
+#3  0x0000ffffaa9fd67c in _int_free (ar_ptr=0xffffaab00530 <main_arena>, ptr=<optimized out>, str=0xffffaaaba6f8 "free(): invalid pointer", action=3) at malloc.c:4967
+#4  0x0000ffffaa9fd67c in _int_free (av=0xffffaab00530 <main_arena>, p=<optimized out>, have_lock=0) at malloc.c:3843
+```
+
+可以看到`#4 p`, `#3 ptr`都被gcc优化掉了，所以不可见。但是根据上一次调试的经验，
+`int_free`中的buf据不变量没有被优化可以获取到该地址, 通过`bt full`命令查看`buf`变量的
+地址:
+
+```
+#3  0x0000ffffaa9fd67c in malloc_printerr (ar_ptr=0xffffaab00530 <main_arena>, ptr=<optimized out>, str=0xffffaaaba6f8 "free(): invalid pointer",
+    action=3) at malloc.c:4967
+        buf = "0000ffff9bd08490"
+        cp = <optimized out>
+        ar_ptr = 0xffffaab00530 <main_arena>
+        ptr = <optimized out>
+        str = 0xffffaaaba6f8 "free(): invalid pointer"
+        action = 3
+```
+
+chunk地址为`0xffff9bd08480`
+查看该chunk信息:
+```
+(gdb) p *(mchunkptr )0xffff9bd08480
+$2 = {prev_size = 0, size = 0, fd = 0x0, bk = 0xffff9bff9cf0, fd_nextsize = 0xfffffffffffffffe, bk_nextsize = 0x0}
+```
+
+可以看到chunk信息不对。像是被写坏了

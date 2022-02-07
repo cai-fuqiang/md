@@ -399,3 +399,11 @@ You may need to update your initramfs before next boot. To do that, run:
 To load the new driver, run:
 /etc/init.d/openibd restart
 Note: In order to load the new nvme-rdma and nvmet-rdma modules, the nvme module must be reloaded.
+
+# yum check new
+openmpi-4.1.2a1-1.54103.aarch64 has missing requires of pkgconfig(zlib)
+opensm-5.9.0.MLNX20210617.c9f2ade-0.1.54103.aarch64 has missing requires of logrotate
+perftest-4.5-0.12.ge93c538.55103.aarch64 has missing requires of libmlx5.so.1(MLX5_1.21)(64bit)
+rdma-core-devel-54mlnx1-1.54103.aarch64 has missing requires of pkgconfig(libnl-3.0)
+rdma-core-devel-54mlnx1-1.54103.aarch64 has missing requires of pkgconfig(libnl-route-3.0)
+

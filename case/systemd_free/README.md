@@ -841,3 +841,50 @@ python.aarch64                                            2.7.5-86.el7.centos.es
 这个堆栈和`core.systemd.63108.node-1.domain.tld.1640145986`
 第一次coredump很像. 
 还需要进一步分析
+
+# 通过gdb+python代码进一步调试
+## core.coaster-agent.3369.node-1.domain.tld.1641608611
+查看调用_int_free之前的堆栈信息
+```
+#5  0x0000ffffaacf1a08 in dict_dealloc (mp=0xffff9bd084b0) at /usr/src/debug/Python-2.7.5/Objects/dictobject.c:1027
+```
+对应的代码为:
+
+```
+dict_dealloc(register PyDictObject *mp)
+{
+    register PyDictEntry *ep;
+    Py_ssize_t fill = mp->ma_fill;
+    PyObject_GC_UnTrack(mp);
+    Py_TRASHCAN_SAFE_BEGIN(mp)
+    for (ep = mp->ma_table; fill > 0; ep++) {
+        if (ep->me_key) {
+            --fill;
+            Py_DECREF(ep->me_key);
+            Py_XDECREF(ep->me_value);
+        }
+    }
+    if (mp->ma_table != mp->ma_smalltable)
+        PyMem_DEL(mp->ma_table);
+    if (numfree < PyDict_MAXFREELIST && Py_TYPE(mp) == &PyDict_Type)
+        free_list[numfree++] = mp;
+    else
+        Py_TYPE(mp)->tp_free((PyObject *)mp);		//====================>line :1027
+    Py_TRASHCAN_SAFE_END(mp)
+}
+```
+通过上面的堆栈信息可以看出mp的值为`0xffff9bd084b0`
+查看`Py_TYPE`相关定义:
+```
+115  Include/object.h <<Py_TYPE>>
+     #define Py_TYPE(ob) (((PyObject*)(ob))->ob_type)
+```
+
+通过gdb获取信息
+```
+(gdb) p ((PyObject *)0xffff9bd084b0)->ob_type->tp_free
+$9 = (freefunc) 0xffffaad857a0 <PyObject_GC_Del>
+```
+
+查看`PyObject_GC_Del`定义:
+

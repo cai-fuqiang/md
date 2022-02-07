@@ -1,0 +1,134 @@
+# ver = *mlnx*
+## centos 8
+-rw-r--r-- 1 root   255224 Dec  2 00:44 infiniband-diags-55mlnx37-1.55103.aarch64.rpm
+-rw-r--r-- 1 root    29876 Dec  2 00:44 infiniband-diags-compat-55mlnx37-1.55103.aarch64.rpm
+-rw-r--r-- 1 root    24536 Dec  2 00:44 libibumad-55mlnx37-1.55103.aarch64.rpm
+-rw-r--r-- 1 root    66352 Dec  2 00:44 libibverbs-utils-55mlnx37-1.55103.aarch64.rpm
+-rw-r--r-- 1 root    94376 Dec  2 00:44 librdmacm-utils-55mlnx37-1.55103.aarch64.rpm
+-rw-r--r-- 1 root  1130344 Dec  2 00:45 python3-pyverbs-55mlnx37-1.55103.aarch64.rpm
+-rw-r--r-- 1 root    46792 Dec  2 00:45 rdma-core-55mlnx37-1.55103.aarch64.rpm
+-rw-r--r-- 1 root    40832 Dec  2 00:45 srp_daemon-55mlnx37-1.55103.aarch64.rpm
+
+
+-rw-r--r-- 1 root   297584 Dec  2 00:45 opensm-devel-5.10.0.MLNX20211115.e645cc83-0.1.55103.aarch64.rpm
+-rw-r--r-- 1 root    81476 Dec  2 00:45 opensm-libs-5.10.0.MLNX20211115.e645cc83-0.1.55103.aarch64.rpm
+-rw-r--r-- 1 root    91480 Dec  2 00:45 opensm-static-5.10.0.MLNX20211115.e645cc83-0.1.55103.aarch64.rpm
+
+
+ucx-1.11.0-1.54103.aarch64.rpm         ucx-ib-1.12.0-1.55103.aarch64.rpm      ucx-xpmem-1.12.0-1.55103.aarch64.rpm
+ucx-cma-1.12.0-1.55103.aarch64.rpm     ucx-knem-1.12.0-1.55103.aarch64.rpm
+ucx-devel-1.11.0-1.54103.aarch64.rpm   ucx-rdmacm-1.12.0-1.55103.aarch64.rpm
+
+
+# mod　列表
+./
+./kernel-mft
+./kernel-mft/mst_pci.ko
+./kernel-mft/mst_pciconf.ko
+./srp
+./srp/scsi
+./srp/scsi/scsi_transport_srp.ko
+./srp/ib_srp.ko
+./isert
+./isert/ib_isert.ko
+./xpmem
+./xpmem/xpmem.ko
+./mlnx-nvme
+./mlnx-nvme/target
+./mlnx-nvme/target/nvmet-tcp.ko
+./mlnx-nvme/target/nvme-fcloop.ko
+./mlnx-nvme/target/nvmet.ko
+./mlnx-nvme/target/nvmet-fc.ko
+./mlnx-nvme/target/nvme-loop.ko
+./mlnx-nvme/target/nvmet-rdma.ko
+./mlnx-nvme/lpfc
+./mlnx-nvme/lpfc/lpfc.ko
+./mlnx-nvme/host
+./mlnx-nvme/host/nvme-tcp.ko
+./mlnx-nvme/host/qla2xxx.ko
+./mlnx-nvme/host/nvme.ko
+./mlnx-nvme/host/nvme-fabrics.ko
+./mlnx-nvme/host/nvme-rdma.ko
+./mlnx-nvme/host/nvme-core.ko
+./mlnx-nvme/host/nvme-fc.ko
+./mlnx-ofa_kernel
+./mlnx-ofa_kernel/compat
+./mlnx-ofa_kernel/compat/mlx_compat.ko
+./mlnx-ofa_kernel/net
+./mlnx-ofa_kernel/net/mlxdevm
+./mlnx-ofa_kernel/net/mlxdevm/mlxdevm.ko
+./mlnx-ofa_kernel/net/sunrpc
+./mlnx-ofa_kernel/net/sunrpc/xprtrdma
+./mlnx-ofa_kernel/net/sunrpc/xprtrdma/svcrdma.ko
+./mlnx-ofa_kernel/net/sunrpc/xprtrdma/rpcrdma.ko
+./mlnx-ofa_kernel/net/sunrpc/xprtrdma/xprtrdma.ko
+./mlnx-ofa_kernel/drivers
+./mlnx-ofa_kernel/drivers/base
+./mlnx-ofa_kernel/drivers/base/auxiliary.ko
+./mlnx-ofa_kernel/drivers/infiniband
+./mlnx-ofa_kernel/drivers/infiniband/sw
+./mlnx-ofa_kernel/drivers/infiniband/sw/rxe
+./mlnx-ofa_kernel/drivers/infiniband/sw/rxe/rdma_rxe.ko
+./mlnx-ofa_kernel/drivers/infiniband/hw
+./mlnx-ofa_kernel/drivers/infiniband/hw/efa
+./mlnx-ofa_kernel/drivers/infiniband/hw/efa/efa.ko
+./mlnx-ofa_kernel/drivers/infiniband/hw/i40iw
+./mlnx-ofa_kernel/drivers/infiniband/hw/i40iw/i40iw.ko
+./mlnx-ofa_kernel/drivers/infiniband/hw/bnxt_re
+./mlnx-ofa_kernel/drivers/infiniband/hw/bnxt_re/bnxt_re.ko
+./mlnx-ofa_kernel/drivers/infiniband/hw/mlx5
+./mlnx-ofa_kernel/drivers/infiniband/hw/mlx5/mlx5_ib.ko
+./mlnx-ofa_kernel/drivers/infiniband/hw/hns
+./mlnx-ofa_kernel/drivers/infiniband/hw/hns/hns-roce-hw-v1.ko
+./mlnx-ofa_kernel/drivers/infiniband/hw/hns/hns-roce.ko
+./mlnx-ofa_kernel/drivers/infiniband/hw/hns/hns-roce-hw-v2.ko
+./mlnx-ofa_kernel/drivers/infiniband/hw/cxgb4
+./mlnx-ofa_kernel/drivers/infiniband/hw/cxgb4/iw_cxgb4.ko
+./mlnx-ofa_kernel/drivers/infiniband/hw/mlx4
+./mlnx-ofa_kernel/drivers/infiniband/hw/mlx4/mlx4_ib.ko
+./mlnx-ofa_kernel/drivers/infiniband/hw/qedr
+./mlnx-ofa_kernel/drivers/infiniband/hw/qedr/qedr.ko
+./mlnx-ofa_kernel/drivers/infiniband/core
+./mlnx-ofa_kernel/drivers/infiniband/core/rdma_cm.ko
+./mlnx-ofa_kernel/drivers/infiniband/core/ib_cm.ko
+./mlnx-ofa_kernel/drivers/infiniband/core/ib_core.ko
+./mlnx-ofa_kernel/drivers/infiniband/core/rdma_ucm.ko
+./mlnx-ofa_kernel/drivers/infiniband/core/ib_uverbs.ko
+./mlnx-ofa_kernel/drivers/infiniband/core/ib_ucm.ko
+./mlnx-ofa_kernel/drivers/infiniband/core/iw_cm.ko
+./mlnx-ofa_kernel/drivers/infiniband/core/ib_umad.ko
+./mlnx-ofa_kernel/drivers/infiniband/ulp
+./mlnx-ofa_kernel/drivers/infiniband/ulp/srp
+./mlnx-ofa_kernel/drivers/infiniband/ulp/srp/ib_srp.ko
+./mlnx-ofa_kernel/drivers/infiniband/ulp/ipoib
+./mlnx-ofa_kernel/drivers/infiniband/ulp/ipoib/ib_ipoib.ko
+./mlnx-ofa_kernel/drivers/infiniband/ulp/isert
+./mlnx-ofa_kernel/drivers/infiniband/ulp/isert/ib_isert.ko
+./mlnx-ofa_kernel/drivers/infiniband/ulp/srpt
+./mlnx-ofa_kernel/drivers/infiniband/ulp/srpt/ib_srpt.ko
+./mlnx-ofa_kernel/drivers/infiniband/ulp/iser
+./mlnx-ofa_kernel/drivers/infiniband/ulp/iser/ib_iser.ko
+./mlnx-ofa_kernel/drivers/nvme
+./mlnx-ofa_kernel/drivers/nvme/target
+./mlnx-ofa_kernel/drivers/nvme/target/nvmet-rdma.ko
+./mlnx-ofa_kernel/drivers/nvme/host
+./mlnx-ofa_kernel/drivers/nvme/host/nvme-rdma.ko
+./mlnx-ofa_kernel/drivers/net
+./mlnx-ofa_kernel/drivers/net/ethernet
+./mlnx-ofa_kernel/drivers/net/ethernet/mellanox
+./mlnx-ofa_kernel/drivers/net/ethernet/mellanox/mlx5
+./mlnx-ofa_kernel/drivers/net/ethernet/mellanox/mlx5/core
+./mlnx-ofa_kernel/drivers/net/ethernet/mellanox/mlx5/core/mlx5_core.ko
+./mlnx-ofa_kernel/drivers/net/ethernet/mellanox/mlxfw
+./mlnx-ofa_kernel/drivers/net/ethernet/mellanox/mlxfw/mlxfw.ko
+./qlgc-qla2xxx
+./qlgc-qla2xxx/qla2xxx.ko
+./iser
+./iser/ib_iser.ko
+./knem
+./knem/knem.ko
+
+## 个数
+-bash-4.4# find ./ -name "*" |wc -l
+106
+

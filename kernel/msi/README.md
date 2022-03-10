@@ -139,3 +139,68 @@ $4 = {match = 0x0 <irq_stack_union>, select = 0x0 <irq_stack_union>,
 ```
 
 ## ACCESS_PRIVATE
+### admin_queue
+```
+int irq_activate(struct irq_desc *desc)
+{
+──────> struct irq_data *d = irq_desc_get_irq_data(desc);
+
+        if (!irqd_affinity_is_managed(d))
+                return irq_domain_activate_irq(d, false);
+        return 0;
+}
+```
+
+```
+$8 = {state_use_accessors = 84082688, node = 0, handler_data = 0x0 <irq_stack_union>, msi_desc = 0xffff88803bd81480, affinity = {{
+      bits = {18446744073709551615}}}, effective_affinity = {{bits = {1}}}}
+(gdb) p d->common->state_use_accessors
+$9 = 84082688
+
+(16)IRQD_IRQ_DISABLED
+(17)IRQD_IRQ_MASKED  
+
+(24)IRQD_SINGLE_TARGET
+(26)IRQD_CAN_RESERVE
+```
+
+## 获取最优的分配vector的cpu
+```
+/* Find the best CPU which has the lowest vector allocation count */
+static unsigned int matrix_find_best_cpu(struct irq_matrix *m,
+                    const struct cpumask *msk)
+{
+    unsigned int cpu, best_cpu, maxavl = 0;
+    struct cpumap *cm;
+
+    best_cpu = UINT_MAX;
+
+    for_each_cpu(cpu, msk) {
+        cm = per_cpu_ptr(m->maps, cpu);
+        //选择必须online，而且cm->available最多的cpu。
+        if (!cm->online || cm->available <= maxavl)
+            continue;
+        //将best_cpu返回
+        best_cpu = cpu;
+        maxavl = cm->available;
+    }
+    return best_cpu;
+}
+```
+其中, cm的值为 : 
+```
+(gdb) p *cm
+$1 = {available = 199, allocated = 0, managed = 2, managed_allocated = 0, initialized = true, online = true, alloc_map = {0, 0, 0, 0},
+  managed_map = {25769803776, 0, 0, 0}}
+```
+m 的值为:
+```
+(gdb) p *m
+$3 = {matrix_bits = 256, alloc_start = 32, alloc_end = 236, alloc_size = 204, global_available = 3974, global_reserved = 14,
+  systembits_inalloc = 3, total_allocated = 7, online_maps = 20, maps = 0x24e80, scratch_map = {1125912792793087, 0, 1,
+    18446726481523507200}, system_map = {1125904202858495, 0, 1, 18446726481523507200}}
+```
+
+
+## ？？？
+bitmap_find_next_zero_area_off -> find_next_bit

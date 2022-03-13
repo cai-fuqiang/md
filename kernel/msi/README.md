@@ -204,3 +204,106 @@ $3 = {matrix_bits = 256, alloc_start = 32, alloc_end = 236, alloc_size = 204, gl
 
 ## ？？？
 bitmap_find_next_zero_area_off -> find_next_bit
+
+
+## 暂记
+
+### irq_data->common 初始化
+整个irq_data最初的初始化，是在`alloc_descs->alloc_desc`过程中初始化
+
+`alloc_desc`中相关代码为：
+```
+static struct irq_desc *alloc_desc(int irq, int node, unsigned int flags,
+                   const struct cpumask *affinity,
+                   struct module *owner)
+{
+	...
+	desc_set_defaults(irq, desc, node, affinity, owner);
+	//将flags赋值给__irqd_to_state()
+	irqd_set(&desc->irq_data, flags);
+	...
+}
+
+```
+
+`desc_set_defaults`：
+```
+static void desc_set_defaults(unsigned int irq, struct irq_desc *desc, int node,
+                  const struct cpumask *affinity, struct module *owner)
+{
+	int cpu;
+	//↓↓↓↓+3
+	desc->irq_common_data.handler_data = NULL;
+	desc->irq_common_data.msi_desc = NULL;
+	
+	desc->irq_data.common = &desc->irq_common_data;
+	//desc->irq_data.irq赋值为参数irq, 实际上就是cat /proc/interrupts 第一列
+	desc->irq_data.irq = irq;
+	desc->irq_data.chip = &no_irq_chip;
+	desc->irq_data.chip_data = NULL;
+	irq_settings_clr_and_set(desc, ~0, _IRQ_DEFAULT_INIT_FLAGS);
+	irqd_set(&desc->irq_data, IRQD_IRQ_DISABLED);
+	irqd_set(&desc->irq_data, IRQD_IRQ_MASKED);
+	desc->handle_irq = handle_bad_irq;
+	desc->depth = 1;
+	desc->irq_count = 0;
+	desc->irqs_unhandled = 0;
+	desc->tot_count = 0;
+	desc->name = NULL;
+	desc->owner = owner;
+	for_each_possible_cpu(cpu)
+	    *per_cpu_ptr(desc->kstat_irqs, cpu) = 0;
+	desc_smp_init(desc, node, affinity);
+}
+```
+
+而flags来源于:`alloc_descs`传参
+```
+static int alloc_descs(unsigned int start, unsigned int cnt, int node,
+               const struct irq_affinity_desc *affinity,
+               struct module *owner)
+{
+	...
+	for (i = 0; i < cnt; i++) {
+		const struct cpumask *mask = NULL;
+		unsigned int flags = 0;
+		
+		if (affinity) {
+		    if (affinity->is_managed) {
+		        flags = IRQD_AFFINITY_MANAGED |
+		            IRQD_MANAGED_SHUTDOWN;
+		    }
+		    mask = &affinity->mask;
+		    node = cpu_to_node(cpumask_first(mask));
+		    affinity++;
+		}
+		
+		desc = alloc_desc(start + i, node, flags, mask, owner);
+		...
+	}
+	...
+}
+```
+
+可以看到，如果`affinity->is_managed`为真，则flags则带上
+```
+IRQD_AFFINITY_MANAGED
+IRQD_MANAGED_SHUTDOWN
+```
+
+而affinity则是在`irq_create_affinity_masks`中初始化:
+对于`affinity->is_managed`初始化，代码如下：
+```
+struct irq_affinity_desc *
+irq_create_affinity_masks(unsigned int nvecs, struct irq_affinity *affd)
+{
+	for (i = affd->pre_vectors; i < nvecs - affd->post_vectors; i++)
+    masks[i].is_managed = 1;
+
+	return masks;
+}
+```
+
+可以看到除了预留的，其余的(`[pre_vectors, post_vectors)`)
+都加上了`is_managed`这个标记。
+

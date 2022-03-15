@@ -226,4 +226,49 @@ cease recognition of any pending virtual interrupt;
 在64-bit模式中，软件可以通过CR8来访问local APIC's task-priority register(TPR). 确切来说，软件使用
 MOV from CR8和MOV to CR8 instruction(Section 10.8.6). 本章节将描述这些访问如何被虚拟化的。
 
+VMM可以虚拟化CR8-based APIC access通过设置`CR8-load exiting`和`CR8-store exiting`VM-execution 控制位，
+确保这些访问可以导致VM exits(Section 25.1.3). 或者，这里有一些方法用来虚拟化某些CR8-based APIC accesses
+并且没有VM exits.
+
+正常来说，执行MOV from CR8或者MOV to CR8不会造成fault or cause a VM exit accesses the
+APIC's TPR.但是，如果设置了`use TPR shadow` VM-execution 控制位为1， 这个执行将会
+被特殊处理。下面介绍这些细节：
+* MOV from CR8. 这个指令使用 源操作数VTPR 的 7:4 加载目的操作数的3:0 (Section 29.1.1)
+目的操作数的63:4位将会被清空
+* MOV to CR8. 这个指令使用源操作数0:3 加载到VTPR的7:4; VTPR的剩余部分(3:0 和 31:8)将会被
+清空。接下来，处理器将会进行TPR virtualization(Section 29.1.2)
+
+
+## 29.4 VIRTUALIZING MEMORY-MAPPED APIC ACCESSES
+(略)
+
+## 29.5 VIRTUALIZING MSR-BASED APIC ACCESSES
+(略)
+
+## 29.6 POSTED-INTERRUPT PROCESSING
+Posted-interrupt processing是处理器通过pending on the virtual-APIC page
+记录虚拟中断的一个特性。
+
+Posted-interrupt processing在设置`process posted interrupt` VM-execution
+控制字段后使能。这个过程的执行是为了回应当一个带着`posted-interrupt nofication 
+vector`的中断到达。在回应这样一个中断时，处理器处理记录在一个数据结构的virtual 
+interrupts, 该数据结构称作`posted-interrupt descriptor`. posted-interrupt nofication
+vector和posted-interrupt descriptor的地址都时VMCS中的字段。See Section 24.6.8
+
+
+如果`process posted interrupts`VM-execution控制字段为1，逻辑处理器使用一个64-byte
+的posted-interrupt descriptor，该描述符记录在posted-interrupt descriptor address.
+这个posted-interrupt descriptor有以下的格式:
+|Bit Position(s)|Name|Description|
+|----|----|----|
+|255:0|Posted-interrupt requestes|(1)|
+|256|Outstanding nofication|(2)|
+|511:257|Reserved for software and other agents|(3)|
+
+(1) 对于每个interrupt vector有一个bit。如果某一位为1，则表明这里有一个对应
+vector的posted-interrupt request
+(2) 如果改为被设置，则表明在bit 255:0 中存在一个或多个posted interrupts为完成
+notification
+(3) 这些位用于软件和系统中其他的agents(例如: chipset). 处理器不会修改这些bits
+
 

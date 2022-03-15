@@ -266,9 +266,20 @@ vector和posted-interrupt descriptor的地址都时VMCS中的字段。See Sectio
 |511:257|Reserved for software and other agents|(3)|
 
 (1) 对于每个interrupt vector有一个bit。如果某一位为1，则表明这里有一个对应
-vector的posted-interrupt request
+vector的posted-interrupt request<br/>
 (2) 如果改为被设置，则表明在bit 255:0 中存在一个或多个posted interrupts为完成
-notification
+notification<br/>
 (3) 这些位用于软件和系统中其他的agents(例如: chipset). 处理器不会修改这些bits
 
+the notation PIR(posted-interrupt requests)指的是在posted-interrupt descriptor
+中的256 posted-interrupt bits
 
+使用posted-interrupt descriptor不同于VMCS中其他引用的数据结构。这里有一个一般
+性的需求：软件会确保只有在没有逻辑处理器的current VMCS在VMX non-root操作模式
+下被引用的时候才可以修改该其中的数据结构。这个需求不适用于posted-interrupt descriptor.
+当然，这有一个另外的需求，这些modifications必须在locked read-modify-write指令的下完成。
+
+如果`external-interrupt exiting` VM-execution控制字段为1，任何未屏蔽的外部中断将
+导致一个VM exit(see Section 25.2).如果`process posted interrupts`VM-execution 控制字段也
+是1，这个行为将会改变，处理器处理一个外部中断的过程如下：
+1. 如果local APIC

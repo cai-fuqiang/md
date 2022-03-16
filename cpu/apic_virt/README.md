@@ -282,4 +282,42 @@ the notation PIR(posted-interrupt requests)指的是在posted-interrupt descript
 如果`external-interrupt exiting` VM-execution控制字段为1，任何未屏蔽的外部中断将
 导致一个VM exit(see Section 25.2).如果`process posted interrupts`VM-execution 控制字段也
 是1，这个行为将会改变，处理器处理一个外部中断的过程如下：
-1. 如果local APIC
+1. 如果local APIC is acknowledaged;它提供给处理器core一个interrupt vector, 这里成这个vector
+为`physical vector`
+2. 如果physical vector 和posted-interrupt notification vector相等，逻辑处理器将
+进行下一个步骤。否则，VM exit将会以接收到外部中断的情况触发VM exit;该vector被保存在
+VM-exit interruption-information 字段
+3. 处理器清空posted-interrupt descriptor 中的outstanding-nofication bit。该处理过程
+是原子的以确保描述符剩余部分是不会被修改的。
+4. 处理器向local APIC中的EOI register写入0; 取消来自local APIC的posted-interrupt
+nofication vector
+5. logical processor将PIR逻辑或到VIRR并且清空PIR。没有其他的agent可以在这次的操作过程中
+(逻辑或和清空)read or write a PIR bit(or group of bits)
+6. 逻辑处理器将RVI设置成老的RVI和PIR中最高级别的位的最大值；如果PIR中没有设置任何bit，
+RVI不会被修改。
+7. 逻辑处理器如在Section 29.2.1 描述那样去evaluates pending virtual interrupts.
+
+逻辑处理器在不可中断的状态下执行上面的步骤，如果步骤#7 会recognition of a virtual
+interrupt, 处理器将立刻deliver  the interrupt
+
+步骤#1 到 #7 发生在interrupt controller delivers 一个未屏蔽的外部中断到CPU core。
+下面的条目考虑了interrupt delivery几种情况:
+* interrupt delivery 可以发生在REP-prefixed指令的iterations中(至少在某个iteration已经
+完成后，在所有的iterations完成之前)。如果这发生了这种情况, 下面的条目描述了在
+posted-interrupt processing完成后, guest执行恢复前的一些操作:
+```
+    -- RIP指向REP-prefixed指令
+    -- RCX, RSI ,RDI都更新到本次iterations 完成后的情况
+    -- RFLAGS.RF=1
+``` 
+* interrupt delivery可以发生在当处理其处于active, HLT, 或者MWAIT的状态。
+如果逻辑处理器在收到中断到达之前已经在active 或者 MWAIT的状态，在完成#7步骤
+后将处于active 状态；如果当时处于HLT状态，他将在完成步骤#7后转会HLT状态(如果
+一个pending virtual interrupts被recognized, 逻辑处理器将会立即从HLT状态中
+唤醒)
+
+* interrupt delivery可以发生在逻辑处理器处于enclave状态。如果逻辑处理器在收到
+中断之前已经处于enclave状态, Asynchronous  Enclave Exit(AEX)将会在step #1到#7之间
+发生（Chapter 36).如果在step #1之前没有发生AEX并且在step #2之前没有发生 VM-exit，
+AEX将发生在VM exit delivered之前。
+

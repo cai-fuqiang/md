@@ -226,4 +226,98 @@ cease recognition of any pending virtual interrupt;
 在64-bit模式中，软件可以通过CR8来访问local APIC's task-priority register(TPR). 确切来说，软件使用
 MOV from CR8和MOV to CR8 instruction(Section 10.8.6). 本章节将描述这些访问如何被虚拟化的。
 
+VMM可以虚拟化CR8-based APIC access通过设置`CR8-load exiting`和`CR8-store exiting`VM-execution 控制位，
+确保这些访问可以导致VM exits(Section 25.1.3). 或者，这里有一些方法用来虚拟化某些CR8-based APIC accesses
+并且没有VM exits.
+
+正常来说，执行MOV from CR8或者MOV to CR8不会造成fault or cause a VM exit accesses the
+APIC's TPR.但是，如果设置了`use TPR shadow` VM-execution 控制位为1， 这个执行将会
+被特殊处理。下面介绍这些细节：
+* MOV from CR8. 这个指令使用 源操作数VTPR 的 7:4 加载目的操作数的3:0 (Section 29.1.1)
+目的操作数的63:4位将会被清空
+* MOV to CR8. 这个指令使用源操作数0:3 加载到VTPR的7:4; VTPR的剩余部分(3:0 和 31:8)将会被
+清空。接下来，处理器将会进行TPR virtualization(Section 29.1.2)
+
+
+## 29.4 VIRTUALIZING MEMORY-MAPPED APIC ACCESSES
+(略)
+
+## 29.5 VIRTUALIZING MSR-BASED APIC ACCESSES
+(略)
+
+## 29.6 POSTED-INTERRUPT PROCESSING
+Posted-interrupt processing是处理器通过pending on the virtual-APIC page
+记录虚拟中断的一个特性。
+
+Posted-interrupt processing在设置`process posted interrupt` VM-execution
+控制字段后使能。这个过程的执行是为了回应当一个带着`posted-interrupt nofication 
+vector`的中断到达。在回应这样一个中断时，处理器处理记录在一个数据结构的virtual 
+interrupts, 该数据结构称作`posted-interrupt descriptor`. posted-interrupt nofication
+vector和posted-interrupt descriptor的地址都时VMCS中的字段。See Section 24.6.8
+
+
+如果`process posted interrupts`VM-execution控制字段为1，逻辑处理器使用一个64-byte
+的posted-interrupt descriptor，该描述符记录在posted-interrupt descriptor address.
+这个posted-interrupt descriptor有以下的格式:
+|Bit Position(s)|Name|Description|
+|----|----|----|
+|255:0|Posted-interrupt requestes|(1)|
+|256|Outstanding nofication|(2)|
+|511:257|Reserved for software and other agents|(3)|
+
+(1) 对于每个interrupt vector有一个bit。如果某一位为1，则表明这里有一个对应
+vector的posted-interrupt request<br/>
+(2) 如果改为被设置，则表明在bit 255:0 中存在一个或多个posted interrupts为完成
+notification<br/>
+(3) 这些位用于软件和系统中其他的agents(例如: chipset). 处理器不会修改这些bits
+
+the notation PIR(posted-interrupt requests)指的是在posted-interrupt descriptor
+中的256 posted-interrupt bits
+
+使用posted-interrupt descriptor不同于VMCS中其他引用的数据结构。这里有一个一般
+性的需求：软件会确保只有在没有逻辑处理器的current VMCS在VMX non-root操作模式
+下被引用的时候才可以修改该其中的数据结构。这个需求不适用于posted-interrupt descriptor.
+当然，这有一个另外的需求，这些modifications必须在locked read-modify-write指令的下完成。
+
+如果`external-interrupt exiting` VM-execution控制字段为1，任何未屏蔽的外部中断将
+导致一个VM exit(see Section 25.2).如果`process posted interrupts`VM-execution 控制字段也
+是1，这个行为将会改变，处理器处理一个外部中断的过程如下：
+1. 如果local APIC is acknowledaged;它提供给处理器core一个interrupt vector, 这里成这个vector
+为`physical vector`
+2. 如果physical vector 和posted-interrupt notification vector相等，逻辑处理器将
+进行下一个步骤。否则，VM exit将会以接收到外部中断的情况触发VM exit;该vector被保存在
+VM-exit interruption-information 字段
+3. 处理器清空posted-interrupt descriptor 中的outstanding-nofication bit。该处理过程
+是原子的以确保描述符剩余部分是不会被修改的。
+4. 处理器向local APIC中的EOI register写入0; 取消来自local APIC的posted-interrupt
+nofication vector
+5. logical processor将PIR逻辑或到VIRR并且清空PIR。没有其他的agent可以在这次的操作过程中
+(逻辑或和清空)read or write a PIR bit(or group of bits)
+6. 逻辑处理器将RVI设置成老的RVI和PIR中最高级别的位的最大值；如果PIR中没有设置任何bit，
+RVI不会被修改。
+7. 逻辑处理器如在Section 29.2.1 描述那样去evaluates pending virtual interrupts.
+
+逻辑处理器在不可中断的状态下执行上面的步骤，如果步骤#7 会recognition of a virtual
+interrupt, 处理器将立刻deliver  the interrupt
+
+步骤#1 到 #7 发生在interrupt controller delivers 一个未屏蔽的外部中断到CPU core。
+下面的条目考虑了interrupt delivery几种情况:
+* interrupt delivery 可以发生在REP-prefixed指令的iterations中(至少在某个iteration已经
+完成后，在所有的iterations完成之前)。如果这发生了这种情况, 下面的条目描述了在
+posted-interrupt processing完成后, guest执行恢复前的一些操作:
+```
+    -- RIP指向REP-prefixed指令
+    -- RCX, RSI ,RDI都更新到本次iterations 完成后的情况
+    -- RFLAGS.RF=1
+``` 
+* interrupt delivery可以发生在当处理其处于active, HLT, 或者MWAIT的状态。
+如果逻辑处理器在收到中断到达之前已经在active 或者 MWAIT的状态，在完成#7步骤
+后将处于active 状态；如果当时处于HLT状态，他将在完成步骤#7后转会HLT状态(如果
+一个pending virtual interrupts被recognized, 逻辑处理器将会立即从HLT状态中
+唤醒)
+
+* interrupt delivery可以发生在逻辑处理器处于enclave状态。如果逻辑处理器在收到
+中断之前已经处于enclave状态, Asynchronous  Enclave Exit(AEX)将会在step #1到#7之间
+发生（Chapter 36).如果在step #1之前没有发生AEX并且在step #2之前没有发生 VM-exit，
+AEX将发生在VM exit delivered之前。
 

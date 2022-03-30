@@ -64,7 +64,7 @@ Section 29.1.3, Section 29.1.4和Section 29.1.5细节描述了虚拟化某些字
 * Virtual interrupt-command register(ICR_LO)
 * Virtual interrupt-command register(ICR_HI)
 
-29.1.2 TPR Virtualization
+### 29.1.2 TPR Virtualization
 处理器在下列操作中需要进行`TPR虚拟化`:
 (1) 对MOV to CR8指令的虚拟化
 (2) 对APIC-access page 的80H偏移的写操作虚拟化
@@ -109,7 +109,7 @@ PPR虚拟化只由TPR虚拟化，EOI虚拟化和VM entry触发。delivery 虚拟
 但是是另一种方式。(Section 29.2.2).其他操作均不会修改VPPR，即使修改SVI, VISR或者
 VTPR。
 
-29.1.4 EOI Virtualization
+### 29.1.4 EOI Virtualization
 处理器进行在下面的操作中进行`EOI 虚拟化`:
 (1) 对APIC-access page偏移BOH的写操作
 (2) WRMSR指令并且ECX= 80BH

@@ -341,4 +341,146 @@ pci segment至少存在一个该structure的实例
 一个设置了INCLUDE_PCI_ALL flags的DRHD
 
 ## 8.3.1 Device Scope Structure
+Device Scope Structure由 Device Scope Entries组成.
+每个Device Scope Entry可能被用作代表一个PCI endpoint device,
+a PCI sub-hierarchy, 或者 I/Ox APICs 或者 HPET(High Precision
+Event Timer)
+
+在这一节, 通用术语`PCI`被用作描述传统的PCI, PCI-X和PCI-Express
+设备. 相似的,通用术语`PCI-PCI bridge`被用作指作传统的PCI bridge,
+PCI-X bridges, PCI-Express root ports, 或者downstream ports of
+a PCI-Express switch.
+
+PCI sub-hierarchy被定义为PCI 控制器的集合,这些PCI 控制器位于
+特定PCI-PCI bridge的downstream.为了识别一个PCI sub-hierarchy,
+Device Scope Entry 只需要识别sub-hierarchy的parent PCI-PCI bridge.
+
+<table style="background-color:red">
+	<th>Filed</th>
+	<th>Byte Length</th>
+	<th>Byte Offset</th>
+	<th>Description</th>
+	<tr>
+		<td>Type</td>
+		<td>1</td>
+		<td>0</td>
+		<td>
+		The following values are defined for this field.
+		<dd>
+		• 0x01: PCI Endpoint Device - The device
+		identified by the ‘Path’ field is a PCI endpoint
+		device. This type must not be used in Device
+		Scope of DRHD structures with
+		INCLUDE_PCI_ALL flag Set.
+		</dd>
+		<dd>
+		• 0x02: PCI Sub-hierarchy - The device identified
+		by the ‘Path’ field is a PCI-PCI bridge. In this
+		case, the specified bridge device and all its
+		downstream devices are included in the scope.
+		This type must not be in Device Scope of DRHD
+		structures with INCLUDE_PCI_ALL flag Set.
+		</dd>
+		<dd>
+		• 0x03: IOAPIC - The device identified by the
+		‘Path’ field is an I/O APIC (or I/O SAPIC) device,
+		enumerated through the ACPI MADT I/O APIC
+		(or I/O SAPIC) structure.
+		</dd>
+		<dd>
+		• 0x04: MSI_CAPABLE_HPET 1 - The device
+		identified by the ‘Path’ field is an HPET Timer
+		Block capable of generating MSI (Message
+		Signaled interrupts). HPET hardware is reported
+		through ACPI HPET structure.
+		</dd>
+		<dd>
+		• 0x05: ACPI_NAMESPACE_DEVICE - The device
+		identified by the ‘Path’ field is an ACPI name-
+		space enumerated device capable of generating
+		DMA requests.
+		</dd>
+		Other values for this field are reserved for future
+		use.
+		<br/>
+		<br/>
+		接下来描述该字段的定义值:
+		<dd>
+		• 0x01: PCI Endpoint Device - `Path` 字段标识了
+		该设备是一个PCI endpoint device.
+		这个类型不能用在带有设置INCLUDE_PCI_ALL flags
+		的DRHD structures的Device Scope
+		</dd>
+		<dd>
+		• 0x02: PCI sub-hierarchy - `Path`字段标识了
+		该设备是一个PCI-PCI bridge. 在这种情况中,
+		这个被指定的bridge device 和它的所有的downstream
+		device都被包括在这个scope中. 
+		这个类型不能用在带有设置INCLUDE_PCI_ALL flags
+		的DRHD structures的Device Scope
+		</dd>
+		<dd>
+		• 0x03: IO-APIC- `Path`字段标识了
+		该设备是一个IO-APIC.(or I/O-SAPIC device),通过ACPI
+		MADT I/O APIC( or I/O-SAPIC)structure枚举
+		</dd>
+		<dd>
+		• 0x04: MSI_CAPABLE_HPET - <sup>1</sup>
+		`Path`字段标识了该设备是一个HPET Timer Block,并且
+		具有生成MSI的能力(Message Signaled interrupts).
+		HPET hardware 通过ACPI HEPT structure被报告.
+		</dd>
+		<dd>
+		• 0x05:ACPI_NAMESPACE_DEVICE -
+		`Path`字段标识该设备是能够生成 DMA 
+		请求的 ACPI 命名空间枚举设备。
+		</dd>
+		其他值被预留用作未来使用.
+	</tr>
+	<tr>
+		<td>Length</td>	
+		<td>1</td>	
+		<td>1</td>	
+		<td>
+		Length of this Entry in Bytes. (6 + X), where X is the
+		size in bytes of the “Path” field.
+		</br></br>
+		这个条目的长度,以Byte为单位.(6+X),其中X是`Path`字段长度
+		(以Byte为单位)
+		</td>	
+	</tr>
+	<tr>
+		<td>Reserved</td>	
+		<td>2</td>	
+		<td>2</td>	
+		<td>Reserved(0)</td>
+	</tr>
+	<tr>
+		<td>Enumeration ID</td>	
+		<td>1</td>	
+		<td>4</td>	
+		<td>
+		When the ‘Type’ field indicates ‘IOAPIC’, this field
+		provides the I/O APICID as provided in the I/O APIC
+		(or I/O SAPIC) structure in the ACPI MADT (Multiple
+		APIC Descriptor Table).
+		</br>
+		When the ‘Type’ field indicates ‘MSI_CAPABLE_HPET’,
+		this field provides the ‘HPET Number’ as provided in
+		the ACPI HPET structure for the corresponding Timer
+		Block.
+		</br>
+		When the ‘Type’ field indicates
+		‘ACPI_NAMESPACE_DEVICE’, this field provides the
+		“ACPI Device Number” as provided in the ACPI
+		Name-space Device Declaration (ANDD) structure for
+		the corresponding ACPI device.
+		</br>
+		This field is treated reserved (0) for all other ‘Type’
+		fields.
+		</br>
+		</br>
+		</td>
+	</tr>
+</table>
 

@@ -404,6 +404,7 @@ Device Scope Entry 只需要识别sub-hierarchy的parent PCI-PCI bridge.
 		use.
 		<br/>
 		<br/>
+		<font color=gray face="黑体" size=2>
 		接下来描述该字段的定义值:
 		<dd>
 		• 0x01: PCI Endpoint Device - `Path` 字段标识了
@@ -436,6 +437,7 @@ Device Scope Entry 只需要识别sub-hierarchy的parent PCI-PCI bridge.
 		请求的 ACPI 命名空间枚举设备。
 		</dd>
 		其他值被预留用作未来使用.
+		</font>
 	</tr>
 	<tr>
 		<td>Length</td>	
@@ -478,9 +480,160 @@ Device Scope Entry 只需要识别sub-hierarchy的parent PCI-PCI bridge.
 		</br>
 		This field is treated reserved (0) for all other ‘Type’
 		fields.
-		</br>
-		</br>
+		</br></br>
+		<font color=gray face="黑体" size=2>
+		<table>
+			<th>`Type` field value</th>
+			<th>含义</th>	
+			<tr>
+				<td>IOAPIC</td>
+				<td>
+				该字段提供I/O APICID ,该ID在ACPI MADT(Multiple APIC
+				Descriptor Table)结构中被提供.
+				</td>
+			</tr>
+			<tr>
+				<td>MSI_CAPABLE_HPET</td>
+				<td>
+				该字段提供了`HPET` number, 该字段在相应的 Timer 
+				Block中的 ACPI HEPT 结构体中被提供.
+				</td>
+			</tr>
+			<tr>
+				<td>ACPI_NAMESPACE_DEVICE</td>
+				<td>
+				这个字段提供了`ACPI Device Number`, 该字段在
+				相应的APCI device中的ACPI Name-space Device 
+				Declaration(ANDD)结构体中被提供.
+				</td>
+			</tr>
+		</table>
+		该字段在其他值的`Type`中按照预留对待(值为0)
+		</font>
+		</td>
+	</tr>
+	<tr>
+		<td>Start Bus Number</td>
+		<td>1</td>
+		<td>5</td>
+		<td>
+		This field describes the bus number (bus number of
+		the first PCI Bus produced by the PCI Host Bridge)
+		under which the device identified by this Device
+		Scope resides.
+		</br></br>
+		<font color=gray face="黑体">
+		这个字段描述了由该Device Scope 表示的设备所在的
+		bus号(由PCI Host Bridge提供的第一个PCI Bus的bus 
+		号),
+		</font>
+		</td>
+	</tr>
+	<tr>
+		<td>Path</td>
+		<td>2 * N</td>
+		<td>6</td>
+		<td>
+		Describes the hierarchical path from the Host Bridge
+		to the device specified by the Device Scope Entry.
+		For example, a device in a N-deep hierarchy is
+		identified by N {PCI Device Number, PCI Function
+		Number} pairs, where N is a positive integer. Even
+		offsets contain the Device numbers, and odd offsets
+		contain the Function numbers.
+		</br></br>
+		The first {Device, Function} pair resides on the bus
+		identified by the ‘Start Bus Number’ field. Each
+		subsequent pair resides on the bus directly behind
+		the bus of the device identified by the previous pair.
+		The identity (Bus, Device, Function) of the target
+		device is obtained by recursively walking down these
+		N {Device, Function} pairs.
+		</br></br>
+		If the ‘Path’ field length is 2 bytes (N=1), the Device
+		Scope Entry identifies a ‘Root-Complex Integrated
+		Device’. The requester-id of ‘Root-Complex
+		Integrated Devices’ are static and not impacted by
+		system software bus rebalancing actions.
+		</br></br>
+		If the ‘Path’ field length is more than 2 bytes (N >
+		1), the Device Scope Entry identifies a device behind
+		one or more system software visible PCI-PCI
+		bridges. Bus rebalancing actions by system software
+		modifying bus assignments of the device’s parent
+		bridge impacts the bus number portion of device’s
+		requester-id.
+		</br></br>
+		</br></br>
+		<font color=gray face="黑体" size=2>
+		描述了从Host Bridge到 Device Scope Entry 所要识别的
+		device 的层级性质的路径.举个例子, 一个N-hierarchy的
+		device可以被认为N个{PCI Device Number, PCI Function
+		Number}的pair, 其中N 是正整数,偶数便宜包含Device Number,
+		基数偏移包含 Function Number
+		</br></br>
+		第一个{Device, Function} pair位于由`Start Bus Number`
+		标识的总线向.每个下一级的pair 在前一对标识的设备的总线
+		后面的总线上. target device的identity(Bus, Device, Function)
+		可以通过递归的遍历N个{Device Function} pairs获取.
+		</br></br>
+		如果`Path`字段长度是2 bytes(N=1),这个 Device  Scope
+		Entry 表明是一个`Root-Complex Integrated Device`.
+		`Root-Complex Integrated Devices`的requester-id是静态的,
+		并且不受系统软件bus rebalancing 行为的影响.
+		</br></br>
+		如果`Path`字段的长度大于2 bytes(N>1).这个Device Scope
+		Entry 表明这个设备位于一个或多个系统软件可见的PCI-PCI
+		bridges. 通过系统软件修改bus assignments 的Bus 
+		rebalancing行为影响device requester-id的bus number部分.
+		</font>
 		</td>
 	</tr>
 </table>
+
+1. An HPTE Timer Block is capable of MSI interrupt generation 
+if any of the Timers in the Timer Block reports 
+FSB_INTERRUPT_DELIVERY capability in the Timer Configuration 
+and Capability Registers. HPET Timer Blocks not capable of 
+MSI interrupt generation (and instead have their interrupts 
+routed through I/OxAPIC)are not reported in the Device Scope.
+
+<font color=gray face="黑体" size=2>
+如果在任何的在Timer Block 的Timers在Timer Configuration和
+Capability Registers中报告了FSB_INTERRUPT_DELIVERY capability
+该HPET Timer Block具有能产生MSI中断的能力. Device Scope中不报告
+HPET Timer Blocks没有产生MSI interrupt 能力的HPET Timer Blocks
+(让它们通过I/OxAPIC路由)
+</font>
+
+The following pseudocode describes how to identify the device 
+specified through a Device Scope structure:
+
+<font color=gray face="黑体" size=2>
+接下来的伪代码描述了通过Device Scope structure识别指定的设备.
+</font>
+
+```
+n = (DevScope.Length - 6) / 2;		// number of entries in the ‘Path’ field
+type = DevScope.Type;				// type of device
+bus = DevScope.StartBusNum;			// starting bus number
+dev = DevScope.Path[0].Device;		// starting device number
+func = DevScope.Path[0].Function;	// starting function number
+i = 1;
+while (--n) {
+	// secondary bus# from config reg.
+	bus = read_secondary_bus_reg(bus, dev, func);
+	// read next device number
+	dev = DevScope.Path[i].Device;
+	func = DevScope.Path[i].Function;
+	// read next function number
+	i++;
+}
+source_id = {bus, dev, func};
+// if ‘type’ indicates ‘IOAPIC’, DevScope.EnumID
+// provides the I/O APICID as reported in the ACPI MADT
+target_device = {type, source_id};   
+```
+
+#### 8.3.1.1 Reporting Scope for I/OxAPICs
 

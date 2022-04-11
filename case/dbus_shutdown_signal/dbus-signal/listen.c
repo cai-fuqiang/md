@@ -62,7 +62,6 @@ void listen_signal()
         }
         dbus_message_unref(msg);
     }//End of while
-       
 }
 int main( int argc , char ** argv ){
     listen_signal();

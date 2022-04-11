@@ -744,7 +744,7 @@ DRHD structure).
 <font color=gray face="黑体" size=2>
 对于报告了interrupt remapping 能力的平台(在DMAR structure 中设置了
 INTR_REMAP 标记位), 平台中通过ACPI MADT报告的每个I/OxAPIC必须在
-相应的remapping haredware units的Device Scope中显式枚举
+相应的remapping hardware units的Device Scope中显式枚举
 </font>
 
 * For I/OxAPICs that are PCI-discoverable, the source-id for 
@@ -810,4 +810,181 @@ the ‘Start Bus Number’ and ‘Path’ field in the Device Scope
 structure together provides the unique 16-bit source-id 
 allocated by the platform for the MSI-capable HPET Timer Block.
 
-## 
+## 8.3.1.4 Device Scope Example
+This section provides an example platform configuration with 
+multiple remapping hardware units. The configurations described 
+are hypothetical examples, only intended to illustrate the Device 
+Scope structures.
+
+<font color=gray face="黑体" size=2>
+该章节提供了一个例子,该平台配置了多个remapping hardware units.
+所描述的实例是假想的,仅用于说明Device Scope structures
+</font>
+<br/><br/>
+Figure 8-31 illustrates a platform configuration with a single 
+PCI segment and host bridge (with a starting bus number of 0), 
+and supporting four remapping hardware units as follows:
+
+1. Remapping hardware unit #1 has under its scope all devices 
+downstream to the PCI-Express root port located at (dev:func) 
+of (14:0).
+2. Remapping hardware unit #2 has under its scope all devices 
+downstream to the PCI-Express root port located at (dev:func) 
+of (14:1).
+3. Remapping hardware unit #3 has under its scope a Root-Complex 
+integrated endpoint device located at (dev:func) of (29:0).
+4. Remapping hardware unit #4 has under its scope all other PCI 
+compatible devices in the platform not explicitly under the scope 
+of the other remapping hardware units. In this example, this
+includes the integrated device at (dev:func) at (30:0), and all 
+the devices attached to the south bridge component. The I/OxAPIC 
+in the platform (I/O APICID = 0) is under the scope of this
+remapping hardware unit, and has a BIOS assigned bus/dev/function 
+number of (0,12,0).
+
+<font color=gray face="黑体" size=2>
+图片8-31演示了一个带有一个PCI segment和host bridge(有一个0 的start 
+bus number) 的平台配置. 并且支持了下面的四个remapping hardware units:
+
+<table>
+	<th>
+	Remapping <br/>hardware <br/>unit index
+	</th>
+	<th>Device Scope</th>
+	<tr>
+		<td>#1</td>
+		<td>
+		PCI-Express root port (dev:func)(14:0) downstream下的所有
+		的设备
+		</td>
+	</tr>
+	<tr>
+		<td>#2</td>
+		<td>
+		PCI-Express root port (dev:func)(14:1) downstream下的所有
+		的设备
+		</td>
+	</tr>
+	<tr>
+		<td>#3</td>
+		<td>
+		Root-Complex integrated endpoint device (dev:func)(29:0)
+		</td>
+	</tr>
+	<tr>
+		<td>#4</td>
+		<td>
+		这个scope下有所有除了在平台中的其他的remapping hardware 
+		unit下的PCI兼容的设备. 在这个例子中,包括了(dev:func)(30:0)
+		这个 integrated device和所有连接到南桥上的设备.平台中的
+		I/OxAPIC(I/O APICID=0)也在这个remapping haredare unit的device 
+		scope中, 该I/OxAPIC分配的bus/dev/function位(0,12,0)
+		</td>
+	</tr>
+</table>
+</font>
+
+![hypothetical_platform_cfg](pic/hypothetical_platform_cfg.png)
+
+This platform requires 4 DRHD structures. The Device Scope fields 
+in each DRHD structure are described as below.
+* Device Scope for remapping hardware unit #1 contains only one 
+Device Scope Entry, identified as [2, 8, 0, 0, 0, 14, 0].
+	+ System Software uses the Entry Type field value of 0x02 to 
+	conclude that all devices downstream of the PCI-PCI bridge 
+	device at PCI Segment 0, Bus 0, Device 14, and Function 0
+	are within the scope of this remapping hardware unit.
+* Device Scope for remapping hardware unit #2 contains only one 
+Devicb Scope Entry, identified as [2, 8, 0, 0, 0, 14, 1].
+	+ System Software uses the Entry Type field value of 0x02 to 
+	conclude that all devices downstream of the PCI-PCI bridge 
+	device at PCI Segment 0, Bus 0, Device 14, and Function 1
+	are within the scope of this remapping hardware unit.
+* Device Scope for remapping hardware unit #3 contains only one 
+Device Scope Entry, identified as [1, 8, 0, 0, 0, 29, 0].
+	+ System software uses the Type field value of 0x1 to conclude 
+	that the scope of remapping hardware unit #3 includes only the 
+	endpoint device at PCI Segment 0, Bus 0, Device 29 and Function 0.
+* Device Scope for remapping hardware unit #4 contains only one 
+Device Scope Entry, identified as [3, 8, 0, 1, 0, 12, 0]. Also, 
+the DHRD structure for remapping hardware unit #4 indicates the
+INCLUDE_PCI_ALL flag. This hardware unit must be the last in the 
+list of hardware unit definition structures reported.
+	+ System software uses the INCLUDE_PCI_ALL flag to 
+	conclude that all PCI compatible devices that are not explicitly 
+	enumerated under other remapping hardware units are in the 
+	scope of remapping unit #4. Also, the Device Scope Entry 
+	with Type field value of 0x3 is used to conclude that the 
+	I/OxAPIC (with I/O APICID=0 and source-id of [0,12,0]) is 
+	under the scope of remapping hardware unit #4.
+
+<font color=gray face="黑体" size=2>
+<table>
+	<th>
+		Remapping <br/>hardware <br/>unit index
+	</th>
+	<th>Entry Type field</th>
+	<th>Device Scope </br>Entry value</th>
+	<th>Device scope</th>
+	<tr>
+		<td>#1</td>
+		<td>0x02</td>
+		<td>[2, 8, 0, 0, 0, 14, 0]</td>
+		<td>
+		downstream of PCI-PCI bridge(0000:00:14,0)
+		</td>
+	</tr>
+	<tr>
+		<td>#2</td>
+		<td>0x02</td>
+		<td>[2, 8, 0, 0, 0, 14, 1]</td>
+		<td>
+		downstream PCI-PCI bridge(0000:00:14.1)
+		</td>
+	</tr>
+	<tr>
+		<td>#3</td>
+		<td>0x01</td>
+		<td>[1, 8, 0, 0, 0, 29, 0]</td>
+		<td>
+		endpoint device (0000:00:29.0)
+		</td>
+	</tr>
+	<tr>
+		<td>#4</td>
+		<td>
+			0x03
+			(DRBD
+		</td>
+		<td>[3, 8, 0, 0, 0, 12, 0]</td>
+		<td>
+		系统软件使用INCLUDE_PCI_ALL flags来表明<br/>
+		未在其他的reammping hardware unit显式枚举的<br/>
+		PCI兼容设备都在remapping unit #4中csope中.<br/>
+		另外Type field value 0x3用来表明I/OxAPIC<br/>
+		(I/O APICID=0并且source-id = (00:12.0) )<br/>
+		在remapping hardware unit #4的scope中
+		</td>
+	</tr>
+</table>
+</font>
+
+<!--
+<table>
+	<tr>
+	<td rowspan="3">3</td>
+	<td>1</td>
+	<td>1</td>
+	</tr>
+	<tr>
+	<td>1</td>
+	<td>1</td>
+	</tr>
+	<tr>
+	<td>1</td>
+	<td>1</td>
+	</tr>
+</table>
+</table>
+</font>
+-->

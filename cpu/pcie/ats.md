@@ -11,7 +11,7 @@ Typically, the processing includes access rights checking to insure that the DMA
 is allowed to access the referenced memory location(s).
 
 <font color=gray face="黑体" size=2>
-大部分现代系统架构对I/O Functions 的DMA (bus mastering)的地址转换作了准备.
+大部分现代系统架构对I/O Functions 的DMA (bus mastering)的地址转换作了规定.
 在许多实现中, 通常的做法是假定CPU 和I/O Fucntions看到的是相同的物理地址空间.
 而在其他情况下并非如此.地址以"handle"的方式被编程进I/O Function,该地址由Root 
 Complex(RC)处理. 这个处理的结果通常是翻译为 central complex 中的physical memory
@@ -308,34 +308,172 @@ a RP to the Function.
 			Completions 打乱了原有ATS Translation Request的顺序
 			</li>
 		</ul>
+		<li>
+		请求的地址可能是非法的.RC需要产生一个Translation Completion
+		标识请求的地址是不可访问的
+		</li>
 	</ul>
 	</li>
 </ol>
 </font>
 
 
-When the Function receives the ATS Translation Completion and either updates its ATC to reflect the translation or notes
-that a translation does not exist. The Function proceeds with processing its work request and generates subsequent
-requests using either a translated address or an untranslated address based on the results of the Completion.
-a. Similar to Read Completions, a Function is required to allocate resource space for each completion(s) without
-causing backpressure on the PCIe Link.
-b. A Function is required to discard Translation Completions that might be “stale”. Stale Translation Completions
-can occur for a variety of reasons.
-As one can surmise, ATS Translation Request and Translation Completion processing is conceptually similar and, in
-many respects, identical to PCIe Read Request and Read Completion processing. This is intentional to reduce design
-complexity and to simplify integration of ATS into existing and new PCIe-based solutions. Keeping this in mind, ATS
-requires the following:
-• ATS capable components must interoperate with [PCIe-1.1] compliant components.
-• ATS is enabled through a new Capability and associated configuration structure. To enable ATS, software must
-detect this Capability and enable the Function to issue ATS TLP. If a Function is not enabled, the Function is
-required not to issue ATS Translation Requests and is required to issue all DMA Read and Write Requests with
-the TLP AT field set to “untranslated”.
-• ATS TLPs are routed using either address-based or Requester ID (RID) routing.
-• ATS TLPs are required to use the same ordering rules as specified in this specification.
-• ATS TLPs are required to flow unmodified through [PCIe-1.1] compliant Switches.
-• A Function is permitted to intermix translated and untranslated requests.
-• ATS transactions are required not to rely upon the address field of a memory request to communicate
-additional information beyond its current use as defined by the PCI-SIG.
+When the Function receives the ATS Translation Completion and either 
+updates its ATC to reflect the translation or notes that a translation 
+does not exist. The Function proceeds with processing its work request 
+and generates subsequent requests using either a translated address 
+or an untranslated address based on the results of the Completion.
+* Similar to Read Completions, a Function is required to allocate 
+resource space for each completion(s) without causing backpressure 
+on the PCIe Link.
+* A Function is required to discard Translation Completions that 
+might be “stale”. Stale Translation Completions can occur for a 
+variety of reasons.
+
+<font color=gray face="黑体" size=2>
+当一个Function收到了ATS Translation Completion并且更新了这个translation
+对应的ATC或者发现这个translation不存在. (应该是该function没有发出过 
+ATS Request). 该 Function 继续处理他的工作请求并且接下来产生的请求根据
+Completion的结果使用已经翻译过的地址或者未翻译的地址
+<ul>
+	<li>
+	和Read Completions相似, Function需要在当前PCIe link不产生backpressure
+	的情况下, 为每个compleions分配resource space
+	</li>
+	<li>
+	Function 需要丢弃已经"stale"(实效的)Translation Completions. Stale
+	Translation Completion可能由于不同的原因产生
+	</li>
+</ul>
+</font>
+
+As one can surmise, ATS Translation Request and Translation Completion 
+processing is conceptually similar and, in many respects, identical to 
+PCIe Read Request and Read Completion processing. This is intentional 
+to reduce design complexity and to simplify integration of ATS into existing 
+and new PCIe-based solutions. Keeping this in mind, ATS requires the following:
+* ATS capable components must interoperate with [PCIe-1.1] compliant components.
+* ATS is enabled through a new Capability and associated configuration 
+ structure. To enable ATS, software must detect this Capability and enable 
+ the Function to issue ATS TLP. If a Function is not enabled, the Function is
+ required not to issue ATS Translation Requests and is required to issue all 
+ DMA Read and Write Requests with the TLP AT field set to “untranslated”.
+* ATS TLPs are routed using either address-based or Requester ID (RID) routing.
+* ATS TLPs are required to use the same ordering rules as specified in 
+ this specification.
+* ATS TLPs are required to flow unmodified through [PCIe-1.1] compliant Switches.
+* A Function is permitted to intermix translated and untranslated requests.
+* ATS transactions are required not to rely upon the address field of a 
+ memory request to communicate additional information beyond its current 
+ use as defined by the PCI-SIG.
+
+<font color=gray face="黑体" size=2>
+作为推测, ATS Translation Request 和Translation Completion 处理在概念上
+相似.并且在很多方面与PCIe Read Request和Read Completion处理上一致. 这是
+刻意为了减少设计的复杂性,并简化集成ATS进现有的和新的PCIe-based 解决方案
+牢记这一点，ATS 需要遵守以下方面：
+
+<ul>
+	<li>
+	支持 ATS 的组件必须与符合 [PCIe-1.1] 的组件 交互。
+	</li>
+	<li>
+	ATS 需要通过一个新的 Capability 和相关的configuration structure enable.
+	为了enable ATS, 软件必须识别这个 Capability 并且使能该 Function 来提交
+	ATS TLP. 如果一个Function 没有 enable, Function 不能提交 ATS Translation
+	Request 并且提交的 DMA Read 和 Write Request 的TLP 中的AT filed 需要设置
+	成"untranslated"
+	</li>
+	<li>
+	ATS TLPs 可以通过 address-based 或者 Requester ID (RID) 路由
+	</li>
+	<li>
+	ATS TLPs 需要 未经修改的通过[PCIe-1.1] compliant Switches.
+	</li>
+	<li>
+	Function 允许去混合 translated 和 untranslated request
+	</li>
+	<li>
+	要求 ATS translation 不依赖内存请求的地址字段传递当前PCI-SIG之外
+	的额外信息
+	</li>
+</ul>
+</font>
+
+> IMPLEMENTATION NODE
+>> Adress Range Overlap
+>>> It is likely that the untranslated and translated address range 
+>>> will overlap, perhaps in their entirety. This is not a
+>>> requirement of ATS but may be an implementation constraint on 
+>>> the TA so that memory requests will be properly routed.
+
+<font color=gray face="黑体" size=2>
+Address Range Overlap(重叠)
+untranslated 和 translated address range 很可能发生重叠, 也可能发生了
+全部的重叠.这不是ATS的需求,但是这可能对TA的实现限制, 以便正确路由内存
+请求
+</font>
+
+In contrast to the prior example, Figure 10-3 illustrates an 
+example Multi-Function Device. In this example Device, there
+are three Functions. Key points to note in Figure 10-3 are:
+
+* Each ATC is associated with a single Function. Each ATS-capable 
+Function must be able to source and sink at least one of each ATS 
+Translation Request or Translation Completion type.
+* Each ATC is configured and accessed on a per Function basis. A 
+Multi-Function Device is not required to implement ATS on every 
+Function.
+* If the ATC implementation shares resources among a set of 
+Functions, then the logical behavior is required to
+be consistent with fully independent ATC implementations.
+
+<font color=gray face="黑体" size=2>
+对比前一个例子, Figure 10_3 举例说明了一个Multi-Function Device.
+在这个例子中的Device, 有三个Functions. Figure 10-3 需要注意的关键点
+如下:
+
+<ul>
+	<li>
+	每个ATC和一个单独的Function相关. 每个ATS-capable Function 必须
+	能够去source and sick至少 ATS Translation Request 或 Translation
+	Completion 一种
+	</li>
+	<li>
+	每个ATC都基于每个Function进行配置和访问. 一个 Multi-Function设备
+	不需要在每个Function上
+	</li>
+	<li>
+	</li>
+</ul>
+</font>
+
+![Figure_10_3](pic/muti_func_dev.png)
+
+Independent of the number of Functions within a Device, the 
+following are required:
+* A Function is required not to issue any TLP with the AT 
+field set unless the address within the TLP was obtained
+through the ATS Translation Request and Translation Completion 
+protocol.
+* Each ATC is required to only be populated using the ATS 
+protocol; i.e., each entry within the ATC must be filled
+via an ATS Translation Completion in response to the Function 
+issuing an ATS Translation Request for a given address.
+* Each ATC cannot be modified except through the ATS protocol. 
+That is:
+	+ Host system software cannot modify the ATC other than 
+	through the protocols defined in this specification except 
+	to invalidate one or more translations in an ATC. A Device 
+	or Function reset would be an example of an operation 
+	performed by software to change the contents of the ATC, but a
+	reset is only allowed to invalidate entries not modify their contents.
+	+ It must not be possible for host system software to 
+	use software executing on the Device to modify the ATC.
+
+<font color=gray face="黑体" size=2>
+
+</font>
 
 [^1]:All references within this  chapter to a Device apply equally to 
 a PCIe Device or a Root Complex Integrated  Endpoint. ATS does 
@@ -343,3 +481,6 @@ not delineate between these two types in terms of requirements,
 semantics, configuration, error handling, etc. From a software perspective, an 
 ATS-capable Root Complex Integrated Endpoint must behave the same as an 
 ATS-capable non-integrated Device. 
+
+<font color=gray face="黑体" size=2>
+</font>

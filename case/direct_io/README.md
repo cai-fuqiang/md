@@ -843,4 +843,91 @@ index 9f5e323e..dc83370c 100644
 #21 0x0000000000000000 in ?? ()
 ```
 
+可以看到在进程退出时, 在函数`exit_task_work`中, 执行task work, 其中有个task
+work 是 `___fput`, 在`____fput`中最终会调用到`truncate_indoe_page`, 其中lstart =
+0,  说明是要把所有的page cache删除, 这些流程不再详述.
+
+比较关心的是, `____fput`是怎么加入到task work list中的.
+通过查看代码并调试得知, 在fput函数中操作了上述内容:
+
+```cpp
+void fput(struct file *file)
+{
+    if (atomic_long_dec_and_test(&file->f_count)) {
+        struct task_struct *task = current;
+
+        if (likely(!in_interrupt() && !(task->flags & PF_KTHREAD))) {
+            init_task_work(&file->f_u.fu_rcuhead, ____fput);
+            if (!task_work_add(task, &file->f_u.fu_rcuhead, true))
+                return;
+            /*
+             * After this task has run exit_task_work(),
+             * task_work_add() will fail.  Fall through to delayed
+             * fput to avoid leaking *file.
+             */
+        }
+
+        if (llist_add(&file->f_u.fu_llist, &delayed_fput_list))
+            schedule_delayed_work(&delayed_fput_work, 1);
+    }
+}
+```
+可以看到, 在`file->f_count`计数器 = 0 时, fput会做这个操作.
+通过gdb调试,获取函数堆栈:
+
+```
+#0  fput (file=0xffff88803b7d3f00) at fs/file_table.c:341
+#1  0xffffffff814991d1 in filp_close (filp=0xffff88803b7d3f00, id=0xffff88803b73c000) at fs/open.c:1146
+#2  0xffffffff814e25f4 in close_files (files=0xffff88803b73c000) at fs/file.c:388
+#3  0xffffffff814e271d in put_files_struct (files=0xffff88803b73c000) at fs/file.c:416
+#4  0xffffffff814e2824 in exit_files (tsk=0xffff88803a070d80) at fs/file.c:445
+#5  0xffffffff810f2d11 in do_exit (code=2) at kernel/exit.c:870
+#6  0xffffffff810f312c in do_group_exit (exit_code=2) at kernel/exit.c:979
+#7  0xffffffff8110e39a in get_signal (ksig=0xffffc900002abda0) at kernel/signal.c:2575
+#8  0xffffffff8103d0b9 in do_signal (regs=0xffffc900002abf58) at arch/x86/kernel/signal.c:816
+#9  0xffffffff810068c2 in exit_to_usermode_loop (regs=0xffffc900002abf58, cached_flags=4) at arch/x86/entry/common.c:162
+#10 0xffffffff81006b1e in prepare_exit_to_usermode (regs=0xffffc900002abf58) at arch/x86/entry/common.c:197
+#11 0xffffffff81006d41 in syscall_return_slowpath (regs=0xffffc900002abf58) at arch/x86/entry/common.c:268
+#12 0xffffffff81006ee6 in do_syscall_64 (nr=35, regs=0xffffc900002abf58) at arch/x86/entry/common.c:293
+#13 0xffffffff8220007c in entry_SYSCALL_64 () at arch/x86/entry/entry_64.S:175
+```
+
+可以看到,该流程是在进程exit时, 把打开的文件全部关闭的流程(具体函数不再分析),
+所以这根小程序中sleep的位置有关, sleep加到了close函数前面
+```
+int main(){
+		...
+        sleep(1000);
+        close(fd);
+        io_destroy(ctx);
+        return 0;
+}
+
+```
+在进程被kill时, 进程未调用close(), 所以在进程exit()时,执行了close的流程, 
+触发了pagecache invalidate
+
+那么, 如果在sleep之前调用close呢?
+测试结果如下:
+
+```
+root@runninglinuxkernel:~/aio# dd if=/dev/zero of=/dev/nvme0n1 bs=1M count=2
+2+0 records in
+2+0 records out
+2097152 bytes (2.1 MB, 2.0 MiB) copied, 0.0225383 s, 93.0 MB/s
+root@runninglinuxkernel:~/aio# ./main &
+[1] 1507
+root@runninglinuxkernel:~/aio# io_setup success
+open: Success
+posix_memalign: Success
+io_submit solve 1 iov
+io_getevents solve 1 iov
+
+root@runninglinuxkernel:~/aio#  xxd -l 64 -s 1048576 /dev/nvme0n1
+00100000: 6865 6c6c 6f20 7878 7878 7878 7878 7878  hello xxxxxxxxxx
+00100010: 7878 7878 7878 7878 7878 7878 7878 7878  xxxxxxxxxxxxxxxx
+00100020: 7878 7878 7878 7878 7878 7878 7878 7878  xxxxxxxxxxxxxxxx
+00100030: 7878 0000 0000 0000 0000 0000 0000 0000  xx..............
+```
+可见,在进程未退出之前,就已经将page cache invalidate了, 符合预期.
 

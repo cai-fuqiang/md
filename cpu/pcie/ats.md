@@ -1,8 +1,7 @@
 # ATS Specification
 
 # 10.1 ATS Architectural Overview
-Most contemporary system architectures make provisions for translating addresses from
-DMA (bus mastering) I/O Functions. In many implementations, it has been common
+Most contemporary system architectures make provisions for translating addresses from DMA (bus mastering) I/O Functions. In many implementations, it has been common
 practice to assume that the physical address space seen by the CPU and by an I/O
 Function is equivalent. While in others, this is not the case. The address programmed into
 an I/O Function is a “handle” that is processed by the Root Complex (RC). The result of 
@@ -444,6 +443,8 @@ be consistent with fully independent ATC implementations.
 	不需要在每个Function上
 	</li>
 	<li>
+	如果 ATC 实现在一组功能之间共享资源，则逻辑行为需要与完全独立的 
+	ATC 实现一致。
 	</li>
 </ul>
 </font>
@@ -472,7 +473,133 @@ That is:
 	use software executing on the Device to modify the ATC.
 
 <font color=gray face="黑体" size=2>
+与Device中的Function数量无关,需要遵守下面:
+<ul>
+	<li>
+	Function不需要提交带有AT字段的TLP除非这个TLP中的address通过
+	ATS Translation Request 和Translation Completion 协议获取过
+	</li>
+	<li>
+	每个ATC只能使用ATS协议填充. 也就是说,ATC中的每个entry都必须由
+	该Fcuntion 提交一个给定地址的ATS translation Requests , 然后
+	回应ATS Translation Completion 来填充
+	</li>
+	<li>
+	每一个ATC 不能被修改,除非通过ATS protocol.
+	<ul>
+		<li>
+		Host 系统软件只能通过该规范中的定义的协议来修改ATC, 除非去invalidate
+		一个或多个ATC中的 translations. Device 或者Function Reset操作将会是
+		一个由software 去改变ATC内容的例子,但是reset操作只能能允许去invalidate
+		entries 但是不能modify他们的内容
+		</li>
+		<li>
+		主机系统软件不得使用在设备上执行的软件来修改 ATC。
+		</li>
+	</ul>
+	</li>
+</ul>
+</font>
+When a TA determines that a Function should no longer maintain a translation 
+within its ATC, the TA initiates the ATS invalidation protocol. The invalidation 
+protocol consists of a single Invalidation Request and one or more Invalidate
+Completions.
 
+<font color=gray face="黑体" size=2>
+当TA判定该function应该不再维护在ATC中的某个translation时. TA会发起ATS
+invailidation protocol. invailidate protocol 由一个 Invalidation Request 和
+一个或多个 Invalidate Completions组成
+</font>
+
+![10-4](pic/10-4.png)
+
+As Figure 10-4 illustrates, there are essentially three steps in the ATS Invalidation protocol:
+1. The system software updates an entry in the tables used by the TA. After the table is changed, the TA
+determines that a translation should be invalidated in an ATC and initiates an Invalidation Request TLP which
+is transmitted from the RP to the example single-Function Device. The Invalidate Request communicates an
+untranslated address range, the TC, and an RP unique tag which is used to correlate Invalidate Completions
+with the Invalidation Request.
+
+
+2. The Function receives the Invalidate Request and invalidates all matching ATC entries. A Function is not
+required to immediately flush all pending requests upon receipt of an Invalidate Request. If transactions are in
+a queue waiting to be sent, it is not necessary for the Function to expunge requests from the queue even if
+those transactions use an address that is being invalidated.
+	* A Function is required not to indicate the invalidation has completed until all outstanding Read
+	  Requests or Translation Requests that reference the associated translated address have been retired
+	  or nullified.
+	* A Function is required to ensure that the Invalidate Completion indication to the RC will arrive at the
+		RC after any previously posted writes that use the “stale” address.
+3. When a Function has ascertained that all uses of the translated address are complete, it issues one or more ATS
+Invalidate Completions.
+	* An Invalidate Completion is issued for each TC that may have referenced the range invalidated. These
+	  completions act as a flush mechanism to ensure the hierarchy is cleansed of any in-flight
+	  transactions which may contain references to the translated address.
+		+ The number of Completions required is communicated within each Invalidate Completion.
+		   A TA or RC implementation can maintain a counter to ensure that all Invalidate
+		Completions are received before considering the translation to no longer be in use.
+		+ If more than one Invalidation Complete is sent, the Invalidate Completion sent in each TC
+		must be identical in the fields detailed in Section 10.3.2 .
+	* An Invalidate Completion contains the ITAG from Invalidate Request to enable the RC to correlate
+	  Invalidate Requests and Completions.
+
+<font color=gray face="黑体" size=2>
+如10-4图所示, ATS Invalidate protocol 基本上包含三个步骤
+<ul>
+	<li>
+	system software更新了一个entry, 而这个entry恰好被TA使用.
+	在这个table被改变后,TA判定对应的translation应该在ATC中被
+	invailidated并且发起一个 Invalidation Request TLP,该TLP从
+	RP传达到例子中的single-Function Device.该Invalidate Request
+	传递了一个 untranslated address range, TC, 和一个 RP unique
+	tag, 该tag用来把 Invalidate Completions 和 Invalidation Request
+	关联起来
+	</li>
+	<li>
+	该function收到了Invalidate Request并且无效了所有对应的ATC 
+	entries. 在收到 Invalidate Request 后, function 不需要立即flush
+	所有pending的 requests.如果一个 transactions 正在队列中等待发送, 
+	则该function没有必要从队列中删除请求, 即使这些事务使用的address正在
+	被 invailidated
+	<ul>
+		<li>
+		在引用相关translated address 的outstanding Read Request或者 
+		Translation Request 在停用或者无效之前, function 不需要表明
+		invailidate 已经 complete
+		</li>
+		<li>
+		Function需要保证 发送到RC的 Invalidate Completion 到达RC之前,
+		之前任何的posted writes都必须使用 "stale"(老的,旧的) 地址
+		</li>
+	</ul>
+	</li>
+	<li>
+	当该function 确定了所用这个translated address相关请求都已经complete, 
+	他会提交1个或多个ATS Invalidate Completions
+	<ul>
+		<li>
+		为每个引用了无效范围的TC发出 Invalidate Completion. 这些 completions
+		充当了一个flush 机制来保证 hierarchy已经清除了任何可能包含translated 
+		address的正在处理的事物
+		<ul>
+			<li>
+			每个Invalidate Completion 都会包含Completions的数量.TA或者RC的实
+			现中会包含一个计数器来确保在认为这个translation 没有人在使用之前,
+			所有的 Invalidate Completions都已经收到.
+			</li>
+			<li>
+			如果多个 Invalidate Complete 发出, 每个TC 发出的Invalidate Completion 
+			需要和 Section 10.3.2中描述的字段保持一致
+			</li>
+		</ul>
+		</li>
+		<li>
+		Invalidate Completion 中包含来自于 Invalidate Request 中的ITAG  来保证
+		RC可以将这些 Invalidate Request和 Completion 联系起来
+		</li>
+	</ul>
+	</li>
+</ul>
 </font>
 
 [^1]:All references within this  chapter to a Device apply equally to 

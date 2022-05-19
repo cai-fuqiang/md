@@ -500,6 +500,7 @@ That is:
 	</li>
 </ul>
 </font>
+
 When a TA determines that a Function should no longer maintain a translation 
 within its ATC, the TA initiates the ATS invalidation protocol. The invalidation 
 protocol consists of a single Invalidation Request and one or more Invalidate
@@ -602,12 +603,277 @@ Invalidate Completions.
 </ul>
 </font>
 
-[^1]:All references within this  chapter to a Device apply equally to 
-a PCIe Device or a Root Complex Integrated  Endpoint. ATS does 
-not delineate between these two types in terms of requirements, 
-semantics, configuration, error handling, etc. From a software perspective, an 
-ATS-capable Root Complex Integrated Endpoint must behave the same as an 
-ATS-capable non-integrated Device. 
+# 10.1.2 Page Request Interface Extension
 
+ATS improves the behavior of DMA based data movement. An associated 
+Page Request Interface (PRI) provides additional advantages by allowing 
+DMA operations to be initiated without requiring that all the data to 
+be moved into or out of system memory be pinned. The overhead 
+associated with pinning memory may be modest, but the negative
+impact on system performance of removing large portions of memory 
+from the pageable pool can be significant. 
+
+<font color=gray face="黑体" size=2>
+ATS改善了基于DMA的数据移动行为. 相关的 Page Request Interface (PRI) 
+提供了其他的优点: 在没有所有的数据可以被传输(感觉这里是说,不需要所有的内存
+请求的地址都是present的)或者目的内存在pinned 系统内存之外条件下, 
+允许 DMA 操作被发起. 和 pinning memory相关的开销可能不明显,但是
+从pageable pool 中删除大量的内存对系统性能负面影响可能很大.(这里可能
+从资源消耗考虑,占用的大量的页表资源). 
+</font>
+
+PRI is functionally independent of the other aspects of ATS. That 
+is, a device that supports ATS need not support PRI, but PRI is 
+dependent on ATS’s capabilities.
+
+<font color=gray face="黑体" size=2>
+PRI 在功能方面是独立于 ATS 其他部分. 展开来说, 一个设备支持ATS 不一定
+支持PRI, 但是 PRI 依赖 ATS的capabilitis
+</font>
+
+Intelligent I/O devices can be constructed to make good use of a 
+more dynamic memory interface. Pinning will always have the best 
+performance characteristics from a device’s perspective-all the 
+memory it wants to touch is guaranteed to be present. However, 
+guaranteeing the residence of all the memory a device might touch 
+can be problematic and force a sub-optimal level of device awareness 
+on a host. Allowing a device to operate more independently (to page 
+fault when it requires memory resources that are not present) provides 
+a superior level of coupling between device and host. 
+
+<font color=gray face="黑体" size=2>
+可以构建智能 I/O 设备以充分利用更动态的内存接口。从设备的全视角来看,
+Pining 总是会有更高的性能特性 -- 该设备想要touch 的内存需要保证present.
+但是, 保证设备可能touch的所有内存都present可能是有问题的,并且会对host
+device awareness 水平强制处于 sub-optimal. 允许设备操作来更加独立(当他
+需要的内存资源不是present的时候,会触发一个page fault)在设备和主机之间
+提供了更高级别(更良好)的耦合. (降低了耦合性, 或者说host对于device不需
+要增加一些特殊的管理了)
+</font>
+
+The mechanisms  used to take advantage of a Page Request Interface 
+are very device specific. As an example of a model in which such 
+an interface could improve overall system performance, let us examine 
+a high-speed LAN device. Such adevice knows its burst rate and 
+need only have as much physical buffer space available for inbound 
+data as it can receive within some quantum. A vector of unpinned 
+virtual memory pages could be made available to the device, that the
+device then requests as needed to maintain its burst window. This 
+minimizes the required memory footprint of the device and simplifies 
+the interface with the host, both without negatively impacting 
+performance.
+
+<font color=gray face="黑体" size=2>
+利用 Page Request Interface 的机制实现是非常特定于设备的.  让我们来
+参考一个高速的LAN 设备, 作为例子模型来展示像这样的一个接口可以提高系统
+整体的性能.这样的一个设备指导它的burst rate(突发速率,最大速率)并且只
+需要为在一定范围内它可以接受的数据提供尽可能多的物理buffer空间. 可以向
+设备提供一个不固定的虚拟内存页的vector(也就是所有的page不一定是pinned,
+可能不是present，可能present，但是指向的physical page不同)， 之后设备
+需要维护他的 burst windows. 这将最小化设备所需的内存占用，简化与主机
+的接口，并且两者不会产生性能方面的负面影响.
+</font>
+
+The ability to page, begs the question of page table status flag 
+management. Typical TAs associate flags (e.g., dirty and access 
+indications) with each untranslated address. Without any additional 
+hints about how to manage pages mapped to a Function, such TAs would 
+need to conservatively assume that when they grant a Function 
+permission to read or write a page, that Function will use the 
+permission. Such writable pages would need to be marked as dirty 
+before their translated addresses are made available to a Function.
+
+<font color=gray face="黑体" size=2>
+对于page来说，该 ability回避了page table status flag 管理的问题。
+典型的TA 会将flags(eg. dirty && access 标志位)和每个未翻译的address
+联系起来。如果没有关于如何管理映射到function页面的额外的指示, 这些TAs
+需要谨慎的假设当他们授予一个function去读写一个page 权限, 这些function
+将会使用这些权限.(当function 去write, 那么认为该page就有write的权限).
+这些可写页面需要在translated address 提供给function之前, 需要标记成
+脏页
+</font>
+
+This conservative dirty-on-write-permission-grant behavior is 
+generally not a significant issue for Functions that do not support 
+paging, where pages are pinned and the cost of saving a clean 
+page to memory will seldom be paid. However, Functions that support 
+the Page Request Interface could pay a significant penalty if all 
+writable pages are treated as dirty, since such Functions operate 
+without pinning their accessible memory footprints and may issue 
+speculative page requests for performance. The cost of saving clean 
+pages (instead of just discarding them) in such systems can diminish
+the value of otherwise attractive paging techniques. This can cause 
+significant performance issues and risk functional issues in 
+circumstances where the backing store is unable to be written, 
+such as a CD-ROM.
+
+<font color=gray face="黑体" size=2>
+对于不支持paging的function来说, 保守的 dirty-on-write-permission-grant行为
+通常不会是一个重要问题, 其中固定页面在保存clean page到内存中将花费很少
+代价. 但是支持 Page Request Interface 的function可能会付出比较大的代价
+,如果所有的可写入的page都被对待为dirty的话,因为这些function不会固定他们要
+访问的内存空间并且可能会有一些预测性质的 page request 来提高性能(预读).
+在无法写入后段存储(例如 CD-ROM) 的情景下, 可能会导致严重的性能问题
+以及可能会造成一些安全问题(risk functional issues)
+</font>
+
+The No Write (NW) flag in Translation Requests indicates that 
+a Function is willing to restrict its usage to only reading the
+page, independent of the access rights that would otherwise have 
+been granted.
+
+<font color=gray face="黑体" size=2>
+Translation Requests NO Write (NW) flag 表明function将其使用限制
+为仅读取页面，而与原本授予的访问权限无关。
+</font>
+
+If a device chooses to request only read access by issuing a 
+Translation Request with the NW flag Set and later determines 
+that it needs to write to the page, then the device must issue 
+a new Translation Request.
+
+<font color=gray face="黑体" size=2>
+如果 device 通过发出带有 NW flag 的 Translation Request 
+来提交只读请求 ,然而之后决定需要去写这个page, 这样的话,device
+必须发出一个新的 Translation Request
+</font>
+
+Upon receiving a Translation Request with the NW flag Clear, 
+TAs are permitted to mark the associated pages dirty. It is 
+strongly recommended that Functions not issue such Requests unless
+they have been given explicit write permission. An example of 
+write permission is where the host issues a command to a Function 
+to load data from a storage device and write that data into memory.
+
+<font color=gray face="黑体" size=2>
+当受到一个不带 NW flag的 Translation Request, TAs 允许去标记相关的
+page 为dirty . 强烈建议function 不要发出这样的请求,除非他们已经获得了
+明确的写入权限.写入权限的一个例子是, 当主机提交了给function一个 从
+storage device 中 load data的cmd并且将该数据写入内存
+</font>
+
+# 10.1.3 Process Address Space ID (PASID)
+Certain TLPs can optionally be associated with a Process Address 
+Space ID (PASID). This value is conveyed using the PASID TLP Prefix. 
+The PASID TLP Prefix is defined in the Section 6.20 .
+
+<font color=gray face="黑体" size=2>
+某些TLPs 可以选择性的带有 Process Address Space ID (PASID).该值
+通过 PASID TLP Prefix(前缀)标识. PASID TLP Prefix 在Section 
+6.20 中定义
+</font>
+
+The PASID TLP Prefix is permitted on:
+* Memory Requests (including Untranslated AtomicOp Requests) 
+  with Untranslated Addresses
+* Address Translation Requests
+* Page Request Messages
+* ATS Invalidation Requests
+* PRG Response Messages
+
+<font color=gray face="黑体" size=2>
+PASID TLP Prefix允许在下面的请求中使用:
+<ul>
+	<li>
+	带有 Untranslated Adress Memory Requests(包括 Untranslated
+	AtomicOp Requests)
+	</li>
+	<li>
+	Address Translation Requests
+	</li>
+	<li>
+	Page Request Messages
+	</li>
+	<li>
+	ATS Invalidation Requests
+	</li>
+	<li>
+	RPG Response Messages
+	</li>
+</ul>
+</font>
+
+Usage of the PASID TLP Prefix for Untranslated Memory Requests 
+is defined in Section 6.20 . This section describes PASID
+TLP Prefix for the remaining TLPs.
+
+<font color=gray face="黑体" size=2>
+对于 Untranslated Memory Requests使用 PASID TLP Prefix在
+Section 6.20中定义. 该章节描述了其他 TLPs 中的PASID TLP 
+Prefix
+</font>
+
+When a Request does not have a PASID TLP Prefix, the Untranslated 
+Address represents an address space associated with the Requester 
+ID.
+
+When a Request has a PASID TLP Prefix, the Untranslated Address 
+represents an address space associated with both the Requester 
+ID and the PASID value.
+
+<font color=gray face="黑体" size=2>
+当一个Requset 不带有 PASID TLP Prefix, 这个 Untranslated 
+Address 表示与 Requester ID相关的地址空间
+
+当一个Request 带有 PASID TLP Prefix, 这个 Untranslated
+Address 表示 与Requester ID和PASID 值 相关的地址空间
+(Requester ID + PASID --> request)
+</font>
+
+When a Response has a PASID TLP Prefix, the PASID value reflects 
+the address space associated the corresponding Request.
+
+<font color=gray face="黑体" size=2>
+当一个 Response 带有 PASID TLP Prefix, 这个 PASID的值反映了
+与其相应的请求相关的地址空间
+</font>
+
+Each Function has an independent set of PASID values. The PASID 
+field is 20 bits wide however the effective width is constrained 
+by the  lesser of the width supported by the Root Complex (TA) 
+and the  width supported by the Function (ATC). Unused upper bits 
+of the PASID value must be 0b.
+
+<font color=gray face="黑体" size=2>
+每个 function 都有一组独立的 PASID 值. PASID字段有20 bits宽, 但是
+有效的宽度会被 Root Complex (TA) 和function (ATC) 限制的更短.
+PASID的没有使用的高bits位必须是0
+</font>
+
+For Endpoints in systems where a Virtual Intermediary (VI) is 
+present, Untranslated.
+
+<font color=gray face="黑体" size=2>
+对于一个存在 Virtual Intermediary (VI) (VMM) 的Enpoints, 是 
+Untranslated
+</font>
+
+Addresses with an associated PASID are typically used to represent 
+Guest Virtual Addresses (GVA) and Untranslated Addresses that are 
+not associated with a PASID represent Guest Physical Addresses (GPA). 
+The TA could be designed so that the VI manages the tables used 
+to perform translations from GPA to Translated Addresses while the 
+individual Guest Operating Systems manage tables used to perform 
+translations from GVA to GPA. When translating an address with an
+associated PASID, the TA performs both translations and returns 
+the resulting Translated Address (i.e., GVA to GPA followed by GPA 
+to Translated Address). The intermediate GPA value is not visible 
+to the ATC.
+
+<font color=gray face="黑体" size=2>
+带有相关的 PASID 的address 通常用于标识 Guest Virtual Address (GVA),
+不带 PASID 的 Untranslated Address标识 Guest Physical Address (GPA).
+TA这样设计以便 VI 管理用于执行从GPA  到 Translated Address 页表,
+而独立的Guest 操作系统管理用于从GVA到 GPA的页表.当 转换一个带有
+相关 PASID的地址, TA 执行 两种translations 并且返回 Translated 
+Address (也就是说: GVA --> GPA 然后是 GPA --> Translated Address).
+中间的GPA值对ATC不可见
+</font>
+
+When an ATC invalidates a cached GPA mapping, it invalidates the 
+GPA mapping and also invalidates all GVA mappings in the ATC. When 
+the GPA invalidate completes, the VI can safely remove pages backing 
+GPA memory range from a Guest Operating System. The VI does not 
+need to know which GVA mappings involved the GPA mapping.
 <font color=gray face="黑体" size=2>
 </font>

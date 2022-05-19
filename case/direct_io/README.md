@@ -614,7 +614,6 @@ root@runninglinuxkernel:~/aio# xxd -l 64 /dev/nvme0n1
 00000020: 7878 7878 7878 7878 7878 7878 7878 7878  xxxxxxxxxxxxxxxx
 00000030: 7878 0000 0000 0000 0000 0000 0000 0000  xx..............
 ```
-
 可以看到`vfs_read()`操作真的影响到了后面的`buffer IO`
 
 # 进一步测试

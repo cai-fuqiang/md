@@ -1,5 +1,4 @@
 # pci realloc 
-N
 ## kernel cmdline 作用
 
 kernel doc中记录了该参数的作用

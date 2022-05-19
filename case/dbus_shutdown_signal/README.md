@@ -69,3 +69,33 @@ dbus->> systemd:			13. 执行`reboot.target` Unit
 
 # 解决方法(规避)
 可以将reboot由`systemctl`的软连接替换成执行`systemctl reboot`命令的脚本
+
+# 进一步测试
+通过简单的命令替换并不能达到想要的效果：
+例如:
+查看reboot命令的执行参数:
+
+root@ubuntu:~/workspace/kernel/linux-4.18.0-147# reboot --help
+reboot [OPTIONS...] [ARG]
+
+Reboot the system.
+
+Options:
+     --help      Show this help
+     --halt      Halt the machine
+  -p --poweroff  Switch off the machine
+     --reboot    Reboot the machine
+  -f --force     Force immediate halt/power-off/reboot
+  -w --wtmp-only Don't halt/power-off/reboot, just write wtmp record
+  -d --no-wtmp   Don't write wtmp record
+     --no-wall   Don't send wall message before halt/power-off/reboot
+
+See the halt(8) man page for details.
+
+但是执行systemctl reboot -p则会显示下面的错误：
+
+root@ubuntu:~/workspace/kernel/linux-4.18.0-147# systemctl reboot -p
+systemctl: option requires an argument -- 'p'
+
+所以，systemctl reboot和reboot命令在参数行为上，也有很大不同
+

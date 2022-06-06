@@ -444,6 +444,7 @@ Section 9.2 provides the exact extended-root-table entry format.
 <font color=gray face="黑体" size=2>
 Section 9.2 提供了详细的 extended-root-table entry的格式。
 </font>
+
 ### 3.4.3 Context-Entry
 
 A context-entry maps a specific I/O device on a bus to the 
@@ -459,31 +460,75 @@ source-id are used to index into the context-table.
 Figure 3-7 illustrates device to domain mapping through 
 root-table. 
 
+<font color=gray face="黑体" size=2>
+一个context-entry 映射了一个bus上指定的I/O 设备 到它所分配的
+domain上，进而映射到domains的 translation structures。context
+entries 通过 memory-resident(常驻) context-tables 编程。每个
+root-table 中的 root-entry 包含了一个指向 它相应bus number 的
+context-table 的指针。 每个context-table 包含256个entries, 每个
+entry对应着该bus 上的一个PCI device function。对于一个PCI devices
+来说，source-id 的 device 和function number (lower-8bit) 用来在
+context-table 索引。Figure 3-7 展示了通过 root-table 将device
+mapping 到domains。
+</font>
+
 ![Figure-3-7](pic/Figure-3-7.png)
 
 Context-entries support only requests-without-PASID, and 
 contains the following fields:
+
+<font color=gray face="黑体" size=2>
+context-entries 只支持 request-without-PASID并且，包含了下面的
+字段:
+</font>
+
 * Present Flag: The present field is used by software to 
-indicate to hardware whether the context- entry is present and
+indicate to hardware whether the context-entry is present and
 initialized. Software may Clear the present field for context
 entries corresponding to device functions that are not present
 in the platform. If the present field of a context-entry used
 to process a request is Clear, the request is blocked, resulting
 in a translation- fault.
+<br/>
+<font color=gray face="黑体" size=2>
+Present Flag: present field 用作软件示意硬件判断 该context-entry
+是否是present 并且初始化好的。软件可能清空 present 位, 因为context 
+entries 相对应的 device function 在平台中没有present。如果处理的request
+的context-entry 的present 字段是 clear, request会被阻塞，并且导致
+一个 translation -fault
+field
+</font>
 
 * Translation Type: The translation-type field indicates what
 types of requests are allowed through the context-entry, and
 the type of the address translation that must be used for such
 requests.
+<br/>
+<font color=gray face="黑体" size=2>
+Translation Type: translation-type 字段只是context-entry 允许哪些
+request types, 以及必须用于这些request的 address translation 类型
+</font>
 
 * Address Width: The address-width field indicates the 
 address-width of the domain to which the device corresponding
 to the context-entry is assigned.
+<br/>
+<font color=gray face="黑体" size=2>
+Address Width: address-width字段指示context-entry 对应的 devices
+被分配到域的address-width
+</font>
 
 * Second-level Page-table Pointer: The second-level page-table
 pointer field provides the host physical address of the address
 translation structure in system memory to be used for remapping
 requests-without-PASID processed through the context-entry.
+<br/>
+<font color=gray face="黑体" size=2>
+Second-level Page-table pointer: second-levl page-table pointer
+字段提供了 关于 在system memory 中的address translation structure 
+的物理内存地址，该address translation structure 用做 通过context-entry
+来处理重映射request-without-PASID。
+</font>
 
 * Domain Identifier: The domain-identifier is a software-assigned
 field in a context-entry that identifies the domain to which 
@@ -493,17 +538,38 @@ programmed with the same domain identifier must reference the
 same address translation structure. Context entries referencing
 the same address translation structures are recommended to use
 the same domain-identifier for best hardware efficiency.
+<br/>
+<font color=gray face="黑体" size=2>
+Domain Identifier: domain-identifier 是一个在context-entry 中的一个
+software-assigned 字段，该字段用于表明带有给定的source-id的devices
+分配到哪个domain。hardware 可能使用该字段来tag 他的 caching structures.
+编程为相同domain identifier 的 Context entries 必须引用相同的address
+translation structure。 引用相同address translation structure 的
+context entries 为了达到最好的硬件效率，推荐使用相同的 domain-identifier。
+</font>
 
 * Fault Processing Disable Flag: The fault-processing-disable
 field enables software to selectively disable recording and 
 reporting of remapping faults detected for requests processed
 through the context-entry.
+<br/>
+<font color=gray face="黑体" size=2>
+Fault Processing Disable Flag: fault-processing-disable field
+可以让软件选择性的disable recording 或者 reporting 通过 context-entry
+处理的requests中探测到的 remapping fault
+</font>
 
 Multiple devices may be assigned to the same domain by programming
 the context-entries for the devices to reference the same 
 translation structures, and programming them with the same 
 domain identifier. Section 9.3 provides the exact context-entry
 format.
+
+<font color=gray face="黑体" size=2>
+Multiple device 分配给相同的domain , 通过编程device 的context-entries , 
+让其 引用相同的translation structures, 并且编程他们 让其有相同的
+domain identifier. Section 9.3 提供了详细的context-entry format。
+</font>
 
 ### 3.4.4 Extended-Context-Entry
 For implementations supporting Extended-Context-Support 

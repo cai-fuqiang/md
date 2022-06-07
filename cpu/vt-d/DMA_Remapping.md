@@ -583,12 +583,28 @@ corresponding to PCI functions in device range 16-31 on the
 bus. Figure 3-8 illustrates device to domain mapping through 
 extended- root-table.
 
+<font color=gray face="黑体" size=2>
+对于支持Extended-Context-Support(在Extended Capability Register 中的
+ECS=1)的实现，当使用extended-root-table时，每一个extended-root-entry
+引用一个 lower-context-table和一个 upper-context-table。lower-context-table
+大小是4-Kbyte 并且包含了128个 extended-context-entries, 这些entries
+对应这在 bus上的 device ranger 为16-31的PCI functions。Figure 3-8图示
+了通过extended-root-table将devices映射到domains上。
+</font>
+
 Extended-context-entries are capable of supporting both 
 requests-without-PASID and requests-with- PASID. For 
 requests-without-PASID, it supports the same fields as in the 
 regular context-entry (described above). Section 9.4 provides
 the exact extended-context-entry format. For requests-with-PASID,
 extended-context-entries contain the following additional fields:
+
+<font color=gray face="黑体" size=2>
+Extended-context-entries 具有支持request-without-PASID和request-with-PASID
+的能力，他支持一般的context-entry(在前面描述的)中的相同字段。Section
+9.4 提供了详细的 extended-context-entry 格式。对于 request-with-PASID,
+extended-context-entries 包含下面格外的字段:
+</font>
 
 * Extended Translation Type: The translation-type field is 
 extended to provide additional controls to specify how requests
@@ -599,6 +615,16 @@ applies to requests-with-PASID. Second-level translation applies
 to requests-without-PASID. When nested translation is specified
 in the extended-context-entry, requests-with-PASID are subject
 to nested first-level and second-level translation.
+<br/>
+<font color=gray face="黑体" size=2>
+Extended Translation Type: translation-type 字段是扩展提供额外的
+控制去指定带有和不带有PASID的request应该如何去处理。Extended-context-entries
+支持two level of translation, 指的是 first-level translation 和 
+second-level translation。 First-level translation 适用于 
+request-without-PASID。Second-level translation 适用于request-without-PASID。
+当 extended-context-entry 指定nested translation 时，request-with-PASID
+受 nested first-level 和second-level translation的影响。
+</font>
 
 * Translation Structure Pointers: For first-level translation,
 the extended-context-entry contains a pointer to a PASID-table.
@@ -609,23 +635,54 @@ For second-level translation, extended-context-entry contains
 a pointer to the second-level page-table, which is the same as
 the second-level page-table pointer field in the regular 
 context-entry (described in Section 3.4.3).
+<br/>
+<font color=gray face="黑体" size=2>
+Translation Structure Pointers: 对于first-level translation,
+extended-context-entry 包含一个指向 PASID-table的指针，每个8-byte
+的PASID-table-entry 对应一个PASID的value, 并且包含first-level
+translation 数据结构的根，该数据结构用于translate 带有相应PASID标
+记的 request-with-PASID。对于second-level translation, 
+extended-contxt-entry包含指向second-level page-table的指针，这和
+一般的context-entry 中的 second-level page-table pointer field 
+相同。
+</font>
 
 * Translation Controls: These include additional controls such
 as Page-Global-Enable, Write- Protect-Enable, No-Execute-Enable,
 Supervisor-Mode-Execute-Protection, etc. that are applied when
 processing requests-with-PASID.
+<br/>
+<font color=gray face="黑体" size=2>
+Translation Controls: 包括额外的控制字段，例如 Page-Global-Enable,
+Write-Protect-Enable, No-Execute-Enable, Supervisor-Mode-Execute-Protection,
+等等。它适用于处理requests-with-PASID。
+</font>
 
 * Memory-type Attributes: Extended-context-entries support fields
 such as Page-Attribute-Table, Extended-memory-type etc., that
 are used to compute the effective memory-type for requests-with-PASID 
 from devices operating in the processor coherency domain.
+<br/>
+<font color=gray face="黑体" size=2>
+Memory-type Attributes: Extended-context-entries 支持某些字段，例如，
+Page-Attribute-Table, Extended-memory-type 等等。这些字段用来计算
+来自处理器一致性域中运行的设备 的reuqest-with-PASID 的有效的memory-type.
+</font>
 
 * Page Request Enable: The page-request-enable field in the 
 extended-context-entry allows software to selectively enable 
 or disable page-fault requests from the device. When enabled,
 page-requests from the device are reported to software through
-a memory-resident page- request-queue. Chapter 7 provides 
+a memory-resident page-request-queue. Chapter 7 provides 
 details on page request processing.
+<br/>
+<font color=gray face="黑体" size=2>
+extended-context-entry 中的Page Request Enable: page-request-enable 
+字段 允许软件选择性的 enable 或者 disable 来自于设备的page-fault
+request。当是enabled, 来自于device中的page-requests 会通过
+memory-resident page-request-queue 报告给 software。 Chapter 7 
+提供了page request 处理上的细节。
+</font>
 
 * Deferred Invalidation Controls: The PASID-state table pointer
 field enables devices to communicate whether a given 
@@ -635,15 +692,143 @@ of cached mappings for inactive PASIDs in translation caches
 (TLBs). Chapter 6 describes the various translation caching 
 structures and invalidation operations, including deferred 
 invalidation support.
+<br/>
+<font color=gray face="黑体" size=2>
+Deferred Invalidation Controls: PASID-state table pointer 
+field 可以让devices 与之联系起来，无论给定的PASID是在device 
+上active 或者没有active。如那件可以利用PASID-state table 来
+deferr 无效 translation cache(TLBs)中的 inactive PASIDs 的
+缓存映射。
+</font>
 
 Figure 3-8 illustrates device to domain mapping using 
 extended-root-table.
 
+<font color=gray face="黑体" size=2>
+图片 3-8 图示了使用 extend-root-table 完成device到domains的映射。
+</font>
+
 ![Figure-3-8](pic/Figure-3-8.png)
 
 
+## 3.5 Hierarchical Translation Structures
+DMA remapping uses hierarchical translation structures for both 
+first-level translation (for requestswith-PASID) and second-level 
+translation (for requests-without-PASID and for nested translation 
+of requests-with-PASID).
+
+<font color=gray face="黑体" size=2>
+DMA remapping 对于 first-level translation( for request-with-PASID) 和
+second-level translate( for request-without-PASID 和 requests-with-PASID
+的 nested translation)都使用hierarchical  translation structures 。
+</font>
+
+For first-level translation, and second-level translation of 
+requests-without-PASID, the DMA-address in the request is used 
+as the input address. For nested translation of requests-with-PASID, 
+any address generated by first-level translation (both addresses to 
+access first-level translation structures and the output address 
+from first-level translation) is used as the input address for 
+nesting with second-level translation. Section 3.6, Section 3.7 and 
+Section 3.8 provides more details on first-level, second-level, and 
+nested translation respectively.
+
+<font color=gray face="黑体" size=2>
+对于first-level translation, 和 requests-with-PASID 的 second-level 
+translation, request 中的 DMA-address 被当作input address使用。对于
+requests-with-PASID 中的nested translation, 由 first-level translation
+获取到的任何地址 (访问first-level translation structure 的 address 
+和 来自first-level translation过程输出的地址) 对于nest second-level 
+translation 当作input address 使用。Section 3.6, Section 3.7 和
+Section 3.8 提供了first level, second-level 和nested translation
+分别做了更多的细节。
+</font>
+
+Every paging structure in the hierarchy is 4-KBytes in size, 
+with 512 8-Byte entries. Remapping hardware uses the upper 
+portion of input address to identify a series of paging-structure
+entries. The last of these entries identifies the physical 
+address of the region to which the input address translates 
+(called the page frame). The lower portion of the input address 
+(called the page offset) identifies the specific offset within 
+that region to which the input address translates. Each 
+paging-structure entry contains a physical address, which is 
+either the address of another paging structure or the address 
+of a page frame. First-level translation supports 4-level 
+structure. Second-level translation supports a Nlevel structure, 
+where the value of N depends on the Guest Address Width (GAW) 
+supported by an implementation as enumerated in the Capability
+Register. 
+
+<font color=gray face="黑体" size=2>
+每个层级中的paging struture大小都是4-KBytes, 并且含有512个
+8-Byte的entries。Remapping hardware 使用 input address 的高位部分
+去确定一系列的 paging-structure entries。这些entries 中的最后一个
+去确定 input address translate 得到的 region 中的physical address,
+(region called page frame(页框))。input address 的低位部分(call the 
+page offset(页面偏移)) 确定 input address translate 得到的 regions
+中的指定偏移。每个paging-structure entry 包含一个物理地址，该物理
+地址可以是另一个paging structure 的地址，也可以是 page frame 的地
+址。First-level translation 支持4-level structure。 Second-level
+translation 支持N level structure, 这里的N值依赖Guest Address Width(GAW),
+该字段由Capability Register 枚举过程的implementation 支持。
+</font>
+
+The paging structures support a base page-size of 4-KBytes. 
+The page-size field in paging entries enable larger page 
+allocations. When a paging entry with the page-size field Set 
+is encountered by hardware on a page-table walk, the translated 
+address is formed immediately by combining the pagebase-address 
+in the paging-entry with the unused input address bits. Remapping
+architecture defines support for 2-MByte and 1-GByte large-page 
+sizes. Implementations report support for large-pages and 
+intermediate-pages through the Capability Register. 
+
+<font color=gray face="黑体" size=2>
+paging structures 支持 4-KBytes 的 base(基础的) page-size.paging entries
+中的page-size字段支持更大的页面分配。当hardware 在 遍历 page-table时，
+遇到了带有设置了page-size 字段的paging entry, 立即结合paging-entry 中的
+pagebase-address和unused input address bits 形成 translated address。
+（这里的立即指的是，不在进一步找页表了，如果是小页的话，还得继续找）。
+Remapping architecture 定义支持2-MByte和1-GByte的 large-page sizes.
+Implementations 通过Capability Register 报告支持 large-pages和 
+intermediate-page。(中间)
+</font>
+
+Figure 3-9 illustrates the paging structure for translating 
+a 48-bit address to a 4-KByte page.
+
+
+## 3.6 First-Level Translation
+Extended-context-entries can be configured to translate requests-with-PASID through first-level
+translation. Extended-context-entries contain the PASID-table pointer and size fields used to
+reference the PASID-table. The PASID-number in a request-with-PASID is used to offset into the
+PASID-table. Each present PASID-entry contains a pointer to the base of the first-level translation
+structure for the respective process address space. Section 9.5 describes the exact format of the
+PASID-entry.
+
+
+First-level translation restricts the input-address to a 48-bit canonical addresses (i.e., address bits
+63:48 has the same value as the address bit 47). A device may perform local check for canonical
+address before it issues a request-with-PASID, and handle a violation in a device specific manner.
+Requests-with-PASID arriving at the remapping hardware are subject to canonical address checking,
+and a violation is treated as a translation-fault. Chapter 7 provides details of translation-fault
+conditions and how they are reported to software.
+
+
+First-level translation supports the same paging structures as Intel® 64 processors when operating in
+64-bit mode. Table 3 gives the different names of the first-level translation structures, that are given
+based on their use in the translation process. It also provides, for each structure, the source of the
+physical-address used to locate it, the bits in the input-address used to select an entry from the
+structure, and details of whether and how such an entry can map a page. Section 9.7 describes
+format of each of these paging structures in detail.
+
 <font color=gray face="黑体" size=2>
 </font>
+
+<font color=gray face="黑体" size=2>
+</font>
+
 <font color=gray face="黑体" size=2> </font>
 <font color=gray face="黑体" size=2>
 </font>

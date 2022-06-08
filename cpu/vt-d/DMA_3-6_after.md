@@ -15,8 +15,7 @@ Extended-context-entries 可以用来配置 来通过 first-level
 translation translate request-with-PASID。Extended-context-entries
 包含PASID-table pointer 和size 字段用来引用PASID-table.request-with-PASID
 中的PASID-number 用来在PASID-table中提供偏移。每个present PASID-entry 
-包含一个指向first-level translation structure 的 基址，这些structure
-分别对应process address space。Section 9.5描述了PASID-entry的详细
+包含一个指向first-level translation structure 的 基址，这些structure 分别对应process address space。Section 9.5描述了PASID-entry的详细
 格式。
 </font>
 
@@ -303,16 +302,49 @@ translation for the input address, but its access rights do
 not permit the access. There is no valid translation if any 
 of the following are true:
 
-* The Root Table Type (RTT) field in Root-table Address 
-register (RTADDR_REG) is 0.
+<font color=gray face="黑体" size=2>
+Requests-with-PASID由于下面两种原因导致在 first-level 
+translation 产生faults:(1) 对于input address 没有合法的
+translation;或者(2) 对于input address 有合法的translation,
+但是他的访问权限不允许本次访问。如果下面的任何条件为真, 则
+没有合法的translation。
+</font>
+
+* The Root Table Type (RTT) field in Root-table 
+Address register (RTADDR_REG) is 0.
+<br/>
+<font color=gray face="黑体" size=2>
+Root-table Adress register 中的Root Table Type(RTT) 字段
+为0(表明不支持extended-root-entry)
+</font>
+
 * The input address in the request is not canonical (i.e., 
 address bits 63:48 not same value as address bit 47).
+<br/>
+<font color=gray face="黑体" size=2>
+request中的 input address不符合规则(例如: address bits 63:48
+和address中bit 47 值不相同)
+</font>
+
 * Hardware attempt to access a translation entry (extended-root-entry, 
 extended-context-entry, PASID-table entry, or a first-level 
 paging-structure entry) resulted in error.
+<br/>
+<font color=gray face="黑体" size=2>
+Hardware 尝试去访问translation entry（ entended-root-entry, 
+extended-context-entry, PASID-table entry, 或者 first-level paging-structure
+entry )将会导致错误。
+</font>
+
 * The extended-root-entry used to process the request (as noted
 in Section 3.4.2) has the relevant present field as 0, has 
 invalid programming, or has a reserved bit set.
+<br/>
+<font color=gray face="黑体" size=2>
+用于处理request 的extended-root-entry 中相关present field 为0(Section
+3.4.2 提到的), 或者 编程为非法的值，或者设置了reserved 的bit.
+</font>
+
 * The extended-context-entry used to process the request 
 (as noted in Section 3.4.3) has the P field as 0, PASIDE 
 field as 0, ERE field as 0 (for requests with Execute-Requested (ER)
@@ -320,18 +352,416 @@ field Set), SMEP field as 1 (for requests with Execute-Requests (ER)
 and Privileged-mode-Requested (PR) fields Set), has invalid programming,
 T field is programmed to block requests-with-PASID, or has a reserved 
 bit set.
+<br/>
+<font color=gray face="黑体" size=2>
+用于处理request的extend-context-entry 中的P field 是0 (如Section 3.4.3
+提到的), PASIDE 字段为0, ERE字段为0 (对于设置了Execute-Requested (ER)
+字段的request),SMEP 字段为0 (对于设置了Execute-Requests(ER) 和Privileged-mode-Requested
+(PR)字段的request), 或者是编程为非法的值，或者是T 字段被编程为 block request-with-PASID,
+（这个并未找到!!!),  或者是设置了reserved位
+</font>
+
 * The PASID-entry used to process the request (as noted in 
 Section 3.6) has the P field as 0, or has the SRE field as 0 
 (for requests with Privileged-mode-Requested (PR) field Set).
+<br/>
+<font color=gray face="黑体" size=2>
+处理request的PASID-entry 中的P字段为0， 或者是SRE字段为0(对于
+设置了 Privileged-mode-Requested (PR) 字段的request)
+</font>
+
 * The translation process for that address (as noted in Section 3.6)
 used a paging-structure entry in which the P field is 0 or one 
 that sets a reserved bit.
+<br/>
+<font color=gray face="黑体" size=2>
+对于 使用的paging-structure entry 中的P 字段为0 , 或者该entry中设置了 
+reserved bit 的address的 translationd的处理。
+</font>
 
 If there is a valid translation for an input address, its 
 access rights are determined as described in Section 3.6.2.
+
+<font color=gray face="黑体" size=2>
+如果对于一个input address 的translation 是合法的话，他的访问
+权限，如Section 3.6.2 描述的那样被确定。
+</font>
 
 Depending on the capabilities supported by remapping hardware 
 units and the endpoint device, translations faults may be 
 treated as non-recoverable errors or recoverable page faults. 
 Chapter 7 provides detailed hardware behavior on translation 
 faults and reporting to software. 
+
+<font color=gray face="黑体" size=2>
+依赖 remapping hardware units 和 endpoint devices  的 capabilities,
+translation faults 可能当作 non-recoverable(不可恢复的) 错误或者
+recoverable page faults。Chapter 7 提供了translation faults 硬件行为
+和 报告给软件(暴露软件接口) 的细节
+</font>
+
+### 3.6.2 Access Rights
+The accesses permitted for a request-with-PASID whose input 
+address that is successfully translated through first-level 
+translation is determined by the attributes of the request 
+and the access rights specified by the paging-structure 
+entries controlling the translation.
+
+<font color=gray face="黑体" size=2>
+对于是否允许对requst-with-PASID 的访问(该input addresss
+已经成功的通过first-level translation )由 request的 attributes和
+控制 translation 的paging-structure entries的访问权限决定。
+</font>
+
+Devices report support for requests-with-PASID through the 
+PCI-Express PASID Capability structure. PASID Capability allows
+software to query and control if the endpoint can issue 
+requests-with-PASID that request execute permission (such as 
+for instruction fetches) and requests with supervisor-privilege. 
+Remapping hardware implementations report support for requests
+seeking execute permission and requests seeking supervisor 
+privilege through the Extended Capability Register (see ERS and
+SRS fields in Section 10.4.3).
+
+<font color=gray face="黑体" size=2>
+Device 通过 PCI-Express PASID Capability structure 报告了对于
+request-with-PASID的支持。PASID Capability 允许软件查询并控制
+enpoint是否可以提交 execute permission的request-with-PASID
+（对于指令预取来说) 或者带有 supervisor-privilege的requests.
+Remapping hardware implementations 通过 Extended Capability Register
+(见Section 10.4.3 中的ERS和SRS字段) 报告了对于查询 request的
+execute permission 和 查询 request 的 supervisor privilege
+的支持
+</font>
+
+The following describes how first-level translation determines
+access rights:
+
+<font color=gray face="黑体" size=2>
+接下来描述了first-level translation如何确定访问权限:
+</font>
+
+* (1) For requests-with-PASID with supervisor privilege (value
+ of 1 in Privilege-mode-Requested (PR) field) processed through
+ a PASID-entry with SRE (Supervisor Requests Enable) field Set:
+ <br/>
+ <font color=gray face="黑体" size=2>
+ 通过PASID-entry 中的SRE (Supervisor Request Enable） 字段的设置
+ 处理带有 supervisor privilege 的request-with-PASID( Privilege-
+ mode-Requested 字段为1) .
+ </font>
+	+ (1.1) Data reads (Read requests with value of 0 in 
+	Execute-Requested (ER) field)
+	<br/> 
+	<font color=gray face="黑体" size=2>
+	Data reads( Execute-Requested(ER) 字段为0 的Read requests)
+	</font>
+		* (1.1.1)Data reads are allowed from any input address 
+		with a valid translation.
+		<br/> 
+		<font color=gray face="黑体" size=2>
+		来自于任何合法translation 的input address 的Data read
+		</font>
+	+ (1.2) Instruction Fetches (Read requests with value of 1 
+	in Execute-Requested (ER) field)
+	<br/> 
+	<font color=gray face="黑体" size=2>
+	指令预取（带有Execute-Requested(ER)字段为1 的Read requests)
+	</font>
+		* (1.1.2) If No-Execute-Enable (NXE) field in 
+		extended-context-entry used to translate request is 0
+		<br/> 
+		<font color=gray face="黑体" size=2>
+		如果translate reques使用的extended-context-entry 中的
+		No-Execute-Enable(NXE) 字段为0
+		</font>
+			+ (1.1.2.1) If Supervisor-Mode-Execute-Protection (SMEP) 
+			field in extended-context-entry used to translate 
+			request is 0, instruction may be fetched from any 
+			input address with a valid translation.
+			<br/> 
+			<font color=gray face="黑体" size=2>
+			如果 translate request 使用的 extended-context-entry 
+			中的 SMEP 字段为0, 指令可能从任何合法的translation de 
+			input address 中预取到
+			</font>
+			+ (1.1.2.2) If Supervisor-Mode-Execute-Protection (SMEP)
+			field in extended-context-entry used to translate request 
+			is 1, instruction may be fetched from any input address 
+			with a valid translation for which the U/S field (bit 2) 
+			is 0 in at least one of the paging-structure entries 
+			controlling the translation.
+			<br/> 
+			<font color=gray face="黑体" size=2>
+			如果translation request使用的 extended-context-entry 中的
+			SMEP 字段为1, 指令可以从任何下面描述的input address 中预取到:
+			该input address 具有合法的translation 并且 控制translation 的
+			paging-structure entries 中至少有一个entries他的U/S field(bit 2)
+			为0 
+			</font>
+			<font color=gray face="黑体" size=5>
+			(!!!WHY  AT LEAST ONE ???)
+			</font>
+		* (1.1.3) If No-Execute-Enable (NXE) field in 
+		extended-context-entry used to translate request is 1
+		<br/>
+		<font color=gray face="黑体" size=2>
+		如果用于translate request 的extended-context-entry 
+		中的 No-Execute-Enable (NXE)字段为1
+		</font>
+			+ (1.1.3.1) If Supervisor-Mode-Execute-Protection (SMEP) 
+			field in extended-context-entry used to translate request
+			is 0, instruction may be fetched from any input address 
+			with a valid translation for which the XD field (bit 63) 
+			is 0 in every paging-structure entry controlling the 
+			translation.
+			<br/>
+			<font color=gray face="黑体" size=2>
+			如果 用于translate request 的extended-context-entry 中的
+			Supervisor-Mode-Execute-Protection(SMEP)字段为0, 指令可以
+			从下面买哦书的任何input address中预取到，该input address 
+			具有合法的 translation 并且 控制translation 的每个 paging-structure
+			中的XD field(bit 63) 都是0
+			</font>
+			+ (1.1.3.2) If Supervisor-Mode-Execute-Protection (SMEP) 
+			field in extended-context-entry used to translate request 
+			is 1, instruction may be fetched from any input address 
+			with a valid translation for which, the U/S field is 0 in 
+			at least one of the paging-structure entries controlling 
+			the translation, and the XD field is 0 in every 
+			paging-structure entry controlling the translation.
+			<br/>
+			<font color=gray face="黑体" size=2>
+			如果用于translate request 的entended-context-entry 中的SMEP
+			字段为1, instruction 可以从下面任何的带有合法translation 的
+			input address取出，控制该translation的至少一个paging structure
+			entries U/S字段为0, 并且控制该translation的每个paging structure
+			的 XD 字段为0
+			</font>
+			<font color=gray face="黑体" size=5>
+			(!!!WHY  AT LEAST ONE ???)
+			</font>
+	+ (1.3) Write requests and Atomics requests
+	<br/>
+	<font color=gray face="黑体" size=2>
+	Write request 和 atomic requests
+	</font>
+		* (1.3.1) If Write-Protect-Enable (WPE) field in 
+		extended-context-entry used to translate request is 0, 
+		writes are allowed to any input address with a valid 
+		translation.
+		<br/>
+		<font color=gray face="黑体" size=2>
+		如果用于translate request 的 extended-context-entry 中的
+		Write-Protect-Enable(WPE) 字段为0, 允许带有任何合法
+		translation de input address 的写操作。
+		</font>
+		* (1.3.2) If WPE=1, writes are allowed to any input address 
+		with a valid translation for which the R/W field (bit 1) 
+		is 1 in every paging-structure entry controlling the 
+		translation.
+		<br/>
+		<font color=gray face="黑体" size=2>
+		如果WPE = 1, 允许下面任何带有合法translation的input address
+		写操作。该input address 需满足: 控制translation 的每个
+		paging-structure entry 中的R/W字段(bit 1) 都为1
+		</font>
+
+* (2) For requests-with-PASID with user privilege (value of 
+0 in Privilege-mode-Requested (PR) field):
+<br/>
+<font color=gray face="黑体" size=2>
+对于带有user privilege( Privilege-mode-Requested(PR) 字段为0)
+的request-with-PASID
+</font>
+	+ (2.1) Data reads (Read requests with value of 0 in 
+	Execute-Requested (ER) field)
+	<br/>
+	<font color=gray face="黑体" size=2>
+	Data read(Read request的Execute-Request(ER) field为0)
+	</font>
+		* (2.1.1)  Data reads are allowed from any input address 
+		with a valid translation for which the U/S field is 1 in 
+		every paging-structure entry controlling the translation.
+		<br/>
+		<font color=gray face="黑体" size=2>
+		Data read 允许下面的任何带有合法translation 的input address ,
+		旭满足控制 translation的每个paging-structure的U/S字段都为1
+		</font>
+	+ (2.2) Instruction fetches (Read requests with value of 1 
+	in Execute-Requested (ER) field)
+	<br/>
+	<font color=gray face="黑体" size=2>
+	指令预取(Read requests的 Execute-Requested (ER) 字段为1)
+	</font>
+		* (2.2.1) If No-Execute-Enable (NXE) field in 
+		extended-context-entry used to translate request 
+		is 0, instructions may be fetched from any input 
+		address with a valid translation for which the 
+		U/S field is 1 in every paging structure entry 
+		controlling  the translation.
+		<br/>
+		<font color=gray face="黑体" size=2>
+		如果用于translate request 的 extended-context-entry 
+		中的No-Execute-Enable(NXE) 字段为0, 指令可以从下面任何
+		的带有合法translation 的input address中预取到。需满足
+		控制translation 的每个 paging structure entry 的 U/S 
+		字段都为1
+		</font>
+		* (2.2.2) If No-Execute-Enable (NXE) field in 
+		extended-context-entry used to translate request is 1, 
+		instructions may be fetched from any input address with a 
+		valid translation for which the U/S field is 1 and XD 
+		field is 0 in every paging-structure entry controlling 
+		the translation.
+		<br/>
+		<font color=gray face="黑体" size=2>
+		如果用于translate request 的extended-context-entry 中的
+		No-Execute-Enable(NXE)字段为1, 指令可以从下面任何合法
+		translate 的地址中预取到, 需满足每个控制translation 的
+		paging-structure entry 中的 U/S字段为1 并且XD字段为0。
+		</font>
+	+ (2.3) Write requests and Atomics requests
+	<br/>
+	<font color=gray face="黑体" size=2>
+	Write request 和 atomic requests
+	</font>
+		* (2.3.1)  Writes are allowed to any input address with 
+		a valid translation for which the R/W field and the U/S 
+		field are 1 in every paging-structure entry controlling 
+		the translation.
+		<br/>
+		<font color=gray face="黑体" size=2>
+		允许任何下面任何带有合法translation 写入 input address,
+		需要满足每个控制translation 的paging-structure entry 中的R/W
+		字段和U/S字段都为1
+		</font>
+
+Remapping hardware may cache information from the paging-structure 
+entries in translation caches. These caches may include information
+about access rights. Remapping hardware may enforce access rights 
+based on these caches instead of on the paging structures in memory.
+This fact implies that, if software modifies a paging-structure 
+entry to change access rights, the hardware might not use that 
+change for a subsequent access to an affected input address. 
+Refer to Chapter 6 for details on hardware translation caching
+and how software can enforce consistency with translation caches
+when modifying paging structures in memory. 
+
+<font color=gray face="黑体" size=2>
+Remapping hardware 可以从paging-structure entries 在translation caches
+缓存信息。这些缓存可以包括访问权限的相关信息。Remapping hardware 可以
+基于这些cache 执行访问权限，而不是基于内存中的paging structures。
+这个带来的实际影响是，如果软件修改了paging-struture entry 来改变
+访问权限，硬件对于接下来的对于受影响的input address的访问使用的是
+未改动的。了解更多hardware translation caching 和软件如何 在修改memory中的
+paging structure 的时候， 让 translation cache 报纸一致性, 请参照Chapter 6 
+</font>
+
+### 3.6.3 Accessed, Extended Accessed, and Dirty Flags
+For any paging-structure entry that is used during first-level
+translation, bit 5 is the Accessed (A) flag. For first-level 
+paging-structure entries referenced through a Extended-context-entry
+with EAFE=1, bit 10 is the Extended-Accessed flag. For 
+paging-structure entries that map a page (as opposed to 
+referencing another paging structure), bit 6 is the Dirty (D)
+flag. These flags are provided for use by memory-management 
+software to manage the transfer of pages and paging structures
+into and out of physical memory.
+
+<font color=gray face="黑体" size=2>
+在first-level translation中，使用的任何paging-structure entry 的bit 5
+都是 Accessed(A) flag。对于通过带有EAFE的Extended-context-entry 指向的
+first-level paging-structure entries, bit 10是Extended-Accessed flag.
+对于map 了 page(和引用了另一个paging structure相反)的 pag-structure 
+entries, bit 6 是Dirty(D) flag. 这些flags 提供给 memory-management
+software 使用，用来管理page和paging structures 转移 into 或者
+out of 物理内存。
+</font>
+
+* Whenever the remapping hardware uses a first-level 
+paging-structure entry as part of input-address translation,
+it atomically sets the A field in that entry (if it is not 
+already set).
+<br/>
+<font color=gray face="黑体" size=2>
+每当remapping hardware 使用 first-level paging structure entry 
+作为input-address translation 一部分时, 他会atomically设置该entry的
+A(access) field(如果他没有被设置)
+</font>
+
+* If the Extended-Accessed-Flag-Enable (EAFE) is 1 in a 
+Extended-context-entry that references a first-level 
+paging-structure entry used by hardware, it atomically 
+sets the EA field in that entry. Whenever EA field is 
+atomically set, the A field is also set in the same atomic 
+operation. For software usages where the first-level paging 
+structures are shared across heterogeneous agents (e.g., CPUs
+and accelerator devices such as GPUs), EA flag may be used by
+software to identify pages accessed by non-CPU agent(s) (as 
+opposed to the A flag which indicates access by any agent 
+sharing the paging structures).
+<br/>
+<font color=gray face="黑体" size=2>
+如果Extended-context-entry 中的 Extend-Accessed-Flag-Enable
+(EAFE) 是1, 该Extend-context-entry 引用的first-level paging-
+structure entry 会被hardware 使用到，它会atomically 设置该
+entry 的EA field。每当EA field 被 atomically 设置，A field
+也会在相同的atomic 操作中被设置。对于在不同的agents 之间
+共享 first-level paging structures的用法(agents e.g. CPUs
+和 加速器devices 例如 GPUs)，EA flags可能用于软件来表示这些pages
+是被non-CPU agent(s) 访问的（与之对应的是A flags，表示由
+任意的共享了paging structure 的 agents访问)。
+</font>
+
+* Whenever there is a write to a input address, the remapping
+hardware atomically sets the D field (if it is not already 
+set) in the paging-structure entry that identifies the final 
+translated address for the input address (either a PTE or a 
+paging-structure entry in which the PS field is 1). The atomic
+operation that sets the D field also sets the A field (and the
+EA field, if EAFE=1 as described above).
+<br/>
+<font color=gray face="黑体" size=2>
+每当有一个对input address 的write 操作，remapping hardware 会
+atomically 设置paging-structure entry 中D field(如果它还没有被设置),
+该entry 确认了input address 的最终的translated address( PTE或者
+paging-structure 中的PS字段为1)。atomic操作会社值D field同时
+也会设置A field (如果上面买哦书的EAFE=1, 也会设置EA 字段)
+</font>
+> PS: PAGE_SIZE,为1表示指向具体的页表，为0表示指向paging structure.
+
+Memory-management software may clear these flags when a page 
+or a paging structure is initially loaded into physical memory.
+These flags are “sticky”, meaning that, once set, the remapping
+hardware does not clear them; only software can clear them.
+
+<font color=gray face="黑体" size=2>
+Memory-management 软件可能会清空这些flags 当page 或者paging strctures
+被初始化load 到物理内存时。之后这些flags 是"sticky", 意思是，一旦被设置，
+remapping hardware 不会在clear 他们; 只有software 会clear 他们.
+</font>
+
+Remapping hardware may cache information from the first-level
+paging-structure entries in translation caches (see Chapter 6).
+These caches may include information about accessed, 
+extended-accessed, and dirty flags. This fact implies that, 
+if software modifies an accessed flag, extended- accessed flag,
+or a dirty flag from 1 to 0, the hardware might not set the 
+corresponding bit in memory on a subsequent access using an 
+affected input address. Refer to Chapter 6 for details on 
+hardware translation caching and how software can enforce 
+consistency with translation caches when modifying paging 
+structures in memory. 
+
+<font color=gray face="黑体" size=2>
+Remapping hardware 会 cache 来自first-level paging structure 
+entries 中的信息到translation caches中(请看 Chapter 6）。
+这些cache 可能包括信息有: accessed, extended-accessed,和
+dirty flags。这带来的实际影响是，如果软件将accessed flags, 
+extended-accessed flags, 或者dirty flags 从1 修改为0, 
+hardware 可能不会在随后的使用受影响的input address 访问
+设置内存中相应的bit. 请查阅Chapter 了解 hardware translation
+caching 和 软件在修改内存中paging structures 时，如何保持
+translation cache 的一致性的细节。
+</font>

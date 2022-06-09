@@ -51,6 +51,42 @@ static ssize_t new_sync_read(struct file *filp, char __user *buf, size_t len, lo
 
 ### blkdev_read_iter
 ```cpp
+ssize_t blkdev_read_iter(struct kiocb *iocb, struct iov_iter *to)
+{
+    struct file *file = iocb->ki_filp;
+    struct inode *bd_inode = bdev_file_inode(file);
+    loff_t size = i_size_read(bd_inode);
+    loff_t pos = iocb->ki_pos;
+
+    if (pos >= size)
+        return 0;
+
+    size -= pos;
+    iov_iter_truncate(to, size);
+    return generic_file_read_iter(iocb, to);
+}
+```
+size代表文件的大小，而pos代表本次写入的偏移，
+如果pos大小大于size，则会返回失败，这和标准的文件
+不太一样，并且，`size -= pos;`表示最大可写入的长度，
+在`iov_iter_truncate`中会修改to(iov_iter)的i_count。
+
+```cpp
+static inline void iov_iter_truncate(struct iov_iter *i, u64 count)
+{
+    /*
+    ¦* count doesn't have to fit in size_t - comparison extends both
+    ¦* operands to u64 here and any value that would be truncated by
+    ¦* conversion in assignement is by definition greater than all
+    ¦* values of size_t, including old i->count.
+    ¦*/
+    if (i->count > count)
+        i->count = count;
+}
+```
+
+### generic_file_read_iter
+```cpp
 ssize_t
 generic_file_read_iter(struct kiocb *iocb, struct iov_iter *iter)
 {

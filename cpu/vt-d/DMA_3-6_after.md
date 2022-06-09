@@ -765,3 +765,166 @@ hardware 可能不会在随后的使用受影响的input address 访问
 caching 和 软件在修改内存中paging structures 时，如何保持
 translation cache 的一致性的细节。
 </font>
+
+### 3.6.4 Snoop Behavior
+Snoop behavior for a memory access (to a translation structure
+entry or access to the mapped page) specifies if the access is
+coherent (snoops the processor caches) or not. The snoop behavior
+is independent of the memory typing described in Section 3.6.5.
+When processing requests-with-PASID through first-level 
+translation, the snoop behavior for various accesses is 
+specified as follows:
+
+<font color=gray face="黑体" size=2>
+对于memory access (访问translation structure entry 或者 访问 mapped
+page)的Snoop behavior(窥探行为) 用于指定 该访问 是否是 一致性的(snoop
+processor cache)
+<font color=red face="黑体" size=2>
+(这个行为像是说，snoop behavior 会向cpu 一样， 去保证内存和cache 的一致性)
+。
+</font>
+snoop 行为不同于Section  3.6.5 中描述的memory typing。当通过first-level
+translation 处理request-with-PASID时，对于不同的访问, snoop behavior 通过
+下面的情形指定:
+</font>
+
+* Access to extended-root and extended-context-entries are 
+snooped if the Coherency ( C ) field in Extended Capability 
+Register (see Section 10.4.3) is reported as 1. These accesses
+are not required to be snooped if the field is reported as 0.
+<br/>
+<font color=gray face="黑体" size=2>
+如果Extended Capability Register(请看Section 10.4.3 ) 中的 
+Coherency( C ) 字段报告为1,  则访问extended-root和
+extended-context-entries 是snooped 。 如果该字段报告为0, 这些
+字段不需要是snooped。
+</font>
+
+* Access to PASID-table entries are always snooped.
+<br/>
+<font color=gray face="黑体" size=2>
+访问PASID-table entries 总是snooped
+</font>
+
+* Accesses to first-level paging-entries (PML4E, PDPE, PDE, PTE)
+are always snooped.
+<br/>
+<font color=gray face="黑体" size=2>
+访问first-level paging-entries (PML4E, PDPE, PDE, PTE) 总是snooped。
+</font>
+
+* Access to the page mapped through first-level translation is
+always snooped (independent of the value of the No-Snoop (NS)
+attribute in the request). 
+<br/>
+<font color=gray face="黑体" size=2>
+通过first-level translation 访问page mapped 总是snooped(无论request
+中 No-Snoop(NS) 属性的值是什么）
+</font>
+
+### 3.6.5 Memory Typing
+The memory type of a memory access (to a translation structure
+entry or access to the mapped page) refers to the type of 
+caching used for that access. Refer to Intel® 64 processor 
+specifications for definition and properties of each supported
+memory-type (UC, UC-, WC, WT, WB, WP). Support for memory typing
+in remapping hardware is reported through the Memory-Type-Support
+(MTS) field in the Extended Capability Register (see Section 
+10.4.3). This section describes how first-level translation 
+contributes to determination of memory typing.
+
+<font color=gray face="黑体" size=2>
+memory access (访问 translation structure entry 或者是 访问一个
+mapped page)的 memory type 指的是本次访问使用的 cache 的 type。
+参考Intel（R）64 processor 手册了解每个支持的memory-type(UC,UC-,
+WC, WT, WB, WP) 的定义和属性。remapping hardware 中支持的memory 
+typing 通过Extended Capability Register (请查看Section 10.4.3) 
+Memory-Type-Support(MTS)字段报告。该章节描述了first-level 
+translation 如何有助于确定memory typing。
+</font>
+
+* Memory-type has no meaning (and hence ignored) for memory 
+accesses from devices operating outside the processor 
+coherency domain.
+<br/>
+<font color=gray face="黑体" size=2>
+Memory-type 
+</font>
+
+* Memory-type applies for memory accesses from devices (such 
+as Intel® Processor Graphics device) operating inside the 
+processor coherency domain. 
+<br/>
+<font color=gray face="黑体" size=2>
+
+</font>
+
+When processing requests-with-PASID from devices operating in 
+the processor coherency domain, the memory type for any access
+through first-level translation is computed as follows:
+
+<font color=gray face="黑体" size=2>
+
+</font>
+
+* If cache-disable (CD) field in the extended-context-entry 
+used to process the request is 1, all accesses use memory-type
+of uncacheable (UC)
+<br/>
+<font color=gray face="黑体" size=2>
+
+</font>
+
+* If CD field is 0, the memory-type for accesses is computed 
+as follows:
+<br/>
+<font color=gray face="黑体" size=2>
+</font>
+	+ Access to extended-root & extended-context-entries use 
+	memory-type of uncacheable (UC).
+	<br/>
+	<font color=gray face="黑体" size=2>
+	</font>
+	+ Access to PASID-table entries use memory-type from MTRR 
+	(described in Section 3.6.5.2).
+	<br/>
+	<font color=gray face="黑体" size=2>
+	</font>
+	+ Memory-type for access to first-level translation-structure
+	entries (PML4E, PDPE, PDE, and PTE), and for access to the 
+	page itself is computed as follows:
+	<br/>
+	<font color=gray face="黑体" size=2>
+	</font>
+		* First, the memory-type specified by the Page Attribute 
+		Table (PAT) is computed. PAT is a 32-bit field in the 
+		extended-context-entry, comprising eight 4-bit entries 
+		(entry i comprises bits 4i+3:4i). Refer to Section 9.4 
+		for the exact format of the PAT field in the 
+		extended-context-entry.
+		<br/>
+		<font color=gray face="黑体" size=2>
+		</font>
+		* Second, the memory-type for the target physical address 
+		as specified by the Memory Type Range Registers (MTRRs) 
+		is computed. MTRRs provide a mechanism for associating the
+		memory types with physical-address ranges in system memory. 
+		MTRR Registers are described in detail in Section 10.4.38, 
+		Section 10.4.39, Section 10.4.40, and Section 10.4.41. For 
+		details on MTRR usage and configuration requirements refer 
+		to Intel(R)64 processor specifications.
+		<br/>
+		<font color=gray face="黑体" size=2>
+		</font>
+		* Finally, the effective memory-type is computed by combining 
+		the memory-types computed from PAT and MTRR.
+		<br/>
+		<font color=gray face="黑体" size=2>
+		</font>
+
+The following sub-sections describe details of computing memory-type 
+from PAT, memory type from MTRR, and how to combine them to 
+form the effective memory type.
+
+<font color=gray face="黑体" size=2>
+</font>

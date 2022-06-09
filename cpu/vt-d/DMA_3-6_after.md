@@ -848,7 +848,8 @@ accesses from devices operating outside the processor
 coherency domain.
 <br/>
 <font color=gray face="黑体" size=2>
-Memory-type 
+对于来自于 operating 在处理器一致性域之外的devices 的内存访问，
+Memory-type是没有意义的(并且由此可以被忽略)
 </font>
 
 * Memory-type applies for memory accesses from devices (such 
@@ -856,7 +857,8 @@ as Intel® Processor Graphics device) operating inside the
 processor coherency domain. 
 <br/>
 <font color=gray face="黑体" size=2>
-
+Memory-type 适用于来自于 operating 在处理器一致性域之内的device
+(例如 Intel (R) Processor Graphics device) 的内存访问。
 </font>
 
 When processing requests-with-PASID from devices operating in 
@@ -864,7 +866,9 @@ the processor coherency domain, the memory type for any access
 through first-level translation is computed as follows:
 
 <font color=gray face="黑体" size=2>
-
+当处理来自于 operating 在处理器一致性之内的devices 的request-with-PASID
+时，对于任何通过first-level translation 的access 对象的memory type
+被如下计算:
 </font>
 
 * If cache-disable (CD) field in the extended-context-entry 
@@ -872,29 +876,37 @@ used to process the request is 1, all accesses use memory-type
 of uncacheable (UC)
 <br/>
 <font color=gray face="黑体" size=2>
-
+如果用于处理request的extended-context-entry 中cache-disable (CD) 
+字段为1，任何访问使用uncacheable 的 memory-type 。
 </font>
 
 * If CD field is 0, the memory-type for accesses is computed 
 as follows:
 <br/>
 <font color=gray face="黑体" size=2>
+如果CD字段为0, accesses 的memory-type会被如下计算:
 </font>
 	+ Access to extended-root & extended-context-entries use 
 	memory-type of uncacheable (UC).
 	<br/>
 	<font color=gray face="黑体" size=2>
+	访问 extended-root & extended-context-entries 使用 UC
+	memory-type
 	</font>
 	+ Access to PASID-table entries use memory-type from MTRR 
 	(described in Section 3.6.5.2).
 	<br/>
 	<font color=gray face="黑体" size=2>
+	访问PASID-table entries 使用来自于MTRR的memory-type。
+	(在Section 3.6.5.2 中描述)
 	</font>
 	+ Memory-type for access to first-level translation-structure
 	entries (PML4E, PDPE, PDE, and PTE), and for access to the 
 	page itself is computed as follows:
 	<br/>
 	<font color=gray face="黑体" size=2>
+	对于对first-level translation-structures entries (PML4E, PDPE, 
+	PDE, 和PTE) 的访问, 并且对于对于该page本身的访问，被如下计算:
 	</font>
 		* First, the memory-type specified by the Page Attribute 
 		Table (PAT) is computed. PAT is a 32-bit field in the 
@@ -904,6 +916,10 @@ as follows:
 		extended-context-entry.
 		<br/>
 		<font color=gray face="黑体" size=2>
+		首先由Page Attribute Table(PAT) 指定的memory-type 会被计算。
+		PAT是一个extended-context-entry 中的32-bit 字段,  由8个4-bit
+		的entries组成(entry 1 由bits 4i+3:4i组成)。参考Section 9.4
+		了解extended-context-entry 中的PAT字段的详细的格式。
 		</font>
 		* Second, the memory-type for the target physical address 
 		as specified by the Memory Type Range Registers (MTRRs) 
@@ -915,11 +931,22 @@ as follows:
 		to Intel(R)64 processor specifications.
 		<br/>
 		<font color=gray face="黑体" size=2>
+		再者，由 Memory Type Range Register (MTRRs) 指定的target physical
+		address 的memory-type 会被计算。MTRRs提供了一个关联memory types和
+		系统内存中的physical-address 范围的机制。MTRR Register 在Section
+		10.4.38, Section 10.4.40, Section 10.4.41 中详细描述。对于MTRR
+		用法和配置需求，请参考Intel(R) 64 processor spec
+		<br/>
+		<font color=gray face="黑体" size=2>
+		4.9 PAGING AND MEMORY TYPING
+		</font>
 		</font>
 		* Finally, the effective memory-type is computed by combining 
 		the memory-types computed from PAT and MTRR.
 		<br/>
 		<font color=gray face="黑体" size=2>
+		最终，有效的memory-type 会通过来自于PAT和MTTR中的memory-types
+		结合计算。
 		</font>
 
 The following sub-sections describe details of computing memory-type 
@@ -927,4 +954,75 @@ from PAT, memory type from MTRR, and how to combine them to
 form the effective memory type.
 
 <font color=gray face="黑体" size=2>
+接下来的子章节，描述了来自于PAT memory-type, 和来自于MTRR memory的计算细节，
+并且如何结合他们形成有效的memory type.
 </font>
+
+#### 3.6.5.1 Selecting Memory Type from Page Attribute Table
+
+Memory-type selection from Page Attribute Table requires hardware
+to form a 3-bit index made up of the PAT, PCD and PWT bits from
+the respective paging-structure entries. The PAT bit is bit 7 in
+pagetable entries that point to 4-KByte pages and bit 12 in 
+paging-structure entries that point to larger pages. The PCD
+and PWT bits are bits 4 and 3, respectively, in paging-structure
+entries that point to pages of any size.
+
+<font color=gray face="黑体" size=2>
+Memory
+</font>
+
+The PAT memory-type comes from entry i of the Page Attribute
+Table in the extended-context-entry controlling the request,
+where i is defined as follows:
+
+* For access to PML4E, i = 2*PCD+PWT, where the PCD and PWT 
+ values come from the PASID-table entry.
+* For access to a paging-structure entry X whose address is 
+in another paging structure entry Y (i.e., PDPE, PDE and PTE),
+i = 2*PCD+PWT, where the PCD and PWT values come from Y.
+* For access to the physical address that is the translation
+of an input address, i = 4*PAT+2*PCD+PWT, where the PAT, PCD,
+and PWT values come from the relevant PTE (if the translation 
+uses a 4-KByte page), the relevant PDE (if the translation uses
+a 2-MByte page), or the relevant PDPE (if the translation uses 
+a 1-GByte page).
+
+#### 3.6.5.2 Selecting Memory Type from Memory Type Range Registers 
+
+Remapping hardware implementations reporting Memory-Type-Support 
+(MTS) field as Set in the Extended Capability Register support
+the Memory Type Range Registers (MTRRs). These include the MTRR
+Capability Register (see Section 10.4.38), MTRR Default Type 
+Register (see Section 10.4.39), fixed-range MTRRs (see Section
+10.4.40), and variable-range MTRRs (see Section 10.4.41).
+
+Selection of memory-type from the MTRR registers function as
+follows:
+
+* If the MTRRs are not enabled (Enable (E) field is 0 in the
+ MTRR Default Type Register), then MTRR memory-type is uncacheable (UC).
+* If the MTRRs are enabled (E=1 in MTRR Default Type Register),
+ then the MTRR memory-type is determined as follows:
+    + If the physical address falls within the first 1-MByte 
+     and fixed MTRRs are enabled, the MTRR memory-type is the 
+     memory-type stored for the appropriate fixed-range MTRR 
+     (see Section 10.4.40).
+    + Otherwise, hardware attempts to match the physical address
+    with a memory type set by the variable-range MTRRs ((see 
+    Section 10.4.41):
+        * If one variable memory range matches, the MTRR 
+	memory-type is the memory type stored in the 
+	MTRR_PHYSBASEn_REG Register for that range.
+        * If two or more variable memory ranges match and the 
+	memory-types are identical, then MTRR memory-type is 
+	that memory-type.
+        * If two or more variable memory ranges match and one 
+	of the memory types is UC, then MTRR memory-type is UC.
+        * If two or more variable memory ranges match and the 
+	memory types are WT and WB, then MTRR memory-type is WT.
+        * For overlaps not defined by above rules, hardware 
+	behavior is undefined.
+    + If no fixed or variable memory range matches, then the 
+    MTRR memory-type is the default memory-type from the MTRR 
+    Default Type Register (see Section 10.4.39). 

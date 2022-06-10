@@ -969,24 +969,60 @@ and PWT bits are bits 4 and 3, respectively, in paging-structure
 entries that point to pages of any size.
 
 <font color=gray face="黑体" size=2>
-Memory
+从Page Attribute Table中选择 Memory-type  需要硬件形成一个3-bits
+的 index, 该index有来自于各个paging-structure entries 的PAT, PCD,
+PWT组成。PAT bits 位于第pagetable-entries中的第7位，当该entries
+指向4-KByte page 并且 当该entries 指向更大大小的pages时，位于该
+pagetable-entries的第12位。PCD 和 PWD 分别为于paging-structure entries
+中的4 和 3 bits, 该entries 可以指向任意大小的page。
 </font>
 
 The PAT memory-type comes from entry i of the Page Attribute
 Table in the extended-context-entry controlling the request,
 where i is defined as follows:
 
+<font color=gray face="黑体" size=2>
+PAT memory-type 来自extended-conetxt-entry中的Page Attribute
+Table 中的第i个entry, 这里的i 被如下定义:
+</font>
+
 * For access to PML4E, i = 2*PCD+PWT, where the PCD and PWT 
  values come from the PASID-table entry.
+<br/>
+<font color=gray face="黑体" size=2>
+如果访问PML4E, i = 2 * PCD + PWT, 这里PCD 和 PWT 的值来自于
+PASID-table entry。
+</font>
+
 * For access to a paging-structure entry X whose address is 
 in another paging structure entry Y (i.e., PDPE, PDE and PTE),
 i = 2*PCD+PWT, where the PCD and PWT values come from Y.
+<br/>
+<font color=gray face="黑体" size=2>
+如果访问 page-structure entry X, X的address 位于另一个paging 
+structure entry Y(例如PDPE, PDE和PTE) , i = 2 * PCD + PWT, 
+这里的PCD和PWT 的值来自于Y。
+</font>
+
 * For access to the physical address that is the translation
 of an input address, i = 4*PAT+2*PCD+PWT, where the PAT, PCD,
 and PWT values come from the relevant PTE (if the translation 
 uses a 4-KByte page), the relevant PDE (if the translation uses
 a 2-MByte page), or the relevant PDPE (if the translation uses 
 a 1-GByte page).
+<br/>
+<font color=gray face="黑体" size=2>
+对于访问的物理地址是一个 input address 的translation(也就是
+说该访问是一个translation 事物， input address --> physical
+address), i = 4*PAT+2*PCD+PWT, 这里的PAT,PCD和PWT值均来自于
+相应的PTE（如果translation 使用的是4-KByte page), 相应的PDE
+（如果translation 使用的是2-MByte page）, 或者相应的PDPE（如果
+translation使用的是1-GByte page)。
+</font>
+
+<font color=red face="黑体" size=2>
+可见PCD和PWT的来源都位于其父entry (指向该entry的entry)
+</font>
 
 #### 3.6.5.2 Selecting Memory Type from Memory Type Range Registers 
 
@@ -996,6 +1032,9 @@ the Memory Type Range Registers (MTRRs). These include the MTRR
 Capability Register (see Section 10.4.38), MTRR Default Type 
 Register (see Section 10.4.39), fixed-range MTRRs (see Section
 10.4.40), and variable-range MTRRs (see Section 10.4.41).
+
+<font color=red face="黑体" size=2>
+</font>
 
 Selection of memory-type from the MTRR registers function as
 follows:

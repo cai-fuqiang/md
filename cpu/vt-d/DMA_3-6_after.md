@@ -1034,6 +1034,8 @@ Register (see Section 10.4.39), fixed-range MTRRs (see Section
 10.4.40), and variable-range MTRRs (see Section 10.4.41).
 
 <font color=red face="黑体" size=2>
+Remapping hardware implementations 报告了 Extended Capablility 
+Register中的Memory-Type-Support (MTS) 字段, 该Register 
 </font>
 
 Selection of memory-type from the MTRR registers function as

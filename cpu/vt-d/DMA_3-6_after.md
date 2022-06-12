@@ -1033,22 +1033,45 @@ Capability Register (see Section 10.4.38), MTRR Default Type
 Register (see Section 10.4.39), fixed-range MTRRs (see Section
 10.4.40), and variable-range MTRRs (see Section 10.4.41).
 
-<font color=red face="黑体" size=2>
+<font color=gray face="黑体" size=2>
 Remapping hardware implementations 报告了 Extended Capablility 
-Register中的Memory-Type-Support (MTS) 字段, 该Register 
+Register中的Memory-Type-Support (MTS) 字段, 支持 Memory Type 
+Ranger Registers(MTRRs)。这包括MTRR Capability Register(请查看
+Section 10.4.38), MTRR Default Type Register(请查看10.4.39),
+fixed-range MTRRs（请查看10.4.40), 和 variable-range MTRRs（请查看
+10.4.41）。
 </font>
 
 Selection of memory-type from the MTRR registers function as
 follows:
 
+<font color=gray face="黑体" size=2>
+根据如下从MTRR register function 中选择memory-type:
+</font>
+
 * If the MTRRs are not enabled (Enable (E) field is 0 in the
  MTRR Default Type Register), then MTRR memory-type is uncacheable (UC).
+<br/>
+<font color=gray face="黑体" size=2>
+如果MTRRs 不是enabled ( MTRR Default Type Register 中的Enable(E) field
+为0), MTRR memory-type 是 uncacheable (UC).
+</font>
+
 * If the MTRRs are enabled (E=1 in MTRR Default Type Register),
  then the MTRR memory-type is determined as follows:
+<br/>
+<font color=gray face="黑体" size=2>
+如果 MTRRs 是enabled （MTRR Default Type Register 中的E=1）， 
+MTRR memory-type 如下被确定:
+</font>
     + If the physical address falls within the first 1-MByte 
      and fixed MTRRs are enabled, the MTRR memory-type is the 
      memory-type stored for the appropriate fixed-range MTRR 
      (see Section 10.4.40).
+	<br/>
+	<font color=gray face="黑体" size=2>
+	如果physical address 
+	</font>
     + Otherwise, hardware attempts to match the physical address
     with a memory type set by the variable-range MTRRs ((see 
     Section 10.4.41):

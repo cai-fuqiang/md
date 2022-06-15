@@ -1534,7 +1534,7 @@ type and strict memory ordering on all of physical memory,
 it is sufficient to either program the MTRRs for all physical
 memory to be UC memory type or disable all MTRRs. 
 
-<font color=blue face="黑体" size=4>
+<font color=gray face="黑体" size=2>
 设置控制寄存器CR0中的CD flags 修改了处理器中的caching 行为像
 Table 11-5描述的那样, 但是由于硬件在不同处理器家族中实现不同，
 单独设置CD flags不足以让所有的处理器家族去强制其所有物理内存
@@ -1552,7 +1552,7 @@ cache hierarchy. Here, to remove code from the cache completely,
 a second WBINVD instruction must be executed after the MTRRs 
 have been disabled.
 
-<font color=blue face="黑体" size=4>
+<font color=gray face="黑体" size=2>
 对于 Pentium 4 和 Intel Xeon 处理器,在上面给定的步骤顺序执行后,
 执行WBINVD 指令后和MTRRs 在实际的被disabled 之前的code 的缓存行仍然会
 保留在 cache 层级中。这里，要从cache 层级中移除这些code, 
@@ -1565,7 +1565,7 @@ memory type of physical memory to be set explicitly).
 Consequently<sup>因此</sup>, software does not need to issue a second 
 WBINVD as some other processor generations might require. 
 
-<font color=blue face="黑体" size=4>
+<font color=gray face="黑体" size=2>
 对于Intel Atom 处理器，设置CD flag 会强制所有的物理内存去
 遵守UC语义(不需要物理内存的memory type 被显示的设置)。
 因此，软件不需要像其他代的CPU 需要的那样去提交第二个 WBINVD指令。
@@ -1583,7 +1583,7 @@ the processor caches, as described earlier in Section 11.5.3,
 in the L3 cache. After the L3 cache has been disabled or enabled,
 caching for the whole processor can be restored<sup>恢复</sup>. 
 
-<font color=blue face="黑体" size=4>
+<font color=gray face="黑体" size=2>
 在基于 NetBurst microarchitecture 处理器上，third-level cache 可以通过
 IA32_MISC_ENABLE MSR 中的bit 6 disable。third-level cache disable
 flag( IA32_MISC_ENABLE MSR 中的 bit 6)允许 L3 cache 去disable 或enable,
@@ -1596,7 +1596,7 @@ Newer Intel 64 processor with L3 do not support IA32_MISC_ENABLE[bit 6],
 the procedure<sup>程序;过程;步骤</sup> described in Section 11.5.3, “Preventing Caching,” 
 apply to the entire cache hierarchy.
 
-<font color=blue face="黑体" size=4>
+<font color=gray face="黑体" size=2>
 更加新的带有L3 cache 的 Intel 64 processor 不支持 IA32_MISC_ENABLE[bit 6],
 Section 11.5.3 "Preventing Caching" 描述的流程适用于整个cache层级。
 </font>
@@ -1610,7 +1610,7 @@ instructions and the non-temporal move instructions (MOVNTI,
 MOVNTQ, MOVNTDQ, MOVNTPS, and MOVNTPD) offer more granular <sup>颗粒;粒状</sup>
 control over caching, and are available to all privileged levels.
 
-<font color=blue face="黑体" size=4>
+<font color=gray face="黑体" size=2>
 Intel 64 和 IA-32 架构提供了一系列用于管理L1,L2,L3 cache的指令。
 INVD 和 WBINVD 指令时特权级指令并且对L1, L2 L3 cache 做一个整体的
 操作。PREFETCHh, CLFLUSH 和 CLFLUSHOPT 指令和 non-temporal mov
@@ -1631,7 +1631,7 @@ without writing back the modified lines (such as, during testing
 or fault recovery where cache coherency with main memory is 
 not a concern), software should use the WBINVD instruction.
 
-<font color=blue face="黑体" size=4>
+<font color=gray face="黑体" size=2>
 INVD和WBINVD指令用于无效 L1,L2,L3 cache内容。INVD指令无效所有的 internal
 cache entries, 然后生成一个 special-function bus cycle, 该bus
 cycle 表明外部的cache 也应该被 invalidate. INVD指令应该被小心使用。
@@ -1657,7 +1657,7 @@ of different cache hierarchies and other factors. **As a
 consequence**<sup>因此</sup>, the use of the WBINVD instruction can have an impact
 on interrupt/event response time.
 
-<font color=blue face="黑体" size=4>
+<font color=gray face="黑体" size=2>
 WBINVD 指令首先会write back internal cache 中的任何modified line,
 然后无效L1,L2,L3 cache中的内容。他会保证 main memory 的一致性,
 无论write policy 是否生效(这里指的是， write-through 或write-back).
@@ -1674,7 +1674,7 @@ processor that a cache line from a specified location in system
 memory be prefetched into the cache hierarchy (see Section 11.8,
 “Explicit Caching”). 
 
-<font color=blue face="黑体" size=4>
+<font color=gray face="黑体" size=2>
 PREFETCHh 指令允许程序 建议 来自系统内存中指定位置的cache line 可以
 被预取到 cache 层级中。（请查看11.8 "Explicit caching").
 </font>
@@ -1685,7 +1685,7 @@ program the ability to explicitly free up cache space, when
 it is known that cached section of system memory will not be
 accessed in the near future.
 
-<font color=blue face="黑体" size=4>
+<font color=gray face="黑体" size=2>
 CLFLUSH 和CLFLUSHOPT 指令允许从内存中 选择要刷新的cache line。
 这些指令提供给软件一个能力(方法) 在当他们知道 系统内存中的 
 cached section 在近期不会在访问的时候, 去显式的free cache 空间，
@@ -1701,14 +1701,13 @@ being stored back into system memory. These instructions operate
 on data in the general-purpose<sup>通用目的; purpose:目的</sup>, 
 MMX, and XMM registers. 
 
-<font color=blue face="黑体" size=4>
+<font color=gray face="黑体" size=2>
 non-temporal mov instruction(MOVNTI, MOVNTQ, MOVNTDQ,
 MOVNTPS,和 MOVNTPD) 允许数据数据从处理器中的寄存器直接移动到
 系统内存，并且不会写入到 L1, l2 和/或 L3 caches。这些指令用于
 防止cache污染，操作的始于在存储到system memory 之前，只会修改一次。
 这些指令操作的对象可以是 general-purpose（通用目的)， MMX和
 XMM等寄存器。
-
 </font>
 
 ### 11.5.6 L1 Data Cache Context Mode
@@ -1719,31 +1718,75 @@ the processor supports setting L1 data cache context mode
 using the L1 data cache context mode flag ( IA32_MISC_ENABLE[bit 24] ). 
 Selectable modes are adaptive mode (default) and shared mode.
 
+<font color=gray face="黑体" size=2>
+L1 data cache context mode是基于 Intel NetBurst microarchitecture
+处理器的一个 feature, 该处理器支持 Intel Hyper-Threading Technology。
+当 CPUID.1:ECX[bit 10] = 1, 处理器支持通过使用L1 data cache context
+mode flag( IA32_MISC_ENABLE[bit 24]) 设置 L1 data cache context mode.
+可选择的mode为 adaptive(default) 和 shared mode.
+</font>
+
 The BIOS is responsible for configuring the L1 data cache 
 context mode.
 
+<font color=gray face="黑体" size=2>
+BIOS 负责配置L1 data cache context mode.
+</font>
+
 #### 11.5.6.1 Adaptive Mode
-Adaptive mode facilitates L1 data cache sharing between logical
+Adaptive mode facilitates<sup>帮助；促进</sup> L1 data cache sharing between logical
 processors. When running in adaptive mode, the L1 data cache
 is shared across logical processors in the same core if:
 
+<font color=gray face="黑体" size=2>
+Adaptive mode 帮助L1 data cache 在逻辑处理器中共享。当运行于
+adaptive mode, L1 data cache 在同一个core 中的逻辑处理器共享
+的条件为:
+</font>
+
 * CR3 control registers for logical processors sharing the 
 cache are identical.
+<br/>
+<font color=gray face="黑体" size=2>
+对于sharing cache 的逻辑处理器中的CR3 control register 是一样的。
+</font>
 * The same paging mode is used by logical processors sharing the cache.
+<br/>
+<font color=gray face="黑体" size=2>
+sharing cache 的逻辑处理器使用相同的paging mode.
+</font>
 
 In this situation, the entire L1 data cache is available to 
-each logical processor (instead of being competitively shared).
+each logical processor (instead of being competitively<sup>有竞争力的</sup>
+shared).
+
+<font color=gray face="黑体" size=2>
+对于这种情况，每个逻辑处理器都可以使用整个的L1 data cache.
+(而不是竞争性的分享)
+</font>
 
 If CR3 values are different for the logical processors sharing
 an L1 data cache or the logical processors use different paging
-modes, processors compete for cache resources. This reduces the
+modes, processors compete<sup>竞争</sup> for cache resources. This reduces the
 effective size of the cache for each logical processor. Aliasing
-of the cache is not allowed (which prevents data thrashing).
+of the cache is not allowed (which prevents data thrashing
+<sup>多次反复; 屡次反复</sup>).
+
+<font color=gray face="黑体" size=2>
+如果sharing L1 data cache 的logical processor 使用不同的CR3 value 或者
+使用不同的paging modes, 处理器将竞争 cache 资源。这将减少
+每一个逻辑处理器的 有效size。不允许缓存别名(防止数据抖动)
+</font>
 
 #### 11.5.6.2 Shared Mode
 In shared mode, the L1 data cache is competitively shared 
 between logical processors. This is true even if the logical
 processors use identical CR3 registers and paging modes.
+
+<font color=gray face="黑体" size=2>
+在share mode 下, L1 data cache 在逻处理器中是竞争性共享。即使
+逻辑处理器使用相同的CR3 寄存器和 paging modes。
+</font>
 
 In shared mode, linear addresses in the L1 data cache can be 
 aliased, meaning that one linear address in the cache can 
@@ -1752,6 +1795,14 @@ resolving aliasing can lead to thrashing. For this reason,
 IA32_MISC_ENABLE[bit 24] = 0 is the preferred configuration 
 for processors based on the Intel NetBurst microarchitecture
 that support Intel Hyper-Threading Technology. 
+
+<font color=gray face="黑体" size=2>
+在shared mode中，L1 data cache 中的线性地址可以被别名，
+意味着cache中的一个线性地址可以指向不同的physical location.
+对于解析别名这个机制可能会带来抖动。因为此原因，对于基于
+Intel NetBurst microarchitecture并支持 Intel Hyper-Threading
+Technology 的处理器来说 IA32_MISC_ENABLE[bit 24] = 0 是配置首选。
+</font>
 
 ## 11.6 SELF-MODIFYING CODE
 A write to a memory location in a code segment that is currently

@@ -1812,13 +1812,27 @@ of the instruction. In addition, the P6 family and Pentium processors
 check whether a write to a code segment may modify an instruction
 that has been prefetched for execution. If the write affects a
 prefetched instruction, the prefetch queue is invalidated. This
-latter check is based on the linear address of the instruction.
+latter<sup>后期的; 末期的;后面的</sup> 
+check is based on the linear address of the instruction.
 For the Pentium 4 and Intel Xeon processors, a write or a snoop
 of an instruction in a code segment, where the target instruction
-is already decoded and resident in the trace cache, invalidates
+is already decoded and resident<sup>定居;常驻;驻留</sup> in the trace cache, invalidates
 the entire trace cache. The latter behavior means that programs
-that self-modify code can cause severe degradation of performance
+that self-modify code can cause severe<sup>严格的;严重;剧烈
+</sup> degradation<sup>降低</sup> of performance
 when run on the Pentium 4 and Intel Xeon processors.
+
+<font color=gray face="黑体" size=2>
+对当前cache存在的处理器中的代码段中的memory location 的写操作会导致
+相关的cache line (或者lines) 无效。该检查基于指令的物理地址。另外,
+P6 family 和 Pentium 处理器检查对代码段的写入是否会修改已经执行预取
+的指令。如果这个write 操作影响了一个已经预取的指令，预取队列将会被无效。
+后面的检查是基于指令的线性地址。对于 Pentium 4和Intel Xeon 处理器，
+在代码段中的指令进行write 或者 snoop , 并且该代码段中的指令已经 decoded
+和 驻留在了trace cache， 无效整个的 trace cache。后面的行为意味着
+编写self-modify code 会严重减低性能，当运行在 Pentium 4 和Intel 
+Xeon processors
+</font>
 
 In practice, the check on linear addresses should not create
 compatibility problems among IA-32 processors. Applications
@@ -1833,6 +1847,9 @@ and prefetch queue. (See Section 8.1.3, “Handling Self- and
 Cross-Modifying Code,” for more information about the use of
 self-modifying code.)
 
+<font color=gray face="黑体" size=2>
+</font>
+
 For Intel486 processors, a write to an instruction in the cache
 will modify it in both the cache and memory, but if the instruction
 was prefetched before the write, the old version of the instruction
@@ -1840,3 +1857,233 @@ could be the one executed. To prevent the old instruction from
 being executed, flush the instruction prefetch unit by coding
 a jump instruction immediately after any write that modifies
 an instruction. 
+
+<font color=gray face="黑体" size=2>
+</font>
+
+## 11.7 IMPLICIT CACHING (PENTIUM 4, INTEL XEON, AND P6 FAMILY PROCESSORS)
+Implicit caching occurs when a memory element is made potentially
+cacheable, although the element may never have been accessed 
+in the normal von Neumann sequence. Implicit caching occurs on
+the P6 and more recent processor families due to aggressive 
+prefetching, branch prediction, and TLB miss handling. Implicit
+caching is an extension of the behavior of existing Intel386,
+Intel486, and Pentium processor systems, since software running
+on these processor families also has not been able to 
+deterministically predict the behavior of instruction prefetch.
+
+To avoid problems related to implicit caching, the operating 
+system must explicitly invalidate the cache when changes are 
+made to cacheable data that the cache coherency mechanism does
+not automatically handle. This includes writes to dual-ported
+or physically aliased memory boards that are not detected by 
+the snooping mecha- nisms of the processor, and changes to 
+page-table entries in memory.
+
+The code in Example 11-1 shows the effect of implicit caching 
+on page-table entries. The linear address F000H points to 
+physical location B000H (the page-table entry for F000H contains
+the value B000H), and the page-table entry for linear address
+F000 is PTE_F000. 
+
+Example 11-1. Effect of Implicit Caching on Page-Table Entries
+```
+mov EAX, CR3; Invalidate the TLB
+mov CR3, EAX; by copying CR3 to itself
+mov PTE_F000, A000H; Change F000H to point to A000H
+mov EBX, [F000H];
+```
+
+Because of speculative execution in the P6 and more recent 
+processor families, the last MOV instruction performed would
+place the value at physical location B000H into EBX, rather 
+than the value at the new physical address A000H. This 
+situation is remedied by placing a TLB invalidation between 
+the load and the store. 
+
+## 11.8 EXPLICIT CACHING
+The Pentium III processor introduced four new instructions, 
+the PREFETCHh instructions, that provide software with 
+explicit control over the caching of data. These instructions
+provide “hints” to the processor that the data requested by a
+PREFETCHh instruction should be read into cache hierarchy now
+or as soon as possible, in anticipation of its use. The 
+instructions provide different variations of the hint that 
+allow selection of the cache level into which data will be 
+read.
+
+The PREFETCHh instructions can help reduce the long latency 
+typically associated with reading data from memory and thus 
+help prevent processor “stalls.” However, these instructions 
+should be used judiciously. Overuse can lead to resource 
+conflicts and hence reduce the performance of an application.
+Also, these instructions should only be used to prefetch data
+from memory; they should not be used to prefetch instructions.
+For more detailed informa- tion on the proper use of the 
+prefetch instruction, refer to Chapter 7, “Optimizing Cache 
+Usage,” in the Intel® 64 and IA-32 Architectures Optimization
+Reference Manual.
+
+## 11.9 INVALIDATING THE TRANSLATION LOOKASIDE BUFFERS (TLBS)
+The processor updates its address translation caches (TLBs) 
+transparently to software. Several mechanisms are available,
+however, that allow software and hardware to invalidate the 
+TLBs either explicitly or as a side effect of another operation.
+Most details are given in Section 4.10.4, “Invalidation of 
+TLBs and Paging-Structure Caches.” In addition, the following
+operations invalidate all TLB entries, irrespective of the 
+setting of the G flag: 
+
+* Asserting or de-asserting the FLUSH# pin.
+* (Pentium 4, Intel Xeon, and later processors only.) Writing
+to an MTRR (with a WRMSR instruction).
+* Writing to control register CR0 to modify the PG or PE flag.
+* (Pentium 4, Intel Xeon, and later processors only.) Writing
+to control register CR4 to modify the PSE, PGE, or PAE flag.
+* Writing to control register CR4 to change the PCIDE flag from 1 to 0.
+
+See Section 4.10, “Caching Translation Information,” for 
+additional information about the TLBs.
+
+## 11.10 STORE BUFFER
+Intel 64 and IA-32 processors temporarily store each write 
+(store) to memory in a store buffer. The store buffer improves
+processor performance by allowing the processor to continue 
+executing instructions without having to wait until a write 
+to memory and/or to a cache is complete. It also allows 
+writes to be delayed for more efficient use of memory-access 
+bus cycles.
+
+In general, the existence of the store buffer is transparent
+to software, even in systems that use multiple processors. 
+The processor ensures that write operations are always carried
+out in program order. It also ensures that the contents of the
+store buffer are always drained to memory in the following 
+situations: 
+
+* When an exception or interrupt is generated.
+* (P6 and more recent processor families only) When a 
+serializing instruction is executed.
+* When an I/O instruction is executed.
+* When a LOCK operation is performed.
+* (P6 and more recent processor families only) When a BINIT 
+operation is performed.
+* (Pentium III, and more recent processor families only) When
+using an SFENCE instruction to order stores.
+* (Pentium 4 and more recent processor families only) When 
+using an MFENCE instruction to order stores.
+
+The discussion of write ordering in Section 8.2, “Memory 
+Ordering,” gives a detailed description of the operation of
+the store buffer.
+
+## 11.11 MEMORY TYPE RANGE REGISTERS (MTRRS)
+The following section pertains only to the P6 and more recent
+processor families.
+
+The memory type range registers (MTRRs) provide a mechanism 
+for associating the memory types (see Section 11.3, “Methods 
+of Caching Available”) with physical-address ranges in system
+memory. They allow the processor to optimize operations for 
+different types of memory such as RAM, ROM, frame-buffer memory,
+and memory-mapped I/O devices. They also simplify system 
+hardware design by eliminating the memory control pins used 
+for this func- tion on earlier IA-32 processors and the 
+external logic needed to drive them.
+
+The MTRR mechanism allows multiple ranges to be defined in 
+physical memory, and it defines a set of model- specific 
+registers (MSRs) for specifying the type of memory that is 
+contained in each range. Table 11-8 shows the memory types 
+that can be specified and their properties; Figure 11-4 shows
+the mapping of physical memory with MTRRs. See Section 11.3, 
+“Methods of Caching Available,” for a more detailed description
+of each memory type. Following a hardware reset, the P6 and 
+more recent processor families disable all the fixed and 
+variable MTRRs, which in effect makes all of physical memory 
+uncacheable. Initialization software should then set the MTRRs
+to a specific, system-defined memory map. Typically, the BIOS
+(basic input/output system) software configures the MTRRs. The
+operating system or executive is then free to modify the memory
+map using the normal page-level cacheability attributes.
+
+In a multiprocessor system using a processor in the P6 family
+or a more recent family, each processor MUST use the identical
+MTRR memory map so that software will have a consistent view 
+of memory. 
+
+NOTE
+
+In multiple processor systems, the operating system must 
+maintain MTRR consistency between all the processors in the 
+system (that is, all processors must use the same MTRR values).
+The P6 and more recent processor families provide no hardware
+support for maintaining this consistency.
+
+![Table-11-8](pic/Table-11-8.png)
+
+NOTE:
+* Use of these encodings results in a general-protection 
+exception (#GP).
+
+![Figure-11-4](pic/Figure-11-4.png)
+
+### 11.11.2 Setting Memory Ranges with MTRRs
+The memory ranges and the types of memory specified in each 
+range are set by three groups of registers: the IA32_MTRR_DEF_TYPE
+MSR, the fixed-range MTRRs, and the variable range MTRRs. 
+These registers can be read and written to using the RDMSR and
+WRMSR instructions, respectively. The IA32_MTRRCAP MSR indicates
+the availability of these registers on the processor (see Section
+11.11.1, “MTRR Feature Identification”).
+
+#### 11.11.2.1 IA32_MTRR_DEF_TYPE MSR
+The IA32_MTRR_DEF_TYPE MSR (named MTRRdefType MSR for the P6 
+family processors) sets the default properties of the regions
+of physical memory that are not encompassed by MTRRs. The 
+functions of the flags and field in this register are as follows:
+
+* Type field, bits 0 through 7 — Indicates the default memory
+type used for those physical memory address ranges that do not
+have a memory type specified for them by an MTRR (see Table 
+11-8 for the encoding of this field). The legal values for this
+field are 0, 1, 4, 5, and 6. All other values result in a 
+general-protection exception (#GP) being generated.
+<br/>
+Intel recommends the use of the UC (uncached) memory type for
+all physical memory addresses where memory does not exist. 
+To assign the UC type to nonexistent memory locations, it can
+either be specified as the default type in the Type field or 
+be explicitly assigned with the fixed and variable MTRRs.
+
+![Figure-11-6](pic/Figure-11-6.png)
+
+* FE (fixed MTRRs enabled) flag, bit 10 — Fixed-range MTRRs are enabled when set; fixed-range MTRRs are
+disabled when clear. When the fixed-range MTRRs are enabled, they take priority over the variable-range
+MTRRs when overlaps in ranges occur. If the fixed-range MTRRs are disabled, the variable-range MTRRs can
+still be used and can map the range ordinarily covered by the fixed-range MTRRs.
+* E (MTRRs enabled) flag, bit 11 — MTRRs are enabled when set; all MTRRs are disabled when clear, and the
+UC memory type is applied to all of physical memory. When this flag is set, the FE flag can disable the fixed-
+range MTRRs; when the flag is clear, the FE flag has no affect. When the E flag is set, the type specified in the
+default memory type field is used for areas of memory not already mapped by either a fixed or variable MTRR.
+
+Bits 8 and 9, and bits 12 through 63, in the IA32_MTRR_DEF_TYPE MSR are reserved; the processor generates a
+general-protection exception (#GP) if software attempts to write nonzero values to them.
+
+#### 11.11.2.2 Fixed Range MTRRs
+The fixed memory ranges are mapped with 11 fixed-range registers of 64 bits each. Each of these registers is
+divided into 8-bit fields that are used to specify the memory type for each of the sub-ranges the register controls:
+
+* Register IA32_MTRR_FIX64K_00000 — Maps the 512-KByte address range from 0H to 7FFFFH. This range
+is divided into eight 64-KByte sub-ranges.
+* Registers IA32_MTRR_FIX16K_80000 and IA32_MTRR_FIX16K_A0000 — Maps the two 128-KByte
+address ranges from 80000H to BFFFFH. This range is divided into sixteen 16-KByte sub-ranges, 8 ranges per
+register.
+* Registers IA32_MTRR_FIX4K_C0000 through IA32_MTRR_FIX4K_F8000 — Maps eight 32-KByte
+address ranges from C0000H to FFFFFH. This range is divided into sixty-four 4-KByte sub-ranges, 8 ranges per
+register.
+
+Table 11-9 shows the relationship between the fixed physical-address ranges and the corresponding fields of the
+fixed-range MTRRs; Table 11-8 shows memory type encoding for MTRRs.
+
+For the P6 family processors, the prefix for the fixed range MTRRs is MTRRfix.

@@ -1460,6 +1460,12 @@ To disable the L1, L2, and L3 caches after they have been
 enabled and have received cache fills, perform the following 
 steps:
 
+<font color=gray face="黑体" size=2>
+在L1, L2, L3 cache 已经enabled 并且已经收到了一些cache fills(已经
+fill了一些cache) 之后，想要去 disable L1, L2, L3 caches，执行下面
+的步骤:
+</font>
+
 1. Enter the no-fill cache mode. (Set the CD flag in control 
 register CR0 to 1 and the NW flag to 0.
 
@@ -1470,19 +1476,48 @@ uncached or set all MTRRs for the uncached memory type (see
 the discussion of the discussion of the TYPE field and the 
 E flag in Section 11.11.2.1, “IA32_MTRR_DEF_TYPE MSR”).
 
+<font color=gray face="黑体" size=2>
+
+1. 进入 no-fill cache 模式(设置CR0 中的CDflags为1，并且NW
+flag 为0。
+2. 通过WBINVND指令 flush所有的缓存
+3.  disable MTRRs 并且设置默认的memory type 成uncached或者
+设置所有的 MTRRs 为 uncached memory type (请参阅 Section 11.11.2.1
+"IA32_MTRR_DEF_TYPE MSR" 中的TYPE field和E flag)
+
+</font>
+
 The caches must be flushed (step 2) after the CD flag is set 
 to ensure system memory coherency. If the caches are not 
 flushed, cache hits on reads will still occur and data will 
 be read from valid cache lines.
 
-The intent of the three separate steps listed above address 
-three distinct requirements: (i) discontinue new data 
+<font color=gray face="黑体" size=2>
+在CD flags被设置后为了保证系统内存一致性 caches 必须被flush。
+如果cache 没有被flush, 在read时，仍然会发生cache hits 并且
+数据也将从valid cache line中读取。
+</font>
+
+The intent<sup>目的</sup> of the three separate<sup>独立的; 分别的</sup> 
+steps listed above address <sup>处理...问题</sup> three distinct<sup>不同的</sup>
+requirements: (i) discontinue<sup>停止</sup> new data 
 replacing existing data in the cache (ii) ensure data already
-in the cache are evicted to memory, (iii) ensure subsequent
-memory references observe UC memory type semantics. Different
+in the cache are evicted to memory, (iii) ensure subsequent<sup>随后的</sup>
+memory references observe<sup>遵守</sup> UC memory type semantics. Different
 processor implementation of caching control hardware may allow
-some variation of software implementation of these three 
+some variation<sup>变化</sup> of software implementation of these three 
 requirements. See note below. 
+
+<font color=gray face="黑体" size=2>
+上面列出的这些独立的步骤 的目的是解决三个不同的要求:
+
+1. 停止新数据替换现有cache中的数据
+2. 保证现有cache中的数据会被 evict 到 内存中
+3. 保证随后的内存引用遵守UC memory type 语义。
+
+cache control hardware 的不同处理器实现可能允许这
+三个要求的软件实现有一些变化。请看下面的Note
+</font>
 
 <font color=blue face="黑体" size=4>
 NOTES:
@@ -1490,113 +1525,267 @@ NOTES:
 
 Setting the CD flag in control register CR0 modifies the 
 processor’s caching behavior as indicated in Table 11-5, 
-but setting the CD flag alone may not be sufficient across 
+but setting the CD flag alone may not be sufficient<sup>足够; 充足</sup> across 
 all processor families to force the effective memory type 
 for all physical memory to be UC nor does it force strict 
 memory ordering, due to hardware implementation variations 
 across different processor families. To force the UC memory 
 type and strict memory ordering on all of physical memory, 
 it is sufficient to either program the MTRRs for all physical
-memory to be UC memory type or disable all MTRRs. For the 
-Pentium 4 and Intel Xeon processors, after the sequence of 
+memory to be UC memory type or disable all MTRRs. 
+
+<font color=blue face="黑体" size=4>
+设置控制寄存器CR0中的CD flags 修改了处理器中的caching 行为像
+Table 11-5描述的那样, 但是由于硬件在不同处理器家族中实现不同，
+单独设置CD flags不足以让所有的处理器家族去强制其所有物理内存
+的有效memory type为 UC , 也不会强制严格的内存排序。为了强制UC
+memory type 并且在所有的物理内存都严格的memory ordering，
+将所有物理内存的MTRR编程为 UC memory type 或者disable所有的
+MTRRs 就可以满足上面的要求。
+</font>
+
+For the Pentium 4 and Intel Xeon processors, after the sequence of 
 steps given above has been executed, the cache lines containing
 the code between the end of the WBINVD instruction and before
-the MTRRS have actually been disabled may be retained in the 
+the MTRRS have actually been disabled may be retained<sup>保留; 保存</sup> in the 
 cache hierarchy. Here, to remove code from the cache completely,
 a second WBINVD instruction must be executed after the MTRRs 
 have been disabled.
 
+<font color=blue face="黑体" size=4>
+对于 Pentium 4 和 Intel Xeon 处理器,在上面给定的步骤顺序执行后,
+执行WBINVD 指令后和MTRRs 在实际的被disabled 之前的code 的缓存行仍然会
+保留在 cache 层级中。这里，要从cache 层级中移除这些code, 
+必须在MTRRs 被disabled 之后 执行第二个 WBINVD 指令
+</font>
+
 For Intel Atom processors, setting the CD flag forces all 
 physical memory to observe UC semantics (without requiring 
 memory type of physical memory to be set explicitly). 
-Consequently, software does not need to issue a second 
+Consequently<sup>因此</sup>, software does not need to issue a second 
 WBINVD as some other processor generations might require. 
 
+<font color=blue face="黑体" size=4>
+对于Intel Atom 处理器，设置CD flag 会强制所有的物理内存去
+遵守UC语义(不需要物理内存的memory type 被显示的设置)。
+因此，软件不需要像其他代的CPU 需要的那样去提交第二个 WBINVD指令。
+</font>
+
 ### 11.5.4 Disabling and Enabling the L3 Cache
-On processors based on Intel NetBurst microarchitecture, the third-level cache can be disabled by bit 6 of the
-IA32_MISC_ENABLE MSR. The third-level cache disable flag (bit 6 of the IA32_MISC_ENABLE MSR) allows the L3
-cache to be disabled and enabled, independently of the L1 and L2 caches. Prior to using this control to disable or
-enable the L3 cache, software should disable and flush all the processor caches, as described earlier in Section
-11.5.3, “Preventing Caching,” to prevent of loss of information stored in the L3 cache. After the L3 cache has been
-disabled or enabled, caching for the whole processor can be restored.
-Newer Intel 64 processor with L3 do not support IA32_MISC_ENABLE[bit 6], the procedure described in Section
-11.5.3, “Preventing Caching,” apply to the entire cache hierarchy.
+On processors based on Intel NetBurst microarchitecture, the
+third-level cache can be disabled by bit 6 of the IA32_MISC_ENABLE
+MSR. The third-level cache disable flag (bit 6 of the IA32_MISC_ENABLE
+MSR) allows the L3 cache to be disabled and enabled, independently
+of the L1 and L2 caches. **Prior to**<sup>在...之前</sup> using this control to disable
+or enable the L3 cache, software should disable and flush all
+the processor caches, as described earlier in Section 11.5.3,
+“Preventing Caching,” to prevent of loss of information stored
+in the L3 cache. After the L3 cache has been disabled or enabled,
+caching for the whole processor can be restored<sup>恢复</sup>. 
+
+<font color=blue face="黑体" size=4>
+在基于 NetBurst microarchitecture 处理器上，third-level cache 可以通过
+IA32_MISC_ENABLE MSR 中的bit 6 disable。third-level cache disable
+flag( IA32_MISC_ENABLE MSR 中的 bit 6)允许 L3 cache 去disable 或enable,
+并且该操作独立于L1和L2 cache, 软件应该像前面的章节 11.5.3 "Preventing Caching"
+描述的那样去disable 并且 flush 所有的处理器缓存, 来防止L3 cache中存储
+的数据丢失。在L3 cache 被disable 或者enable 后，可以恢复整个处理器的缓存。
+</font>
+
+Newer Intel 64 processor with L3 do not support IA32_MISC_ENABLE[bit 6], 
+the procedure<sup>程序;过程;步骤</sup> described in Section 11.5.3, “Preventing Caching,” 
+apply to the entire cache hierarchy.
+
+<font color=blue face="黑体" size=4>
+更加新的带有L3 cache 的 Intel 64 processor 不支持 IA32_MISC_ENABLE[bit 6],
+Section 11.5.3 "Preventing Caching" 描述的流程适用于整个cache层级。
+</font>
 
 ### 11.5.5 Cache Management Instructions
-The Intel 64 and IA-32 architectures provide several instructions for managing the L1, L2, and L3 caches. The INVD
-and WBINVD instructions are privileged instructions and operate on the L1, L2 and L3 caches as a whole. The
-PREFETCHh, CLFLUSH and CLFLUSHOPT instructions and the non-temporal move instructions (MOVNTI, MOVNTQ,
-MOVNTDQ, MOVNTPS, and MOVNTPD) offer more granular control over caching, and are available to all privileged
-levels.
-The INVD and WBINVD instructions are used to invalidate the contents of the L1, L2, and L3 caches. The INVD
-instruction invalidates all internal cache entries, then generates a special-function bus cycle that indicates that
-external caches also should be invalidated. The INVD instruction should be used with care. It does not force a
-write-back of modified cache lines; therefore, data stored in the caches and not written back to system memory
-will be lost. Unless there is a specific requirement or benefit to invalidating the caches without writing back the
-modified lines (such as, during testing or fault recovery where cache coherency with main memory is not a
-concern), software should use the WBINVD instruction.
-The WBINVD instruction first writes back any modified lines in all the internal caches, then invalidates the contents
-of both the L1, L2, and L3 caches. It ensures that cache coherency with main memory is maintained regardless of
-the write policy in effect (that is, write-through or write-back). Following this operation, the WBINVD instruction
-generates one (P6 family processors) or two (Pentium and Intel486 processors) special-function bus cycles to indi-
-cate to external cache controllers that write-back of modified data followed by invalidation of external caches
-should occur. The amount of time or cycles for WBINVD to complete will vary due to the size of different cache hier-
-archies and other factors. As a consequence, the use of the WBINVD instruction can have an impact on inter-
-rupt/event response time.
-The PREFETCHh instructions allow a program to suggest to the processor that a cache line from a specified location
-in system memory be prefetched into the cache hierarchy (see Section 11.8, “Explicit Caching”).
-The CLFLUSH and CLFLUSHOPT instructions allow selected cache lines to be flushed from memory. These instruc-
-tions give a program the ability to explicitly free up cache space, when it is known that cached section of system
-memory will not be accessed in the near future.
-The non-temporal move instructions (MOVNTI, MOVNTQ, MOVNTDQ, MOVNTPS, and MOVNTPD) allow data to be
-moved from the processor’s registers directly into system memory without being also written into the L1, L2,
-and/or L3 caches. These instructions can be used to prevent cache pollution when operating on data that is going
-to be modified only once before being stored back into system memory. These instructions operate on data in the
-general-purpose, MMX, and XMM registers.
+The Intel 64 and IA-32 architectures provide several instructions
+for managing the L1, L2, and L3 caches. The INVD and WBINVD 
+instructions are privileged instructions and operate on the L1,
+L2 and L3 caches as a whole. The PREFETCHh, CLFLUSH and CLFLUSHOPT
+instructions and the non-temporal move instructions (MOVNTI,
+MOVNTQ, MOVNTDQ, MOVNTPS, and MOVNTPD) offer more granular <sup>颗粒;粒状</sup>
+control over caching, and are available to all privileged levels.
+
+<font color=blue face="黑体" size=4>
+Intel 64 和 IA-32 架构提供了一系列用于管理L1,L2,L3 cache的指令。
+INVD 和 WBINVD 指令时特权级指令并且对L1, L2 L3 cache 做一个整体的
+操作。PREFETCHh, CLFLUSH 和 CLFLUSHOPT 指令和 non-temporal mov
+指令(MOVNTI, MOVNTQ, MOVNTDQ, MOVNTPS以及MOVNTPD) 对cache提供了
+更精细的控制，并且对提供给所有的特权级使用。
+</font>
+
+The INVD and WBINVD instructions are used to invalidate the 
+contents<sup>内容</sup> of the L1, L2, and L3 caches. The INVD instruction 
+invalidates all internal cache entries, then generates a 
+special-function bus cycle that indicates that external caches
+also should be invalidated. The INVD instruction should be 
+used with care. It does not force a write-back of modified 
+cache lines; therefore, data stored in the caches and not 
+written back to system memory will be lost. Unless there is 
+a specific requirement or benefit to invalidating the caches
+without writing back the modified lines (such as, during testing
+or fault recovery where cache coherency with main memory is 
+not a concern), software should use the WBINVD instruction.
+
+<font color=blue face="黑体" size=4>
+INVD和WBINVD指令用于无效 L1,L2,L3 cache内容。INVD指令无效所有的 internal
+cache entries, 然后生成一个 special-function bus cycle, 该bus
+cycle 表明外部的cache 也应该被 invalidate. INVD指令应该被小心使用。
+他不会强制回写修改过的缓存行; 因此，数据存储在 caches中并且没有被
+会写到系统内存将会丢失。除非在没有write back 修改过的缓存行就invalidate 
+cache 有特殊需求，或者收益点(能从该行为中获益)（例如, 处于test 流程
+或者 在做一个fault recovery 这里并不关注 main memory 中的cache 一致性),
+否则软件应该使用WBINVD 指令。
+</font>
+
+The WBINVD instruction first writes back any modified lines 
+in all the internal caches, then invalidates the contents of
+both the L1, L2, and L3 caches. It ensures that cache coherency
+with main memory is maintained regardless of the write policy
+in effect (that is, write-through or write-back). Following 
+this operation, the WBINVD instruction generates one (P6 family
+processors) or two (Pentium and Intel486 processors) 
+special-function bus cycles to indicate to external cache 
+controllers that write-back of modified data followed by 
+invalidation of external caches should occur. The amount of 
+time or cycles for WBINVD to complete will vary due to the size
+of different cache hierarchies and other factors. **As a 
+consequence**<sup>因此</sup>, the use of the WBINVD instruction can have an impact
+on interrupt/event response time.
+
+<font color=blue face="黑体" size=4>
+WBINVD 指令首先会write back internal cache 中的任何modified line,
+然后无效L1,L2,L3 cache中的内容。他会保证 main memory 的一致性,
+无论write policy 是否生效(这里指的是， write-through 或write-back).
+在这个操作之后，WBINVD指令生成一个(P6 family 处理器) 或者两个
+(Pentium 或者Intel486 处理器) special-function bus cycle 来指示
+外部 cache controllers write-back modified data, 然后使外部缓存
+失效。对于WBINVD 完成的time 或者cycle将会不同，由于 不同cache
+层级的size 或者其他影响。因此，使用 WBINVD指令可以对 interrupt/event
+回应产生影响。(可能会造成延迟)
+</font>
+
+The PREFETCHh instructions allow a program to suggest to the
+processor that a cache line from a specified location in system
+memory be prefetched into the cache hierarchy (see Section 11.8,
+“Explicit Caching”). 
+
+<font color=blue face="黑体" size=4>
+PREFETCHh 指令允许程序 建议 来自系统内存中指定位置的cache line 可以
+被预取到 cache 层级中。（请查看11.8 "Explicit caching").
+</font>
+
+The CLFLUSH and CLFLUSHOPT instructions allow selected cache
+lines to be flushed from memory. These instructions give a 
+program the ability to explicitly free up cache space, when 
+it is known that cached section of system memory will not be
+accessed in the near future.
+
+<font color=blue face="黑体" size=4>
+CLFLUSH 和CLFLUSHOPT 指令允许从内存中 选择要刷新的cache line。
+这些指令提供给软件一个能力(方法) 在当他们知道 系统内存中的 
+cached section 在近期不会在访问的时候, 去显式的free cache 空间，
+</font>
+
+The non-temporal move instructions (MOVNTI, MOVNTQ, MOVNTDQ,
+MOVNTPS, and MOVNTPD) allow data to be moved from the 
+processor’s registers directly into system memory without being
+also written into the L1, L2, and/or L3 caches. These 
+instructions can be used to prevent cache pollution<sup>污染</sup> when 
+operating on data that is going to be modified only once before
+being stored back into system memory. These instructions operate
+on data in the general-purpose<sup>通用目的; purpose:目的</sup>, 
+MMX, and XMM registers. 
+
+<font color=blue face="黑体" size=4>
+non-temporal mov instruction(MOVNTI, MOVNTQ, MOVNTDQ,
+MOVNTPS,和 MOVNTPD) 允许数据数据从处理器中的寄存器直接移动到
+系统内存，并且不会写入到 L1, l2 和/或 L3 caches。这些指令用于
+防止cache污染，操作的始于在存储到system memory 之前，只会修改一次。
+这些指令操作的对象可以是 general-purpose（通用目的)， MMX和
+XMM等寄存器。
+
+</font>
 
 ### 11.5.6 L1 Data Cache Context Mode
-L1 data cache context mode is a feature of processors based on the Intel NetBurst microarchitecture that support
-Intel Hyper-Threading Technology. When CPUID.1:ECX[bit 10] = 1, the processor supports setting L1 data cache
-context mode using the L1 data cache context mode flag ( IA32_MISC_ENABLE[bit 24] ). Selectable modes are
-adaptive mode (default) and shared mode.
-The BIOS is responsible for configuring the L1 data cache context mode.
+L1 data cache context mode is a feature of processors based 
+on the Intel NetBurst microarchitecture that support
+Intel Hyper-Threading Technology. When CPUID.1:ECX[bit 10] = 1,
+the processor supports setting L1 data cache context mode 
+using the L1 data cache context mode flag ( IA32_MISC_ENABLE[bit 24] ). 
+Selectable modes are adaptive mode (default) and shared mode.
+
+The BIOS is responsible for configuring the L1 data cache 
+context mode.
 
 #### 11.5.6.1 Adaptive Mode
-Adaptive mode facilitates L1 data cache sharing between logical processors. When running in adaptive mode, the
-L1 data cache is shared across logical processors in the same core if:
-* CR3 control registers for logical processors sharing the cache are identical.
+Adaptive mode facilitates L1 data cache sharing between logical
+processors. When running in adaptive mode, the L1 data cache
+is shared across logical processors in the same core if:
+
+* CR3 control registers for logical processors sharing the 
+cache are identical.
 * The same paging mode is used by logical processors sharing the cache.
-In this situation, the entire L1 data cache is available to each logical processor (instead of being competitively
-shared).
-If CR3 values are different for the logical processors sharing an L1 data cache or the logical processors use different
-paging modes, processors compete for cache resources. This reduces the effective size of the cache for each logical
-processor. Aliasing of the cache is not allowed (which prevents data thrashing).
+
+In this situation, the entire L1 data cache is available to 
+each logical processor (instead of being competitively shared).
+
+If CR3 values are different for the logical processors sharing
+an L1 data cache or the logical processors use different paging
+modes, processors compete for cache resources. This reduces the
+effective size of the cache for each logical processor. Aliasing
+of the cache is not allowed (which prevents data thrashing).
 
 #### 11.5.6.2 Shared Mode
-In shared mode, the L1 data cache is competitively shared between logical processors. This is true even if the
-logical processors use identical CR3 registers and paging modes.
-In shared mode, linear addresses in the L1 data cache can be aliased, meaning that one linear address in the cache
-can point to different physical locations. The mechanism for resolving aliasing can lead to thrashing. For this
-reason, IA32_MISC_ENABLE[bit 24] = 0 is the preferred configuration for processors based on the Intel NetBurst
-microarchitecture that support Intel Hyper-Threading Technology.
+In shared mode, the L1 data cache is competitively shared 
+between logical processors. This is true even if the logical
+processors use identical CR3 registers and paging modes.
+
+In shared mode, linear addresses in the L1 data cache can be 
+aliased, meaning that one linear address in the cache can 
+point to different physical locations. The mechanism for 
+resolving aliasing can lead to thrashing. For this reason, 
+IA32_MISC_ENABLE[bit 24] = 0 is the preferred configuration 
+for processors based on the Intel NetBurst microarchitecture
+that support Intel Hyper-Threading Technology. 
 
 ## 11.6 SELF-MODIFYING CODE
-A write to a memory location in a code segment that is currently cached in the processor causes the associated
-cache line (or lines) to be invalidated. This check is based on the physical address of the instruction. In addition,
-the P6 family and Pentium processors check whether a write to a code segment may modify an instruction that has
-been prefetched for execution. If the write affects a prefetched instruction, the prefetch queue is invalidated. This
-latter check is based on the linear address of the instruction. For the Pentium 4 and Intel Xeon processors, a write
-or a snoop of an instruction in a code segment, where the target instruction is already decoded and resident in the
-trace cache, invalidates the entire trace cache. The latter behavior means that programs that self-modify code can
-cause severe degradation of performance when run on the Pentium 4 and Intel Xeon processors.
-In practice, the check on linear addresses should not create compatibility problems among IA-32 processors. Appli-
-cations that include self-modifying code use the same linear address for modifying and fetching the instruction.
-Systems software, such as a debugger, that might possibly modify an instruction using a different linear address
-than that used to fetch the instruction, will execute a serializing operation, such as a CPUID instruction, before the
-modified instruction is executed, which will automatically resynchronize the instruction cache and prefetch queue.
-(See Section 8.1.3, “Handling Self- and Cross-Modifying Code,” for more information about the use of self-modi-
-fying code.)
-For Intel486 processors, a write to an instruction in the cache will modify it in both the cache and memory, but if
-the instruction was prefetched before the write, the old version of the instruction could be the one executed. To
-prevent the old instruction from being executed, flush the instruction prefetch unit by coding a jump instruction
-immediately after any write that modifies an instruction.
+A write to a memory location in a code segment that is currently
+cached in the processor causes the associated cache line (or lines)
+to be invalidated. This check is based on the physical address
+of the instruction. In addition, the P6 family and Pentium processors
+check whether a write to a code segment may modify an instruction
+that has been prefetched for execution. If the write affects a
+prefetched instruction, the prefetch queue is invalidated. This
+latter check is based on the linear address of the instruction.
+For the Pentium 4 and Intel Xeon processors, a write or a snoop
+of an instruction in a code segment, where the target instruction
+is already decoded and resident in the trace cache, invalidates
+the entire trace cache. The latter behavior means that programs
+that self-modify code can cause severe degradation of performance
+when run on the Pentium 4 and Intel Xeon processors.
+
+In practice, the check on linear addresses should not create
+compatibility problems among IA-32 processors. Applications
+that include self-modifying code use the same linear address
+for modifying and fetching the instruction. Systems software,
+such as a debugger, that might possibly modify an instruction
+using a different linear address than that used to fetch the
+instruction, will execute a serializing operation, such as a
+CPUID instruction, before the modified instruction is executed,
+which will automatically resynchronize the instruction cache
+and prefetch queue. (See Section 8.1.3, “Handling Self- and 
+Cross-Modifying Code,” for more information about the use of
+self-modifying code.)
+
+For Intel486 processors, a write to an instruction in the cache
+will modify it in both the cache and memory, but if the instruction
+was prefetched before the write, the old version of the instruction
+could be the one executed. To prevent the old instruction from
+being executed, flush the instruction prefetch unit by coding
+a jump instruction immediately after any write that modifies
+an instruction. 

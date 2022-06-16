@@ -1834,7 +1834,7 @@ P6 family 和 Pentium 处理器检查对代码段的写入是否会修改已经�
 Xeon processors
 </font>
 
-In practice, the check on linear addresses should not create
+**In practice**<sup>实际上</sup>, the check on linear addresses should not create
 compatibility problems among IA-32 processors. Applications
 that include self-modifying code use the same linear address
 for modifying and fetching the instruction. Systems software,
@@ -1842,12 +1842,19 @@ such as a debugger, that might possibly modify an instruction
 using a different linear address than that used to fetch the
 instruction, will execute a serializing operation, such as a
 CPUID instruction, before the modified instruction is executed,
-which will automatically resynchronize the instruction cache
+which will automatically<sup>自动的</sup> resynchronize the instruction cache
 and prefetch queue. (See Section 8.1.3, “Handling Self- and 
 Cross-Modifying Code,” for more information about the use of
 self-modifying code.)
 
 <font color=gray face="黑体" size=2>
+实际上来说，在IA-32的这些处理器之间, 对线性地址的检查不应该新增
+一些兼容性的问题。包含self-modifying code 的应用使用相同的线性地址
+来修改和预取指令。系统软件，例如调试其，可能会使用和预取指令时不同
+线性地址来修改指令,在修改指令执行之前，执行执行一个序列化指令，例如
+CPUID指令，这将会自动重新同步指令缓存和预取队列（请查看Section 8.1.3
+"Handing Self- and Cross-Modify Code 了解更多和self-modifying code 
+使用方法更多信息)
 </font>
 
 For Intel486 processors, a write to an instruction in the cache
@@ -1859,32 +1866,58 @@ a jump instruction immediately after any write that modifies
 an instruction. 
 
 <font color=gray face="黑体" size=2>
+对于Intel486 处理器来说，对cache中的一个指令进行写操作将会同时
+修改cache 和memory， 但是如果一个指令在写之前预取了，执行的指令
+可能是旧版本的指令（旧的指令)。为了防止旧的指令被执行, 在执行
+任何修改指令的写操作后，通过编程一个 jump 指令来flush 指令预取单元。
 </font>
 
 ## 11.7 IMPLICIT CACHING (PENTIUM 4, INTEL XEON, AND P6 FAMILY PROCESSORS)
-Implicit caching occurs when a memory element is made potentially
+Implicit caching occurs when a memory element is made potentially<sup>潜在的</sup>
 cacheable, although the element may never have been accessed 
 in the normal von Neumann sequence. Implicit caching occurs on
-the P6 and more recent processor families due to aggressive 
+the P6 and more recent processor families due to aggressive <sup>气盛，激进的</sup>
 prefetching, branch prediction, and TLB miss handling. Implicit
 caching is an extension of the behavior of existing Intel386,
 Intel486, and Pentium processor systems, since software running
 on these processor families also has not been able to 
-deterministically predict the behavior of instruction prefetch.
+deterministically<sup>确切的</sup> predict the behavior of instruction prefetch.
+
+<font color=gray face="黑体" size=2>
+隐式缓存发生在memory element 被潜在的缓存时, 尽管该元素可能从来
+没有在正常的 von Neumann(冯诺依曼) 序列中被访问。隐式缓存发生在P6
+和更新的传力气家族, 由于激进的 prefetching, branch prediction,
+和 TLB miss handling。隐式的caching 在现有的Intel386 , Intel486,
+和 Pentium 处理器系统的行为扩展，因为在这些处理器家族上运行的软件
+不能确切的预测 指令预取的行为。
+</font>
 
 To avoid problems related to implicit caching, the operating 
 system must explicitly invalidate the cache when changes are 
 made to cacheable data that the cache coherency mechanism does
 not automatically handle. This includes writes to dual-ported
-or physically aliased memory boards that are not detected by 
-the snooping mecha- nisms of the processor, and changes to 
+or physically aliased memory boards that are not detected<sup>检测，发现</sup> by 
+the snooping mechanisms of the processor, and changes to 
 page-table entries in memory.
+
+<font color=gray face="黑体" size=2>
+为了避免与隐式cache相关的问题，当缓存一致性基质不能自动的处理
+的可缓存数据发生更改时，操作系统必须显式的无效该缓存。这些包括写入 dual-port
+或者写入 不能被处理器snooping 机制检测到的 physical aliased memory boards
+以及对内存中page-table entries 的修改。
+</font>
 
 The code in Example 11-1 shows the effect of implicit caching 
 on page-table entries. The linear address F000H points to 
 physical location B000H (the page-table entry for F000H contains
 the value B000H), and the page-table entry for linear address
 F000 is PTE_F000. 
+
+<font color=gray face="黑体" size=2>
+Example 11-1 中的代码展示了 在page-table entires上的隐式缓存的影响。
+线性地址F000H 指向物理位置 B000H (对于F000H 的page-table entry包含了
+B000H 值),对于线性地址F000的page-table entry 是 PTE_F000。
+</font>
 
 Example 11-1. Effect of Implicit Caching on Page-Table Entries
 ```
@@ -1898,8 +1931,15 @@ Because of speculative execution in the P6 and more recent
 processor families, the last MOV instruction performed would
 place the value at physical location B000H into EBX, rather 
 than the value at the new physical address A000H. This 
-situation is remedied by placing a TLB invalidation between 
+situation is remedied<sup>纠正;矫正</sup> by placing a TLB invalidation between 
 the load and the store. 
+
+<font color=gray face="黑体" size=2>
+因为在P6和更新处理器家族中的投机执行，最后的MOV 指令执行
+可能把 在 physical location B000H 中的值 赋给了EBX， 而不是
+新的物理地址A000H处的值。这种情况通过在load和store中间放置一个TLB
+无效指令避免该问题。
+</font>
 
 ## 11.8 EXPLICIT CACHING
 The Pentium III processor introduced four new instructions, 
@@ -1907,10 +1947,18 @@ the PREFETCHh instructions, that provide software with
 explicit control over the caching of data. These instructions
 provide “hints” to the processor that the data requested by a
 PREFETCHh instruction should be read into cache hierarchy now
-or as soon as possible, in anticipation of its use. The 
-instructions provide different variations of the hint that 
+or as soon as possible, in anticipation<sup>预期</sup> of its use. The 
+instructions provide different variations<sup>变化;变异，变种，变体</sup> of the hint that 
 allow selection of the cache level into which data will be 
 read.
+
+<font color=gray face="黑体" size=2>
+Pentium III 处理器引进了4个全新指令, PREFETCHh 指令，这些指令
+提供给穿件对数据缓存的显示的控制。这些指令提供给处理器"hints(提示)",
+通过 PREFETCHh 指令数据需要现在就要被读到cache 层级中, 或者是
+尽可能的快，以供预期使用。这些指令提供了 hint 的不同变体，允许
+选择数据被读到的缓存级别。
+</font>
 
 The PREFETCHh instructions can help reduce the long latency 
 typically associated with reading data from memory and thus 
@@ -1919,10 +1967,19 @@ should be used judiciously. Overuse can lead to resource
 conflicts and hence reduce the performance of an application.
 Also, these instructions should only be used to prefetch data
 from memory; they should not be used to prefetch instructions.
-For more detailed informa- tion on the proper use of the 
+For more detailed information on the proper<sup>适当的</sup> use of the 
 prefetch instruction, refer to Chapter 7, “Optimizing Cache 
 Usage,” in the Intel® 64 and IA-32 Architectures Optimization
 Reference Manual.
+
+<font color=gray face="黑体" size=2>
+PREFETCHh 指令 会有助于减少通常于内存读取数据相关的长延迟
+并且有助于防止处理器"stalls(停顿)". 但是这些指令应该被谨慎使用。
+过度使用会导致资源冲突并且因此减少应用的性能。同时，这些指令
+应该使用在预取内存中的data, 而不是使用在预取指令。
+关于是当时用预取指令的细节，请参考 Intel(R)64 和IA-32 Architectures
+Optimization Reference Manual 中的Chapter 7 " Optimizing Cache Usage" 
+</font>
 
 ## 11.9 INVALIDATING THE TRANSLATION LOOKASIDE BUFFERS (TLBS)
 The processor updates its address translation caches (TLBs) 
@@ -1931,8 +1988,17 @@ however, that allow software and hardware to invalidate the
 TLBs either explicitly or as a side effect of another operation.
 Most details are given in Section 4.10.4, “Invalidation of 
 TLBs and Paging-Structure Caches.” In addition, the following
-operations invalidate all TLB entries, irrespective of the 
+operations invalidate all TLB entries, irrespective<sup>不顾;不考虑</sup> of the 
 setting of the G flag: 
+
+<font color=gray face="黑体" size=2>
+处理器更新他的 address transcation caches(TLBs) 对于软件来说
+是透明的。但是，有几种机制可用，他们允许软件和硬件显式的或者
+作为另一个操作的副作用来使 TLB 无效。在Section 4.10.4 "Invalidation
+of TLBs and Paging-Structure Caches" 中给出了更多细节。
+另外, 下面的操作会invalidate 所有的TLB entries, 不考虑
+设置G flags
+</font>
 
 * Asserting or de-asserting the FLUSH# pin.
 * (Pentium 4, Intel Xeon, and later processors only.) Writing
@@ -1941,9 +2007,23 @@ to an MTRR (with a WRMSR instruction).
 * (Pentium 4, Intel Xeon, and later processors only.) Writing
 to control register CR4 to modify the PSE, PGE, or PAE flag.
 * Writing to control register CR4 to change the PCIDE flag from 1 to 0.
+<br/>
+<font color=gray face="黑体" size=2>
+* assert 或者 de-assert FLUSH# 引脚
+* (只适用 Pentium 4, Intel Xeon 或者更新的处理器) 写入MTRR（使用WRMSR指令)
+* 写入CR0 去修改PG 或PE flags 
+* (只适用 Pentium 4, Intel Xeon 或者更新的处理器) 写入CR4去修该
+PSE,PGE或者PAE flag
+* 写入CR4 将PCIDE flags 从1 修改为0
+</font>
 
 See Section 4.10, “Caching Translation Information,” for 
 additional information about the TLBs.
+
+<font color=gray face="黑体" size=2>
+请查看Section 4.10 "Caching Translation Information " 了解关于TLBs
+额外的更多信息
+</font>
 
 ## 11.10 STORE BUFFER
 Intel 64 and IA-32 processors temporarily store each write 
@@ -1951,15 +2031,29 @@ Intel 64 and IA-32 processors temporarily store each write
 processor performance by allowing the processor to continue 
 executing instructions without having to wait until a write 
 to memory and/or to a cache is complete. It also allows 
-writes to be delayed for more efficient use of memory-access 
+writes to be delayed for more efficient<sup></sup> use of memory-access 
 bus cycles.
+
+<font color=gray face="黑体" size=2>
+Intel 64 和 IA-32 处理器临时在 store buffer 中 store 每一个
+memory 写入(store). store buffer 通过 允许处理器在没有写入memory
+或者 cache 的操作完成的情况下，不需要去等待 去提升了处理器性能。
+它还允许延迟写入，为了更有效的使用内存访问总线周期。
+</font>
 
 In general, the existence of the store buffer is transparent
 to software, even in systems that use multiple processors. 
-The processor ensures that write operations are always carried
-out in program order. It also ensures that the contents of the
-store buffer are always drained to memory in the following 
+The processor ensures that write operations are always **carried
+out**<sup>实施，贯彻，完成</sup> in program order. It also ensures that the contents of the
+store buffer are always drained<sup>排水;排泄;外流</sup> to memory in the following 
 situations: 
+
+<font color=gray face="黑体" size=2>
+通常来说，现有的store buffer 对于软件来说是透明的，即使在使用
+multiple processor 的系统中。处理器确保始终按照程序执行顺序去
+进行写操作。它也保证store buffer 中的内容在下面的情况下，始终
+可以更新到 memory中。
+</font>
 
 * When an exception or interrupt is generated.
 * (P6 and more recent processor families only) When a 
@@ -1973,13 +2067,34 @@ using an SFENCE instruction to order stores.
 * (Pentium 4 and more recent processor families only) When 
 using an MFENCE instruction to order stores.
 
+<font color=gray face="黑体" size=2>
+* 当获取到一个异常/中断
+* (只适用于P6 和更新的处理器家族) 当执行序列化指令时
+* 当执行I/O instruction
+* 当执行LOCK 操作时。
+* (只适用于P6 和更新的处理器家族) 当之行BINIT操作时.
+* (只适用于Pentium III, and 更新的processor families only)当
+使用 SFENCE指令来排序stores时
+* (只适用于Pentium III, and 更新的processor families only)当
+使用 MFENCE 指令来排序stors时
+</font>
+
 The discussion of write ordering in Section 8.2, “Memory 
 Ordering,” gives a detailed description of the operation of
 the store buffer.
 
+<font color=gray face="黑体" size=2>
+关于写入排序的讨论在Section 8.2 "Memory Ordering", 并各处了
+关于store buffer 的操作细节的描述。
+</font>
+
 ## 11.11 MEMORY TYPE RANGE REGISTERS (MTRRS)
-The following section pertains only to the P6 and more recent
-processor families.
+The following section pertains<sup>符合;与某事物有关联</sup>
+only to the P6 and more recent processor families.
+
+<font color=gray face="黑体" size=2>
+接下来的章节只适用于 P6 和更新的处理器家族。
+</font>
 
 The memory type range registers (MTRRs) provide a mechanism 
 for associating the memory types (see Section 11.3, “Methods 
@@ -1987,25 +2102,49 @@ of Caching Available”) with physical-address ranges in system
 memory. They allow the processor to optimize operations for 
 different types of memory such as RAM, ROM, frame-buffer memory,
 and memory-mapped I/O devices. They also simplify system 
-hardware design by eliminating the memory control pins used 
-for this func- tion on earlier IA-32 processors and the 
+hardware design by eliminating<sup>清除</sup> the memory control pins used 
+for this function on earlier IA-32 processors and the 
 external logic needed to drive them.
 
+<font color=gray face="黑体" size=2>
+MTRRs提供了关联memory types(请查看Section 11.3 "Methods
+of Caching Available")和系统内存中物理地址区间的机制。
+他允许处理器针对不同类型的内存进行优化操作，这些不同类型
+的内存例如 RAM, ROM frame-buffer memory和memory-mapped I/O
+device。它也通过清除memory control pins 简化了硬件设计, 这些
+pins也用于这个功能并且在更早期的IA-32 processor中使用，并且
+驱动它们需要额外的逻辑。
+</font>
+
 The MTRR mechanism allows multiple ranges to be defined in 
-physical memory, and it defines a set of model- specific 
+physical memory, and it defines a set of model-specific 
 registers (MSRs) for specifying the type of memory that is 
 contained in each range. Table 11-8 shows the memory types 
 that can be specified and their properties; Figure 11-4 shows
 the mapping of physical memory with MTRRs. See Section 11.3, 
 “Methods of Caching Available,” for a more detailed description
-of each memory type. Following a hardware reset, the P6 and 
-more recent processor families disable all the fixed and 
-variable MTRRs, which in effect makes all of physical memory 
-uncacheable. Initialization software should then set the MTRRs
-to a specific, system-defined memory map. Typically, the BIOS
-(basic input/output system) software configures the MTRRs. The
-operating system or executive is then free to modify the memory
-map using the normal page-level cacheability attributes.
+of each memory type. 
+
+<font color=gray face="黑体" size=2>
+MTRR 机制允许定义多个区间被定义在物理内存中，并且它定义了一系列的
+MSRs用于指定每个range 中包含的memory type。Table 11-8 展示了
+可以指定的memory type和他们的属性值(encodings); Figure 11-4展示了
+物理内存和MTRR之间的映射关系。Section 11.3 "Method of Caching 
+Available", 描述了每个memory type的更多细节。
+</font>
+
+Following a hardware reset, the P6 and more recent processor
+families disable all the fixed and variable MTRRs, which in 
+effect makes all of physical memory uncacheable. Initialization
+software should then set the MTRRs to a specific, system-defined
+memory map. Typically, the BIOS (basic input/output system) 
+software configures the MTRRs. The operating system or 
+executive is then free to modify the memory map using the 
+normal page-level cacheability attributes.
+
+<font color=gray face="黑体" size=2>
+
+</font>
 
 In a multiprocessor system using a processor in the P6 family
 or a more recent family, each processor MUST use the identical

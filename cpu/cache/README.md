@@ -1,4 +1,4 @@
-# MEMORY CACHE CONTROL
+# 11 MEMORY CACHE CONTROL
 This chapter describes the memory cache and cache control 
 mechanisms, the TLBs, and the store buffer in Intel 64 and 
 IA-32 processors. It also describes the memory type range 
@@ -7,7 +7,7 @@ and how they are used to control caching of physical memory
 locations.
 
 <font color=gray face="黑体" size=2>
-该章节描述了Intel 64  和 IA-32 处理器中的memory cache 和 
+该章节描述了Intel 64 和 IA-32 处理器中的memory cache 和 
 cache control机制， TLB和store buffer。也描述了P6 family processor
 引进的memory type range register (MTRRs) 和他们如何用于控制physical
 memory locations 的cache。
@@ -31,7 +31,7 @@ Volume 2A.
 
 <font color=gray face="黑体" size=2>
 Intel 64 和IA-32 架构支持cache, translation look aside buffers(TLBs),
-和为  临时 on-chip (和外部的) 指令和数据的storage 建立的 store buffer
+和为 临时 on-chip (和外部的) 指令和数据的storage 建立的 store buffer
 (Figure 11-1展示了对于Pentium 4, Intel Xeon, P6 family, 和 Pentium 处理器
 的这些caches和buffers的特征）。这些单units 的大小和特征是machine specific
 并且在之后的处理器版本中可能会改变。CPUID instruction 返回了对于运行该指令
@@ -102,7 +102,7 @@ L2, each shared by two processor cores. No trace cache is implemented.
 Intel(R) Core(TM) 处理器家族和 基于Intel(R) Core(TM) microarchitecture
 的Intel (R) Xeon(R) 处理器家族:
 <br/>
-L1 cache  被分为两部分: 一部分用于缓存指令(预解码指令)另一部分用于缓存
+L1 cache 被分为两部分: 一部分用于缓存指令(预解码指令)另一部分用于缓存
 data。L2 cache 不区分data和 instruction cache , 这些cache 位于procoessor 
 chip; 它在 dual-core 处理器实现中的两个 processor core 之间共享。Qual-core
 处理器有两个L2, 每个在两个处理器中共享。没有trace cache 被实现。
@@ -161,14 +161,14 @@ chip in later Pentium processors. For Pentium processors where
 the L2 cache is external to the processor, access to the cache
 is through the system bus. 
 
-For Intel Core i7 processors and  processors based on Intel Core, 
+For Intel Core i7 processors and processors based on Intel Core, 
 Intel Atom, and Intel NetBurst microarchitectures, Intel Core
 Duo, Intel Core Solo and Pentium M processors, the cache lines
 for the L1 and L2 caches (and L3 caches if supported) are 64 
-bytes wide. The processor always  reads a cache line from system
+bytes wide. The processor always reads a cache line from system
 memory beginning on a 64- byte **boundary.**<sup>1</sup> (A 64-byte 
-aligned cache line begins at an  address  with its 6 least- 
-**significant**<sup>2</sup> bits clear.) A cache line  can be 
+aligned cache line begins at an address with its 6 least- 
+**significant**<sup>2</sup> bits clear.) A cache line can be 
 filled from memory with a **8-transfer burst** <sup>3</sup>transaction. The 
 caches do not support partially-filled cache lines, so caching
 even a single doubleword requires caching an entire line.
@@ -256,7 +256,7 @@ cache thrashing<sup>5</sup>.
 
 <font color=gray face="黑体" size=2>
 1. most part: 很大程度上;大部分 <br/>
-2. 流经; 流过;  <br/>
+2. 流经; 流过; <br/>
 3. 量度, 维度 <br/>
 4. 替换 <br/>
 5. 激烈的运动，移动
@@ -272,7 +272,7 @@ control instructions for use in flushing caches and forcing
 **memory ordering**<sup>3</sup>.
 
 <font color=gray face="黑体" size=2>
-1.  rare: 极少数 circumstances: 环境，情形，情况  <br/>
+1. rare: 极少数 circumstances: 环境，情形，情况 <br/>
 in rare circumstances: 在极少数的情况下<br/>
 2. 介入
 3. 内存访问排序 这里指的是一些内存屏障指令
@@ -297,9 +297,9 @@ internal caches and caches in other processors (see Section
 11.4, “Cache Control Protocol”). 
 
 When the processor recognizes that an operand<sup>1</sup> 
-being read  from memory is cacheable, the  processor 
-reads an entire  cache line into the appropriate  cache 
-(L1, L2, L3, or all).  This operation is called a cache 
+being read from memory is cacheable, the processor 
+reads an entire cache line into the appropriate cache 
+(L1, L2, L3, or all). This operation is called a cache 
 line fill. If the memory location containing that operand is 
 still cached the next time the processor attempts to access 
 the operand, the processor can read the operand from the cache
@@ -370,7 +370,7 @@ accesses the same memory location.
 自己的internal cache 和system memory 以及其他cpu core 的 internal cache
 有一些通信行为。 如果另一个处理器修改了 本处理器中cache 数据，
 本处理器会snoop 到， 并且 invalidate internal cache line . 如果下
-次要访问这块内存的话，需要去执行一个 cache line  fill 的操作.
+次要访问这块内存的话，需要去执行一个 cache line fill 的操作.
 </font>
 
 Beginning with the P6 family processors, if a processor detects<sup>1</sup>
@@ -399,7 +399,7 @@ and update memory.
 该信号表示该cache line 已经处于修改的状态，并且将会执行一个隐式
 的modify data 的 write-back操作。该 隐式write-back 会直接传输到
 发起request 的 processor 被嗯切被memory controller snoop 到，用于
-保证系统内存已经更新。这里带有合法data的(正确的)processor  可能将输出直接
+保证系统内存已经更新。这里带有合法data的(正确的)processor 可能将输出直接
 传输到其他的处理器，在数据实际没有写入系统内存的情况下;
 但是, memory controller 负责 snoop 该行为并且更新内存。
 </font>
@@ -428,7 +428,7 @@ greatly reduces processor performance.
 1. speculative: 投机的; 推测出的
 
 UC： 有以下几个特点：<br/>
-1. 对system memory 访问不会触发cache  <br/>
+1. 对system memory 访问不会触发cache <br/>
 2. 任何读写访问不会被重新排序 <br/>
 3. 没有投机内存访问，page-table walks, 以及预取推测的分支目标
 
@@ -485,7 +485,7 @@ Write Combining (WC)有以下特点:<br/>
 5. 某些寄存器可以通过 MTRRs 编程或者通过PAT 选择 enable 该memory type
 
 
-(Note:  Speculative read是指读之前并不验证内存的有效性，先冒险的读进来，
+(Note: Speculative read是指读之前并不验证内存的有效性，先冒险的读进来，
 如果发现不是有效数据再取消读取操作，并更新内存后再读取. 比如说数据还是被
 buffer在WC buffer中)
 <br/>
@@ -515,7 +515,7 @@ Write-through (WT) :<br/>
 memory.</li>
 <li> 当写向内存时，无效的cache line 不会被filled, 有效的cache line 
 可能会被fill, 或者被 无效(这里应该指的是other processor cpu)</li>
-<li>  此类行的cache 使用于frame buffer 或者systemd bus 上的devices 
+<li> 此类行的cache 使用于frame buffer 或者systemd bus 上的devices 
 访问系统 内存</li>
 <font color=red face="黑体" size=2>
 <li> 不能执行snoop memory access.(???)</li>
@@ -645,7 +645,7 @@ empty the WC buffers when system memory coherency is required.
 <font color=gray face="黑体" size=2>
 当软件开始写入WC memory时， processor 开始一次 fill 一个WC buffer。
 当一个或者多个 WC buffer 已经fill时， processor 可以选择将 buffer 
-evict 到  system memory。对于 evict WC buffer 的协议是 implementation
+evict 到 system memory。对于 evict WC buffer 的协议是 implementation
 dependent 并且对于system memory coherency不应该依赖软件. 当使用WC memory
 type 时， software 必须慎重考虑 写入数据到系统内存的延迟的这个事实
 并且当系统内存一致性需要时，有意的清空WC buffer 
@@ -907,7 +907,7 @@ MESI protocol is transparent to programs.
 <font color=gray face="黑体" size=2>
 在L1 data cache 和 在L2/L3 无差别cache中（不区分data/instruction cache),
 MESI cache 协议保持了和其他处理器中的cache的一致性。L1 data cache
-和L2/L3 无差别cache 每个cache line  有两个MESI status flags, 每个cache line 
+和L2/L3 无差别cache 每个cache line 有两个MESI status flags, 每个cache line 
 可以被编辑为 Table 11-4 中的某一个status。一般来说，MESI协议对
 程序(对软件层)是透明的。
 </font>
@@ -1163,8 +1163,8 @@ CR4控制寄存器中的PGE (page global enable) flags:<br/>
 Translation Information" 了解关于此flags的更多信息
 </font>
 
-* **Memory type range registers  (MTRRs) (introduced in 
-P6 family processors)** — Control the  type of 
+* **Memory type range registers (MTRRs) (introduced in 
+P6 family processors)** — Control the type of 
 caching used in specific regions of physical memory. 
 Any of the caching types described in Section 11.3, “Methods 
 of Caching Available,” can be selected. See Section 11.11, 
@@ -1290,7 +1290,7 @@ have on the L1 and L2 caches.
 <font color=gray face="黑体" size=2>
 在基于 Intel NetBurst microarchitecture的处理器来说，third-level
 cache 可以通过 IA32_MISC_ENABLE MSR的第6位 disable。对于这些处理器中
-的L3 cache来说，使用  IA32_MISC_ENABLE  [bit 6] 比CD flags , 
+的L3 cache来说，使用 IA32_MISC_ENABLE [bit 6] 比CD flags , 
 MTRRs, 以及PAT 优先级要高。也就是说，当third-level cache disable
 flags 被设置时( cache disabled) , 其他的cache controls 对L3 cache
 不起作用; 当flags 被清空( enabled) ，cache controls 在L3 cache上的
@@ -1341,7 +1341,7 @@ Intel Xeon, and Pentium III processors when the PAT bit is not
 used (set to 0) in page-table and page-directory entries.
 <br/>
 当PAT bit 没有在page-table 和page-directory entries中使用时，(set to 0)
-这些有效的memory types 也是用于  Pentium 4, Intel Xeon, 和
+这些有效的memory types 也是用于 Pentium 4, Intel Xeon, 和
 Pentium III 处理器。
 </font>
 
@@ -1368,7 +1368,7 @@ types and architecturally-defined for the WB, WT, and UC
 memory types.
 
 <font color=gray face="黑体" size=2>
-1. 如果 对于page 的 PCD 和 PWT  attribute 都是0, 有效
+1. 如果 对于page 的 PCD 和 PWT attribute 都是0, 有效
 memory type 和 MTRR-defined memory type 保持一致 <br/>
 2. 如果设置了PCD flag, 有效memory type 为UC。<br/>
 3. 如果PCD flags 是clear 状态，并且设置了PWT flags,
@@ -1481,7 +1481,7 @@ E flag in Section 11.11.2.1, “IA32_MTRR_DEF_TYPE MSR”).
 1. 进入 no-fill cache 模式(设置CR0 中的CDflags为1，并且NW
 flag 为0。
 2. 通过WBINVND指令 flush所有的缓存
-3.  disable MTRRs 并且设置默认的memory type 成uncached或者
+3. disable MTRRs 并且设置默认的memory type 成uncached或者
 设置所有的 MTRRs 为 uncached memory type (请参阅 Section 11.11.2.1
 "IA32_MTRR_DEF_TYPE MSR" 中的TYPE field和E flag)
 
@@ -2143,7 +2143,12 @@ executive is then free to modify the memory map using the
 normal page-level cacheability attributes.
 
 <font color=gray face="黑体" size=2>
-
+随着硬件reset, P6 和更新的处理器家族disable 所有fixed和 variable
+MTRRs，这实际上使所有的物理内存都为 uncacheable。初始化软件
+应该将MTRR设置成特定的值，system-defined 内存映射。通常BIOS
+(basic input/output system) 软件配置MTRRs。操作系统或者执行程序
+可以使用 normal page-level cacheability attributes 来自由的修改
+memory map。
 </font>
 
 In a multiprocessor system using a processor in the P6 family
@@ -2151,7 +2156,15 @@ or a more recent family, each processor MUST use the identical
 MTRR memory map so that software will have a consistent view 
 of memory. 
 
-NOTE
+<font color=gray face="黑体" size=2>
+在多处理器系统中，使用P6 family或更近的处理器家族的处理器，每个
+处理器必须使用一致的MTRR memory map, 这样软件可以有一个一致性
+的内存视图。
+</font>
+<br/><br/>
+<font color=blue face="黑体" size=3>
+NOTE:
+</font>
 
 In multiple processor systems, the operating system must 
 maintain MTRR consistency between all the processors in the 
@@ -2159,13 +2172,122 @@ system (that is, all processors must use the same MTRR values).
 The P6 and more recent processor families provide no hardware
 support for maintaining this consistency.
 
+<font color=gray face="黑体" size=2>
+在多处理器系统中，操作系统必须在系统中所有处理器之间保持MTRR 
+一致性（也就是说，所有处理器必须使用相同的MTRR values). P6 和
+更新的处理器家族对保持上述的一致性不提供硬件支持。
+</font>
+<br/><br/>
+
 ![Table-11-8](pic/Table-11-8.png)
 
+<font color=blue face="黑体" size=3>
 NOTE:
-* Use of these encodings results in a general-protection 
+</font>
+
+* Use of these encodings<sup>编码</sup> results in a general-protection 
 exception (#GP).
+<br/>
+<font color=blue face="黑体" size=3>
+使用这些编码将导致 general-protection exception (#GP)。
+</font>
 
 ![Figure-11-4](pic/Figure-11-4.png)
+### 11.11.1 MTRR Feature Identification
+The availability of the MTRR feature is model-specific. 
+Software can determine if MTRRs are supported on a
+processor by executing the CPUID instruction and reading 
+the state of the MTRR flag (bit 12) in the feature 
+information register (EDX).
+
+<font color=gray face="黑体" size=2>
+MTRR feature的可用是model-specific。软件可以通过执行CPUID指令
+并且在feature information register (EDX) 中读取MTRR flags(bit 12)
+确定该处理器是否支持MTRRs
+</font>
+
+If the MTRR flag is set (indicating that the processor implements
+MTRRs), additional information about MTRRs can be obtained from
+the 64-bit IA32_MTRRCAP MSR (named MTRRcap MSR for the P6 family
+processors). The IA32_MTRRCAP MSR is a read-only MSR that can be
+read with the RDMSR instruction. Figure 11-5 shows the contents
+of the IA32_MTRRCAP MSR. The functions of the flags and field in
+this register are as follows:
+
+<font color=gray face="黑体" size=2>
+如果MTRR flags被设置了(表明处理器实现了 MTRRs), 关于MTRRs的额外的
+信息可以通过64-bit IA32_MTRRCAP MSR获取(对于P6 家族的处理器来说
+命名为MTRRcap)。IA32_MTRRCAP MSR 是一个只读的MSR， 该MSR可以通过
+RDMSR 指令读取。Figure 11-5展示了 IA32_MTRRCAP MSR 的内容。
+该register 中flags 和 field的功能如下:
+</font>
+
+* **VCNT (variable range registers count) field, bits 0 through
+7** — Indicates the number of variable ranges implemented on 
+the processor.
+<br/>
+<font color=gray face="黑体" size=2>
+VCNT:<br/>
+指明处理器上实现的 variable ranges 的数量
+</font>
+<br/>
+* **FIX (fixed range registers supported) flag, bit 8** — Fixed 
+range MTRRs (IA32_MTRR_FIX64K_00000 through IA32_MTRR_FIX4K_0F8000)
+are supported when set; no fixed range registers are supported when
+clear.
+<br/>
+<font color=gray face="黑体" size=2>
+Fix flags:<br/>
+当设置时，支持Fixed range MTRRs; 当clear时，不支持 fixed range 
+registers。
+</font>
+<br/>
+* **WC (write combining) flag, bit 10** — The write-combining (WC)
+memory type is supported when set; the WC type is not supported
+when clear.
+<br/>
+<font color=gray face="黑体" size=2>
+WC:<br/>
+当设置时，支持 WC memory type; 当clear时，不支持 WC type。
+</font>
+<br/>
+* **SMRR (System-Management Range Register) flag, bit 11** — The 
+system-management range register (SMRR) interface is supported
+when bit 11 is set; the SMRR interface is not supported when 
+clear. 
+<br/>
+<font color=gray face="黑体" size=2>
+SMRR:<br/>
+当设置bit 11 时，支持 system-management range register (SMRR) 接口;
+当clear时，不支持 SMRR interface 。
+</font>
+
+Bit 9 and bits 12 through 63 in the IA32_MTRRCAP MSR 
+are reserved. If software attempts to write to the IA32_MTRRCAP
+MSR, a general-protection exception (#GP) is generated.
+
+<font color=gray face="黑体" size=2>
+IA32_MTRRCAP MSR 中的 Bit 9 以及 Bit 12 到 Bit 32是被保留的。
+如果软件尝试对IA32_MTRRCAP MSR 进行写操作的话(因为该寄存器是一个
+只读寄存器，会生成一个 general-protection exception (#GP)。
+</font>
+
+Software must read IA32_MTRRCAP VCNT field to determine the 
+number of variable MTRRs and query<sup>查询</sup> other feature bits in 
+IA32_MTRRCAP to determine additional capabilities that are 
+supported in a processor. For example, some processors may 
+report a value of ‘8’ in the VCNT field, other processors may
+report VCNT with different values. 
+
+<font color=gray face="黑体" size=2>
+软件必须读取 IA32_MTRRCAP VCNT 字段来确定 variable MTRRs 的
+数量并查询其他的 IA32_MTRRCAP 中的 其他 feature bits 以确定
+该处理器支持的额外的 capabilities。例如, 某些寄存器可能在
+VCNT 字段中报告了8 这个值，而其他处理器则报告了VCNT 为其他
+值。
+</font>
+
+![Figure-11-5](pic/Figure-11-5.png)
 
 ### 11.11.2 Setting Memory Ranges with MTRRs
 The memory ranges and the types of memory specified in each 
@@ -2175,54 +2297,1364 @@ These registers can be read and written to using the RDMSR and
 WRMSR instructions, respectively. The IA32_MTRRCAP MSR indicates
 the availability of these registers on the processor (see Section
 11.11.1, “MTRR Feature Identification”).
+<br/>
+<font color=gray face="黑体" size=2>
+memory ranges和指定在每个range中的memory type 可以有三组寄存器设置:
+IA32_MTRR_DEF_TYPE MSR, fixed-range MTRRs和 variable range MTRRs。
+这些寄存器可以通过RDMSR 和 WRMSR指令分别进行读和写操作。IA32_MTRRCAP
+MSR指示处理器上的 这些register 的可用性(请查看Section 11.11.1 "MTRR
+Feature Identification”)。
+</font>
 
 #### 11.11.2.1 IA32_MTRR_DEF_TYPE MSR
 The IA32_MTRR_DEF_TYPE MSR (named MTRRdefType MSR for the P6 
 family processors) sets the default properties of the regions
-of physical memory that are not encompassed by MTRRs. The 
+of physical memory that are not encompassed<sup>包含</sup> by MTRRs. The 
 functions of the flags and field in this register are as follows:
 
-* Type field, bits 0 through 7 — Indicates the default memory
+<font color=gray face="黑体" size=2>
+IA32_MTRR_DEF_TYPE MSR（在P6 家族处理器中命名MTRRdefType) 设置 MTRRs
+没有包含的物理内存区间的默认属性。在这个register 中的flags 和
+field 的龚恩嗯如下所述:
+</font>
+
+* **Type field, bits 0 through 7** — Indicates the default memory
 type used for those physical memory address ranges that do not
 have a memory type specified for them by an MTRR (see Table 
-11-8 for the encoding of this field). The legal values for this
-field are 0, 1, 4, 5, and 6. All other values result in a 
-general-protection exception (#GP) being generated.
+11-8 for the encoding of this field). The legal<sup>合法的;
+法律许可的</sup> values for this field are 0, 1, 4, 5, 
+and 6. All other values result in a general-protection 
+exception (#GP) being generated.
 <br/>
-Intel recommends the use of the UC (uncached) memory type for
+<font color=gray face="黑体" size=2>
+Type field, bits 0 through 7 :<br/>
+对于那些没有通过MTRR 指定 的memory type的 内存区间 , 指定默
+认的 memory type。(查看Table 11-8 了解这个字段的编码)。
+对于这些字段合法的值有0,1,4,5和6。所有其他的值将导致 产生general-
+protection exception(#GP)。
+</font>
+<br/>
+Intel recommends<sup>推荐</sup> the use of the UC (uncached) memory type for
 all physical memory addresses where memory does not exist. 
 To assign the UC type to nonexistent memory locations, it can
 either be specified as the default type in the Type field or 
 be explicitly assigned with the fixed and variable MTRRs.
+<br/>
+<font color=gray face="黑体" size=2>
+Intel 推荐 对所有不存在的物理内存地址使用 UC(uncached) 
+内存类型。为了给这些不存在的 memory location分配UC 类型，
+可以通过指定 Type field 中的 default type 指定或者显式的
+通过fixed 和 variable MTRRs 分配。
+</font>
 
 ![Figure-11-6](pic/Figure-11-6.png)
 
-* FE (fixed MTRRs enabled) flag, bit 10 — Fixed-range MTRRs are enabled when set; fixed-range MTRRs are
-disabled when clear. When the fixed-range MTRRs are enabled, they take priority over the variable-range
-MTRRs when overlaps in ranges occur. If the fixed-range MTRRs are disabled, the variable-range MTRRs can
-still be used and can map the range ordinarily covered by the fixed-range MTRRs.
-* E (MTRRs enabled) flag, bit 11 — MTRRs are enabled when set; all MTRRs are disabled when clear, and the
-UC memory type is applied to all of physical memory. When this flag is set, the FE flag can disable the fixed-
-range MTRRs; when the flag is clear, the FE flag has no affect. When the E flag is set, the type specified in the
-default memory type field is used for areas of memory not already mapped by either a fixed or variable MTRR.
+* **FE (fixed MTRRs enabled) flag, bit 10** — Fixed-range MTRRs 
+are enabled when set; fixed-range MTRRs are disabled when 
+clear. When the fixed-range MTRRs are enabled, they take 
+priority over the variable-range MTRRs when overlaps in ranges
+occur. If the fixed-range MTRRs are disabled, the variable-range 
+MTRRs can still be used and can map the range ordinarily <sup>正常的;通常的</sup>
+covered by the fixed-range MTRRs.
+<br/>
+<font color=gray face="黑体" size=2>
+FE:<br/>
+当设置时，enable fixed-range MTRRs; 当clear 时，fixed-range MTRRs
+disable。当 enable fixed-range MTRRs，如果variable 和 fixed range 
+发生了重叠, fixed-range 的优先级超过了 variable-range MTRRs 。如果
+fixed-range MTRRs 被disabled, variable-range MTRRs仍然可用并且
+可以映射正常情况下由 fixed-range MTRRs 覆盖的range.
+</font>
+* **E (MTRRs enabled) flag, bit 11** — MTRRs are enabled when set;
+all MTRRs are disabled when clear, and the UC memory type is
+applied to all of physical memory. When this flag is set, 
+the FE flag can disable the fixed-range MTRRs; when the flag
+is clear, the FE flag has no affect. When the E flag is set,
+the type specified in the default memory type field is used 
+for areas of memory not already mapped by either a fixed or 
+variable MTRR. 
+<br/>
+<font color=gray face="黑体" size=2>
+E: <br/>
+当设置时，MTRRs enable, 当clear, 所有的 MTRRs disable，并且
+所有的物理内存都是 UC memory type。当该设置flags, FE flags可以
+disable fixed-range MTRRs;当flags 被clear时，FE flags则不会
+生效（flags 值没有意义)。当设置E flags, 指定在 default memory
+type 中的 type 用于还没有被fixed或者 variable MTRR 映射的内存
+区域。
+</font>
 
-Bits 8 and 9, and bits 12 through 63, in the IA32_MTRR_DEF_TYPE MSR are reserved; the processor generates a
-general-protection exception (#GP) if software attempts to write nonzero values to them.
+Bits 8 and 9, and bits 12 through 63, in the IA32_MTRR_DEF_TYPE
+MSR are reserved; the processor generates a general-protection
+exception (#GP) if software attempts to write nonzero values 
+to them.
+
+<font color=gray face="黑体" size=2>
+IA32_MTRR_DEF_TYPE MSR中的Bits 8 和 9, 和 bit2 到 bit63是reserved;
+当软件尝试对他们写入一个非0值时，处理器会生成一个 general-protection
+exception。
+</font>
 
 #### 11.11.2.2 Fixed Range MTRRs
-The fixed memory ranges are mapped with 11 fixed-range registers of 64 bits each. Each of these registers is
-divided into 8-bit fields that are used to specify the memory type for each of the sub-ranges the register controls:
+The fixed memory ranges are mapped with 11 fixed-range registers
+of 64 bits each. Each of these registers is divided into 8-bit
+fields that are used to specify the memory type for each of the
+sub-ranges the register controls:
+<font color=gray face="黑体" size=2>
+fixed memory ranges 被11 个 64 bits 的 fixed-range registers 映射。
+这些寄存器中的每个都被分割成 8-bits 字段，这些字段用于指定该register
+控制的每个sub-ranges。
+</font>
 
-* Register IA32_MTRR_FIX64K_00000 — Maps the 512-KByte address range from 0H to 7FFFFH. This range
-is divided into eight 64-KByte sub-ranges.
-* Registers IA32_MTRR_FIX16K_80000 and IA32_MTRR_FIX16K_A0000 — Maps the two 128-KByte
-address ranges from 80000H to BFFFFH. This range is divided into sixteen 16-KByte sub-ranges, 8 ranges per
-register.
-* Registers IA32_MTRR_FIX4K_C0000 through IA32_MTRR_FIX4K_F8000 — Maps eight 32-KByte
-address ranges from C0000H to FFFFFH. This range is divided into sixty-four 4-KByte sub-ranges, 8 ranges per
-register.
+* **Register IA32_MTRR_FIX64K_00000** — Maps the 512-KByte address
+range from 0H to 7FFFFH. This range is divided into eight 64-KByte
+sub-ranges.
+<br/>
+<font color=gray face="黑体" size=2>
+IA32_MTRR_FIX64K_00000:<br/>
+映射 从0H 到 7FFFFH 的512-KByte 地址范围。该范围空间备分割为每个
+64-KByte 的 sub-ranges
+</font>
+<br/>
+* **Registers IA32_MTRR_FIX16K_80000 and IA32_MTRR_FIX16K_A0000** —
+Maps the two 128-KByte address ranges from 80000H to BFFFFH.
+This range is divided into sixteen 16-KByte sub-ranges, 8 
+ranges per register.
+<br/>
+<font color=gray face="黑体" size=2>
+IA32_MTRR_FIX16K_80000 和 IA32_MTRR_FIX16K_A0000:<br/>
+映射从80000H到BFFFFH 这两个128-KByte 地址范围。该范围空间
+被分为16个 16KByte 的sub-ranges, 每个register 有 8个 ranges.
+</font>
+<br/>
+* **Registers IA32_MTRR_FIX4K_C0000 through IA32_MTRR_FIX4K_F8000** —
+Maps eight 32-KByte address ranges from C0000H to FFFFFH. This
+range is divided into sixty-four 4-KByte sub-ranges, 8 ranges
+per register.
 
-Table 11-9 shows the relationship between the fixed physical-address ranges and the corresponding fields of the
-fixed-range MTRRs; Table 11-8 shows memory type encoding for MTRRs.
+<font color=gray face="黑体" size=2>
+IA32_MTRR_FIX4K_C0000 到 IA32_MTRR_FIX4K_F8000 :<br/>
+映射从 C0000H到 FFFFFH 8 个32-KByte 的地址范围。该range
+被分为64个4KByte 的sub-ranges, 每个register 有8个ranges。
+</font>
 
-For the P6 family processors, the prefix for the fixed range MTRRs is MTRRfix.
+Table 11-9 shows the relationship between the fixed physical-address
+ranges and the corresponding fields of the fixed-range MTRRs;Table 
+11-8 shows memory type encoding for MTRRs.
+
+<font color=gray face="黑体" size=2>
+Table 11-9 展示了 fixed physical-address和fixed-range MTRR 对应字段
+之间的关系; Table 11-8 展示了 对于MTRRs 的memmory type 的编码值。
+</font>
+
+For the P6 family processors, the prefix for the fixed range 
+MTRRs is MTRRfix. 
+
+<font color=gray face="黑体" size=2>
+对于P6 family processor来说，fixed range MTRRs 的前缀是 MTRRfix。
+</font>
+
+![Table-11-9](pic/Table-11-9.png)
+
+#### 11.11.2.3 Variable Range MTRRs
+The Pentium 4, Intel Xeon, and P6 family processors permit 
+software to specify the memory type for m variable- size 
+address ranges, using a pair of MTRRs for each range. The 
+number m of ranges supported is given in bits 7:0 of the 
+IA32_MTRRCAP MSR (see Figure 11-5 in Section 11.11.1).
+
+<font color=gray face="黑体" size=2>
+Pentium 4, Intel Xeon,和P6 家族处理器允许软件对 m 个variable-size
+的address ranges 指定其memory type, 通过对每个range使用一对
+MTRRs达成上面的目的。ranges的数量 m 由 IA32_MTRRCAP MSR( 请看
+Section 11.11.1 中的Figure 11-5) 的bits 7:0 给定。
+</font>
+
+The first entry in each pair (IA32_MTRR_PHYSBASEn) defines the
+base address and memory type for the range; the second entry 
+(IA32_MTRR_PHYSMASKn) contains a mask used to determine the 
+address range. The “n” suffix is in the range 0 through m–1 
+and identifies a specific register pair.
+
+<font color=gray face="黑体" size=2>
+每个pair中的first entry (IA32_MTRR_PHYBASEn) 定义了对于该range 的
+base address和memory type；second entry (IA32_MTRR_PHYMASKn)
+包含了一个用于确定 address range 的 mask。"n" 后缀在 [0, m-1]
+范围内，并且用于确定一个指定的 register pair。
+</font>
+
+For P6 family processors, the prefixes for these variable range
+MTRRs are MTRRphysBase and MTRRphysMask. 
+
+<font color=gray face="黑体" size=2>
+对于P6 family 处理器来说，对于这些可变range MTRR 的前缀是
+MTRRphyBase和MTRRphysMask。
+</font>
+
+Figure 11-7 shows flags and fields in these registers. The 
+functions of these flags and fields are:
+
+<font color=gray face="黑体" size=2>
+图11-7 展示了 这些 register 中的flags 和field。这些flags 和
+field 的功能如下:
+</font>
+
+* **Type field, bits 0 through 7** — Specifies the memory type for 
+the range (see Table 11-8 for the encoding of this field). 
+<br/>
+<font color=gray face="黑体" size=2>
+Type 字段:<br/>
+指定该range 的memory type (对于这些字段的编码，请查看Table 11-8)
+</font>
+* **PhysBase field, bits 12 through (MAXPHYADDR-1)** — Specifies 
+the base address of the address range. This 24-bit value, in 
+the case where MAXPHYADDR is 36 bits, is extended by 12 bits 
+at the low end to form the base address (this automatically 
+aligns the address on a 4-KByte boundary). 
+<br/>
+<font color=gray face="黑体" size=2>
+PhyBase 字段:<br/>
+指定了该address range 的base address。此24-bit 值，在
+MAXPHYADDR 是36 bits 情况下，通过低端扩展12位生成基地值。
+(这会自动的将地址在4-KByte 边界上对齐)
+</font>
+* PhysMask field, bits 12 through (MAXPHYADDR-1) — Specifies 
+a mask (24 bits if the maximum physical address size is 36 bits,
+28 bits if the maximum physical address size is 40 bits). The
+mask determines the range of the region being mapped, according
+<sup>据...所述</sup> to the following relationships:
+<br/>
+<font color=gray face="黑体" size=2>
+PhysMask field:<br/>
+指定了一个mask(如果物理地址最大大小为36 bits的话，该mask是24
+bits, 如果物理地址最大大小为40 bits的话，该mask 是28 bits)。
+根据下面关系所述，mask 确定 region 被映射的范围:
+</font>
+	+ Address_Within_Range AND PhysMask = PhysBase AND PhysMask
+	<br/>
+	<font color=gray face="黑体" size=2>
+	(例如: PhysBase = fe000, Physical Mask fef00, 那么, 
+	Address_Within_Range的值可能为 fe011, fe022, 不能为fe100)
+	</font>
+	+ This value is extended by 12 bits at the low end to form 
+	the mask value. For more information: see Section 11.11.3, 
+	“Example Base and Mask Calculations.”
+	<br/>
+	<font color=gray face="黑体" size=2>
+	该值通过低12bits扩展形成mask value。关于更多信息，请查看
+	Section 11.11.3 “Example Base and Mask Calculations.”
+	</font>
+	+ The width of the PhysMask field depends on the maximum 
+	physical address size supported by the processor.
+	<br/><br/>
+	CPUID.80000008H reports the maximum physical address size 	
+	supported by the processor. If 	CPUID.80000008H is not 
+	available, software may assume that the processor supports 
+	a 36-bit physical 	address size (then PhysMask is 24 bits 
+	wide and the upper 28 bits of IA32_MTRR_PHYSMASKn are 	
+	reserved). See the Note below. 
+	<font color=gray face="黑体" size=2>
+	CPUID.80000008H报告了处理器支持的 maximum physical address 
+	大小。如果 CPUID.80000008H 没有 available, 软件可以假设处理器
+	支持36-bits 的物理地址空间大小(也就是说 PhysMask 是24 bits宽，
+	而 IA32_MTRR_PHYSMASKn 的高28 bits 是保留的)。请看下面的Note
+	部分
+	</font>
+* **V (valid) flag, bit 11** — Enables the register pair when set;
+disables register pair when clear.
+<font color=gray face="黑体" size=2>
+V flags:<br/>
+当设置时， enable register pair, 当clear时，disable register pair。
+</font>
+
+![Figure-11-7](pic/Figure-11-7.png)
+
+All other bits in the IA32_MTRR_PHYSBASEn and IA32_MTRR_PHYSMASKn
+registers are reserved; the processor generates a general-protection 
+exception (#GP) if software attempts to write to them.
+
+<font color=gray face="黑体" size=2>
+在 IA32_MTRR_PHYBASEn 和 IA32_MTRR_PHYMASKsn 寄存器中的所有其他 bits
+都是保留的，如果软件尝试去写这些位的话， 处理器则会生成一个
+general-protection exception(#GP)。
+</font>
+
+Some mask values can result in ranges that are not
+continuous<sup>继续不停的,不间断的</sup>.
+In such ranges, the area not mapped by the mask value is set 
+to the default memory type, unless some other MTRR specifies 
+a type for that range. Intel does not encourage the use of 
+“discontinuous” ranges.
+
+<font color=gray face="黑体" size=2>
+某些mask 值可能会造成这些range 是不连续的。在这些ranges中，
+未被掩码映射的area 会被设置成默认的memory type,除非一些其他的
+MTRR指定了该ranges的type 。Intel 不鼓励（不推荐）使用" discontinue"
+ranges.
+</font>
+<br/>
+<font color=blue face="黑体" size=3>
+NOTE:
+</font>
+
+It is possible for software to parse the memory descriptions 
+that BIOS provides by using the ACPI/INT15 e820 interface 
+mechanism. This information then can be used to determine how
+MTRRs are initialized (for example: allowing the BIOS to define
+valid memory ranges and the maximum memory range supported by
+the platform, including the processor).
+
+<font color=gray face="黑体" size=2>
+通过使用 ACPI/INT15 e820 接口，软件可以解析BIOS 提供的内存描述符。
+然后可以使用这个信息去确定如何初始化MTRRs(例如: 允许 BIOS 
+去定义平台，包括处理器支持的valid memory ranges 和 maximum 
+memory range。
+</font>
+
+See Section 11.11.4.1, “MTRR Precedences<sup>t1</sup>,” for information on
+overlapping variable MTRR ranges. 
+
+<font color=gray face="黑体" size=2>
+t1: precedence: (时间，顺序，行列等上）领先于某人，某事物的权利
+
+请查看Section 11.11.4.1 "MTRR Precedences",了解更多
+在 variable MTRR ranges发生覆盖的一些信息。
+</font>
+
+#### 11.11.2.4 System-Management Range Register Interface
+If IA32_MTRRCAP[bit 11] is set, the processor supports the 
+SMRR interface to restrict access to a specified memory 
+address range used by system-management mode (SMM) software 
+(see Section 31.4.2.1). If the SMRR interface is supported, 
+SMM software is strongly encouraged<sup>鼓励;支持</sup> to use it to protect the 
+SMI code and data stored by SMI handler in the SMRAM region.
+<br/>
+<font color=gray face="黑体" size=2>
+如果设置了 IA32_MTRRCAP[bit 11] 位，处理器支持SMRR 接口来限制
+对用于system-manage mode(SMM) 软件的指定的内存地址范围的访问。
+(请查看Section 31.4.2.1)。如果支持SMRR 接口，强烈支持SMM 软件
+使用它去保护SMI 代码和使用SMI handler 在SMRAM region中store的
+数据。
+</font>
+
+The system-management range registers consist of a pair of MSRs
+(see Figure 11-8). The IA32_SMRR_PHYSBASE MSR defines the base
+address for the SMRAM memory range and the memory type used to
+access it in SMM. The IA32_SMRR_PHYSMASK MSR contains a valid
+bit and a mask that determines the SMRAM address range protected
+by the SMRR interface. These MSRs may be written only in SMM;
+an attempt to write them outside of SMM causes a general-protection 
+exception. 
+<br/>
+<font color=gray face="黑体" size=2>
+system-management range register 包含了一对MSRs。(see Figure 11-8)。
+IA32_SMRR_PHYSBASE MSR 定义了SMRAM memory range 的 base address和
+在SMM 下用于访问它的memroy type。IA32_SMRR_PHYSMASK MSR 包含了一个
+有效位bit和一个mask, 该mask用于确定有SMRR interface 保护的 SMRAM 
+address range。这些MSRs只可以在SMM中被写入; 在SMM 之前尝试对它们
+执行写入操作会造成 general-protection exception。
+</font>
+
+Figure 11-8 shows flags and fields in these registers. The 
+functions of these flags and fields are the following:
+<br/>
+<font color=gray face="黑体" size=2>
+Figure 11-8 展示了这些register 中的flags 和 fields。这些
+flags 和 fields 的功能如下:
+</font>
+
+* **Type field, bits 0 through 7** — Specifies the memory type 
+for the range (see Table 11-8 for the encoding of this field).
+<br/>
+<font color=gray face="黑体" size=2>
+Type field <br/>
+指定了range的memery type(请查看Table 11-8 了解该字段的编码)
+</font>
+* **PhysBase field, bits 12 through 31** — Specifies the base 
+address of the address range. The address must be less than 4
+GBytes and is automatically aligned on a 4-KByte boundary.
+<br/>
+<font color=gray face="黑体" size=2>
+PhysBase field<br/>
+指定了address range 的 base address。该地址必须比4Gbyte 要小
+并且在4-KByte 边界上，自动对齐。
+</font>
+* **PhysMask field, bits 12 through 31** — Specifies a mask that 
+determines the range of the region being mapped, according to
+the following relationships:
+<br/>
+<font color=gray face="黑体" size=2>
+PhysMask field<br />
+指定一个掩码,根据以下关系确定被映射区域的范围:
+</font>
+	+ Address_Within_Range AND PhysMask = PhysBase AND PhysMask
+	+ This value is extended by 12 bits at the low end to form 
+	the mask value. For more information: see Section11.11.3, 
+	“Example Base and Mask Calculations<sup>计算</sup>.”
+	<br/>
+	<font color=gray face="黑体" size=2>
+	该值通过低12 bits扩展 形成mask value。了解更多信息:请查看
+	Section 11.11.3 “Example Base and Mask Calculations.”
+	</font>
+* **V (valid) flag, bit 11** — Enables the register pair when set;
+disables register pair when clear.
+<br/>
+<font color=gray face="黑体" size=2>
+V:<br/>
+当设置时，enable register pair, 当clear时，disable register
+pair。
+</font>
+
+Before attempting to access these SMRR registers, software 
+must test bit 11 in the IA32_MTRRCAP register. If SMRR is 
+not supported, reads from or writes to registers cause 
+general-protection exceptions. When the valid flag in the 
+IA32_SMRR_PHYSMASK MSR is 1, accesses to the specified 
+address range are treated as follows:
+<br/>
+<font color=gray face="黑体" size=2>
+在尝试访问这些SMRR 寄存器之前，软件必须test(感觉这里像是test
+指令的意思)IA32_MTRRCAP 寄存器中的bit 11(SMRR flags)。如果 
+SMRR 不支持，对这些寄存器的读取或写入会导致 generic-protection
+exceptions。当 IA32_SMRR_PHYSMASK MSR 中的valid flags为1,
+对这个指定 地址范围的访问会如下对待:
+</font>
+
+* If the logical processor is in SMM, accesses uses the memory
+type in the IA32_SMRR_PHYSBASE MSR.
+<br/>
+<font color=gray face="黑体" size=2>
+如果logical processor 在SMM中，使用 IA32_SMRR_PHYSBASE MSR 中
+的memory type 进行访问
+</font>
+* If the logical processor is not in SMM, write accesses are 
+ignored and read accesses return a fixed value for each
+byte. The uncacheable memory type (UC) is used in this case.
+<br/>
+<font color=gray face="黑体" size=2>
+如果logical processor 没有在SMM中，write访问被忽略，read 
+访问对于每个byte 返回一个固定的值。在这种情况下使用 uncacheable
+memory type(UC)
+</font>
+
+The above items apply even if the address range specified 
+overlaps with a range specified by the MTRRs.
+<br/>
+<font color=gray face="黑体" size=2>
+即使 指定的address range 和MTRRs 中指定的range 重叠，上面的
+条目也适用。
+</font>
+
+![Figure-11-8](pic/Figure-11-8.png)
+
+### 11.11.3 Example Base and Mask Calculations
+The examples in this section apply to processors that support
+a maximum physical address size of 36 bits. The base and mask
+values entered in variable-range MTRR pairs are 24-bit values
+that the processor extends to 36-bits.
+<br/>
+<font color=gray face="黑体" size=2>
+该section 中的例子适用于支持 最大 phyiscal address size 为36 bits
+的处理器。variable-range MTRRs pair 中的base 和mask 值是24-bit,
+并且处理器将其扩展为36-bits
+</font>
+
+For example, to enter<sup>输入</sup> a base address of 2 MBytes (200000H) in
+the IA32_MTRR_PHYSBASE3 register, the 12 least- significant 
+bits are truncated and the value 000200H is entered in the 
+PhysBase field. The same operation must be performed on mask 
+values. For example, to map the address range from 200000H to
+3FFFFFH (2 MBytes to 4 MBytes), a mask value of FFFE00000H is
+required. Again, the 12 least-significant bits of this mask 
+value are truncated, so that the value entered in the PhysMask
+field of IA32_MTRR_PHYSMASK3 is FFFE00H. This mask is chosen 
+so that when any address in the 200000H to 3FFFFFH range is 
+AND’d with the mask value, it will return the same value as 
+when the base address is AND’d with the mask value (which is 
+200000H).
+<br/>
+<font color=gray face="黑体" size=2>
+举个例子, 要在 IA32_MTRR_PHYSBASE3 寄存器中输入一个2MByte(200000H)
+的基地值，低12有效位需要被 truncate 并且 PhysBase 输入的值为
+200H。相同的操作也需要在 mask值上执行。例如, 去map 一个 从
+20000H 到3FFFFFH 的address range(2MByte 到 4MByte), 需要FFFE00000H
+mask value。同样的，mask value的低12有效bits 被truncate，因此
+IA32_MTRR_PHYSMASK3 中的PhysMask 字段输入为FFFE00H。这样选择mask是为了
+落在200000H到3FFFFFH范围中任何地址与mask values进行AND(与)操作时,
+其返回值和 base address 和mask value AND操作的值相同
+</font>
+
+To map the address range from 400000H to 7FFFFFH (4 MBytes to
+8 MBytes), a base value of 000400H is entered in the PhysBase
+field and a mask value of FFFC00H is entered in the PhysMask 
+field. 
+<br/>
+<font color=gray face="黑体" size=2>
+为了map 一个从 400000H到 7FFFFFH的地址范围(4Byte 到 8Byte),
+需要向PhysBase字段中输入一个 400H的 base value 并且向PhysMask
+字段中输入一个 FFFC00H 的mask value
+</font>
+
+
+<font color=blue face="黑体" size=3>
+Example 11-2. Setting-Up Memory for a System
+</font>
+
+Here is an example of setting up the MTRRs for an system. 
+Assume that the system has the following characteristics:
+<br/>
+<font color=gray face="黑体" size=2>
+这里有一个为一个系统初始化MTRRs的例子。假设系统中有以下特征:
+</font>
+
+* 96 MBytes of system memory is mapped as write-back memory 
+(WB) for highest system performance.
+<br/>
+<font color=gray face="黑体" size=2>
+系统内存中的96 MByte 被映射为 write-back memory(WB)，为了
+获取更高的系统性能。
+</font>
+* A custom<sup>定制</sup> 4-MByte I/O card is mapped to uncached memory (UC)
+at a base address of 64 MBytes. This restriction forces the 
+96 MBytes of system memory to be addressed from 0 to 64 MBytes
+and from 68 MBytes to 100 MBytes, leaving a 4-MByte hole for 
+the I/O card.
+<br/>
+<font color=gray face="黑体" size=2>
+一个定制的 4MByte I/O 卡被映射到了一个base address 为64 MByte的
+uncache memory (UC)。此限制强制96MB的系统内存寻址为从0~64 Mbyte
+和68~100 MByte, 为I/O card留下了一个4-MByte的空洞。
+</font>
+* An 8-MByte graphics card is mapped to write-combining memory
+(WC) beginning at address A0000000H.
+<br/>
+<font color=gray face="黑体" size=2>
+一个 8-Mbyte graphics card 被map到一个从地址 A0000000H开始的
+write-combining memory (WC) 。
+</font>
+* The BIOS area from 15 MBytes to 16 MBytes is mapped to UC 
+memory.
+<br/>
+<font color=gray face="黑体" size=2>
+从15 MByte 到 16 MByte 的BIOS 空间被映射为UC memory。
+</font>
+
+The following settings for the MTRRs will yield<sup>产生</sup> 
+the proper <sup>适当的</sup> mapping of the physical address 
+space for this system configuration.
+
+<font color=gray face="黑体" size=2>
+下面对于MTRRs的设置将为系统配置会产生正确的物理地址空间映射。
+</font>
+
+```
+IA32_MTRR_PHYSBASE0 = 0000 0000 0000 0006H
+IA32_MTRR_PHYSMASK0 = 0000 000F FC00 0800H
+Caches 0-64 MByte as WB cache type.
+IA32_MTRR_PHYSBASE1 = 0000 0000 0400 0006H
+IA32_MTRR_PHYSMASK1 = 0000 000F FE00 0800H
+Caches 64-96 MByte as WB cache type.
+IA32_MTRR_PHYSBASE2 = 0000 0000 0600 0006H
+IA32_MTRR_PHYSMASK2 = 0000 000F FFC0 0800H
+Caches 96-100 MByte as WB cache type.
+IA32_MTRR_PHYSBASE3 = 0000 0000 0400 0000H
+IA32_MTRR_PHYSMASK3 = 0000 000F FFC0 0800H
+Caches 64-68 MByte as UC cache type.
+IA32_MTRR_PHYSBASE4 = 0000 0000 00F0 0000H
+IA32_MTRR_PHYSMASK4 = 0000 000F FFF0 0800H
+Caches 15-16 MByte as UC cache type.
+IA32_MTRR_PHYSBASE5 = 0000 0000 A000 0001H
+IA32_MTRR_PHYSMASK5 = 0000 000F FF80 0800H
+Caches A0000000-A0800000 as WC type.
+```
+
+This MTRR setup uses the ability to overlap any two memory 
+ranges (as long as the ranges are mapped to WB and UC memory 
+types) to minimize the number of MTRR registers that are 
+required to configure the memory environment. This setup 
+also fulfills<sup>满足</sup> the requirement that two register pairs are left
+for operating system usage.
+
+<font color=gray face="黑体" size=2>
+该MTRR 初始化使用了从重叠任意两个memory range的能力（只要
+ranges被映射为WB和UC memory type) 来最小化配置内存环境所需的
+MTRR 寄存器的数量。该初始化同时也满足了操作系统保留两个register
+pairs的需求。
+</font>
+
+#### 11.11.3.1 Base and Mask Calculations for Greater-Than 36-bit Physical Address Support
+For Intel 64 and IA-32 processors that support greater than 36
+bits of physical address size, software should query CPUID.80000008H 
+to determine the maximum physical address. See the example.
+
+<font color=gray face="黑体" size=2>
+对于支持超过36 bits 物理地址大小的Intel 64 和 IA-32 processor 处理器，
+软件应该查询  CPUID.80000008H 来确定物理地址的最大值。请看这个例子
+</font>
+
+Example 11-3. Setting-Up Memory for a System with a 40-Bit Address Size
+
+If a processor supports 40-bits of physical address size, then
+the PhysMask field (in IA32_MTRR_PHYSMASKn registers) is 28 
+bits instead of 24 bits. For this situation, Example 11-2 
+should be modified as follows: 
+
+<font color=gray face="黑体" size=2>
+如果一个处理器支持40-bits 物理地址大小，其 PhysMask 字段(在 IA32_MTRR_PHYSMASKn
+寄存器)是28 bits，而不是24 bites. 在这种情况下，Example 11-2
+应该被修改如下:
+</font>
+```
+IA32_MTRR_PHYSBASE0 = 0000 0000 0000 0006H
+IA32_MTRR_PHYSMASK0 = 0000 00FF FC00 0800H
+Caches 0-64 MByte as WB cache type.
+IA32_MTRR_PHYSBASE1 = 0000 0000 0400 0006H
+IA32_MTRR_PHYSMASK1 = 0000 00FF FE00 0800H
+Caches 64-96 MByte as WB cache type.
+IA32_MTRR_PHYSBASE2 = 0000 0000 0600 0006H
+IA32_MTRR_PHYSMASK2 = 0000 00FF FFC0 0800H
+Caches 96-100 MByte as WB cache type.
+IA32_MTRR_PHYSBASE3 = 0000 0000 0400 0000H
+IA32_MTRR_PHYSMASK3 = 0000 00FF FFC0 0800H
+Caches 64-68 MByte as UC cache type.
+IA32_MTRR_PHYSBASE4 = 0000 0000 00F0 0000H
+IA32_MTRR_PHYSMASK4 = 0000 00FF FFF0 0800H
+Caches 15-16 MByte as UC cache type.
+IA32_MTRR_PHYSBASE5 = 0000 0000 A000 0001H
+IA32_MTRR_PHYSMASK5 = 0000 00FF FF80 0800H
+Caches A0000000-A0800000 as WC type.
+```
+
+### 11.11.4 Range Size and Alignment Requirement
+A range that is to be mapped to a variable-range MTRR must 
+meet the following “power of 2” size and alignment rules:
+<br/>
+<font color=gray face="黑体" size=2>
+要映射到 variable-range MTRR 的 range 必须满足以"2的幂"
+大小和对齐规则
+</font>
+
+1. The minimum range size is 4 KBytes and the base address 
+of the range must be on at least a 4-KByte boundary.
+<br/>
+<font color=gray face="黑体" size=2>
+最小的range size为 4KByte 并且其范围的基址必须在至少4-KByte的
+边界上。
+</font>
+2. For ranges greater than 4 KBytes, each range must be of 
+length 2<sup>n</sup> and its base address must be aligned on a 2<sup>n</sup>
+boundary, where n is a value equal to or greater than 12. 
+The base-address alignment value cannot be less than its 
+length. For example, an 8-KByte range cannot be aligned on 
+a 4-KByte boundary. It must be aligned on at least an 8-KByte
+boundary.
+<br/>
+<font color=gray face="黑体" size=2>
+对于大于4KByte的 range来说，每个range 必须是2的n次幂的长度,
+并且他的基地址必须以2的n次幂为边界对齐，这里的n >= 2。
+这些基地址 alignment value 不能小于他的长度。例如 8-KByte 的range
+不能以4-KByte 边界对齐。它必须以至少8-KByte 的边界对齐。
+</font>
+
+#### 11.11.4.1 MTRR Precedences
+If the MTRRs are not enabled (by setting the E flag in the 
+IA32_MTRR_DEF_TYPE MSR), then all memory accesses are of the 
+UC memory type. If the MTRRs are enabled, then the memory 
+type used for a memory access is determined as follows:
+<br/>
+<font color=gray face="黑体" size=2>
+如果MTRRs没有被enabled(通过在 IA32_MTRR_DEF_TYPE MSR 设置E flags),
+然后所有的内存访问都是UC memory type。如果MTRRs是enabled状态，
+用于内存访问的memory type 如下描述确定:
+</font>
+
+1. If the physical address falls within the first 1 MByte of 
+physical memory and fixed MTRRs are enabled, the processor 
+uses the memory type stored for the appropriate fixed-range 
+MTRR.
+<br/>
+<font color=gray face="黑体" size=2>
+如果物理地址落在了物理内存的前1M空间，并且fixed MTRRs 是enabled，
+处理器使用 stored在合适的 fixed-range MTRR 中的 memory type。
+</font>
+2. Otherwise, the processor attempts to match the physical 
+address with a memory type set by the variable-range MTRRs:
+<br/>
+<font color=gray face="黑体" size=2>
+其他的，处理器尝试匹配物理地址和 由 variable-range MTRRs设置
+的memory type
+</font>
+	+ If one variable memory range matches, the processor uses 
+	the memory type stored in the IA32_MTRR_PHYSBASEn register 
+	for that range.
+	<br/>
+	<font color=gray face="黑体" size=2>
+	如果匹配了一个 variable memory range, 对于这个range处理器
+	使用 store 在 IA32_MTRR_PHYBASEn range中的memory type。
+	</font>
+	+ If two or more variable memory ranges match and the 
+	memory types are identical, then that memory type is 
+	used.
+	<br/>
+	<font color=gray face="黑体" size=2>
+	如果两个或多个vaiable memory range 都 匹配到并且其memory
+	types 都是一致的, 然后使用该memory type
+	</font>
+	+ If two or more variable memory ranges match and one of 
+	the memory types is UC, the UC memory type used.
+	<br/>
+	<font color=gray face="黑体" size=2>
+	如果两个或多个 variable memory range 都匹配到了，
+	其中一个memory type 是UC, 使用 UC memory type。
+	</font>
+	+ If two or more variable memory ranges match and the 
+	memory types are WT and WB, the WT memory type is used.
+	<br/>
+	<font color=gray face="黑体" size=2>
+	如果两个或多个 variable memory range 匹配到，其中memory
+	type 是WT 和WB, 使用 WT memory type.
+	</font>
+	+ For overlaps not defined by the above rules, processor 
+	behavior is undefined.
+	<br/>
+	<font color=gray face="黑体" size=2>
+	如果覆盖的情况没有在上面的规则中定义，则处理器的行为是
+	undefined
+	</font>
+3. If no fixed or variable memory range matches, the processor
+uses the default memory type.
+<br/>
+<font color=gray face="黑体" size=2>
+如果没有 fixed 或者 variable memory range 匹配到，处理器使用默认
+的memory type.
+</font>
+
+### 11.11.5 MTRR Initialization
+On a hardware reset, the P6 and more recent processors clear 
+the valid flags in variable-range MTRRs and clear the E flag 
+in the IA32_MTRR_DEF_TYPE MSR to disable all MTRRs. All other
+bits in the MTRRs are undefined.
+<br/>
+<font color=gray face="黑体" size=2>
+在处理器reset 时， P6和更新的处理器clear variable-range MTRR中的
+valid flags并且清空 IA32_MTRR_DEF_TYPE MSR 中的Eflags，来 disable
+所有的MTRRs。 MTRRs中的其他bits 都是 undefined。
+</font>
+
+Prior<sup>在...之前</sup> to initializing the MTRRs, software (normally the system
+BIOS) must initialize all fixed-range and variable-range MTRR
+register fields to 0. Software can then initialize the MTRRs 
+according to known types of memory, including memory on devices
+that it auto-configures. Initialization is expected to occur 
+prior to booting the operating system.
+<br/>
+<font color=gray face="黑体" size=2>
+在初始化MTRRs之前，软件(正常来说是 system BIOS) 必须初始化 fixed-range
+和 variable-range MTRR register 中的字段为0。软件之后可以根据内存的已知
+类型初始化MTRRs， 包括 auto-configures的 设备上的内存。初始化动作
+应在操作系统引导之前进行。
+</font>
+
+See Section 11.11.8, “MTRR Considerations in MP Systems,” for
+information on initializing MTRRs in MP (multiple- processor)
+systems. 
+<br/>
+<font color=gray face="黑体" size=2>
+请查看11.11.8 "MTRRs Considerations in MP Systems", 了解更多
+在MP系统上初始化 MTRRs的信息。
+</font>
+
+### 11.11.6 Remapping Memory Types
+A system designer may re-map memory types to tune<sup>调整</sup> performance
+or because a future processor may not imple- ment all memory 
+types supported by the Pentium 4, Intel Xeon, and P6 family 
+processors. The following rules support coherent memory-type 
+re-mappings:
+<br/>
+<font color=gray face="黑体" size=2>
+系统设计人员可能会 re-map memory type 来调整性能，或者因为将来的
+处理器可能不会实现 在 Pentium 4, Intel Xeon 和P6 family 处理器
+所有支持的 memory types。 下面的规则支持 一致性 memory-type
+重新映射。
+</font>
+1. A memory type should not be mapped into another memory type
+that has a weaker memory ordering model. For example, the 
+uncacheable type cannot be mapped into any other type, and the
+write-back, write-through, and write-protected types cannot be
+mapped into the weakly ordered write-combining type.
+<br/>
+<font color=gray face="黑体" size=2>
+memory type 不应该映射到具有弱一致模型的 另一个memory type 中。
+例如 uncacheable type 不能映射到另一个 type。 WB, WT 和WP type
+不能映射到 弱排序的 write-combining type。
+</font>
+2. A memory type that does not delay writes should not be mapped
+into a memory type that does delay writes, because applications
+of such a memory type may rely on its write-through behavior.
+Accordingly<sup>因此</sup>, the write- back type cannot be mapped into the 
+write-through type.
+<br/>
+<font color=gray face="黑体" size=2>
+一个不能delay write 的memory type 不应该map 在 可能delay write
+的memory type 上，因为这样的一个memory type 的应用可能会依赖
+它的write-through 行为。因此, write-back type 不能 map 到
+write-through type。
+</font>
+3. A memory type that views write data as not necessarily 
+stored and read back by a subsequent read, such as the 
+write-protected type, can only be mapped to another type 
+with the same behavior (and there are no others for the 
+Pentium 4, Intel Xeon, and P6 family processors) or to the 
+uncacheable type. 
+<br/>
+<font color=gray face="黑体" size=2>
+一个将写入数据视为 不一定stored并且可以通过连续读取read back的
+memory type ,例如write-protected type, 只能影响到具有相同行为
+的 memory type ( 在 Pentium4 , Intel Xeon, 和 P6 家族处理器）
+没有其他memory type) 或者映射到 uncacheable type。
+</font>
+
+In many specific cases, a system designer  can have additional
+information about how a memory type is  used, allowing 
+additional mappings. For example, write-through memory 
+with no associated write side effects can be mapped into 
+write-back memory. 
+<br/>
+<font color=gray face="黑体" size=2>
+在许多特定的例子中，系统设计人员可以有更多的额外信息关于memory
+type 如何使用，允许额外的 mappings。例如 可以将没有副作用的write-through
+memory 映射到 write-back memory。
+</font>
+
+### 11.11.7 MTRR Maintenance Programming Interface
+The operating system maintains the MTRRs after booting and 
+sets up or changes the memory types for memory-mapped devices.
+The operating system should provide a driver and application 
+programming interface (API) to access and set the MTRRs. The 
+function calls MemTypeGet() and MemTypeSet() define this 
+interface.
+<br/>
+<font color=gray face="黑体" size=2>
+操作系统在启动后维护 MTRRs并且初始化或者为memory-mapped devices
+改变memory type。操作系统应该系统一个driver和一些API 来 访问
+并设置这些MTRRs。function call MemTypeGet()和 MemTypeSet()定义
+了这个接口。
+</font>
+
+#### 11.11.7.1 MemTypeGet() Function
+#### 11.11.7.2 MemTypeSet() Function
+
+### 11.11.8 MTRR Considerations in MP Systems
+In MP (multiple-processor) systems, the operating systems must
+maintain MTRR consistency between all the processors in the 
+system. The Pentium 4, Intel Xeon, and P6 family processors 
+provide no hardware support to maintain this consistency. 
+In general, all processors must have the same MTRR values.
+<br/>
+<font color=gray face="黑体" size=2>
+在MP系统中, 操作系统必须维持系统中所有处理器的MTRRs一致。Pentium
+4, Intel Xeon, 和 P6 家族处理器没有提供硬件支持来维持这个一致性
+的行为。通常的，这些处理器必须有相同的MTRRs值。
+</font>
+
+This requirement implies<sup>意味着</sup> that when the operating system 
+initializes an MP system, it must load the MTRRs of the 
+boot processor while the E flag in register MTRRdefType is 0.
+The operating system then directs<sup>指挥，指示</sup> other processors to load 
+their MTRRs with the same memory map. After all the processors
+have loaded their MTRRs, the operating system signals them 
+to enable their MTRRs. Barrier synchronization is used to 
+prevent further memory accesses until all processors indicate
+that the MTRRs are enabled. This synchronization **is likely 
+to**<sup>很有可能</sup> be a shoot-down style algorithm, with shared variables 
+and interprocessor interrupts.
+<br/>
+<font color=gray face="黑体" size=2>
+这个需求意味着当操作系统初始化MP 系统时，他必须将 boot processor
+的 MTRRs的 MTRRdefType(IA32_MTRR_DEF_TYPE) 中的 E flags 设置为0。
+操作系统之后会只是其他的处理器去将他们的MTRRs  load为相同的 memory
+map。 在所有的处理器load 他们的MTRRs完成，操作系统向他们发信号
+去enable 他们的MTRRs。Barrier 同步用于防止之后的内存访问，直到
+所有的处理器表明 MTRRs已经enabled。 **这个同步很有可能是一个 shoot-down
+style 算法，具有共享变量和处理器间中断。**???
+</font>
+
+Any change to the value of the MTRRs in an MP system requires
+the operating system to repeat the loading and enabling 
+process to maintain consistency, using the following procedure: 
+<br/>
+<font color=gray face="黑体" size=2>
+任何对MP系统中的MTRRs值的改变都需要操作系统重复 load和enable
+的过程来维持一致性，使用下面的流程:
+</font>
+
+1. Broadcast to all processors to execute the following code 
+sequence.
+2. Disable interrupts.
+3. Wait for all processors to reach this point.
+4. Enter the no-fill cache mode. (Set the CD flag in control 
+register CR0 to 1 and the NW flag to 0.)
+5. Flush all caches using the WBINVD instructions. Note on a
+processor that supports self-snooping, CPUID feature flag bit
+27, this step is unnecessary.
+<br/>
+<font color=gray face="黑体" size=2>
+* 广播到所有的处理器去执行下面的代码序列。
+* disable interrputs
+* 等待所有处理器到达该点(等待所有处理器完成disable interrupts)
+* 进入 no-fill cache mode (设置CR0 CD flags为1, 并设置NW flags为0)
+* 使用指令WBINVD flush所有的cache。注意在支持self-snooping处理器上,
+ CPUID feature flag bit 27, 该步骤是没有必要的)
+</font>
+6. If the PGE flag is set in control register CR4, flush all 
+TLBs by clearing that flag.
+7. If the PGE flag is clear in control register CR4, flush 
+all TLBs by executing a MOV from control register CR3 to
+another register and then a MOV from that register back to CR3.
+8. Disable all range registers (by clearing the E flag in 
+register MTRRdefType). If only variable ranges are being 
+modified, software may clear the valid bits for the affected
+register pairs instead.
+<br/>
+<font color=gray face="黑体" size=2>
+* 如果CR4中的PGE flags设置，通过清空该flags flush 所有的
+TLB。
+* 如果CR4中的PGE flags已经clear, 通过执行MOV CR3 to OTH register,
+MOV OTH register to CR3 来flush所有的TLBs。
+* disable 所有的range  registers( 通过clear MTRRdefType 
+中的E flags）。如果只修改 variable range, 软件可以受影响寄存器
+对的 valid位.
+</font>
+9. Update the MTRRs.
+10. Enable all range registers (by setting the E flag in 
+register MTRRdefType). If only variable-range registers were
+modified and their individual valid bits were cleared, then 
+set the valid bits for the affected ranges instead.
+11. Flush all caches and all TLBs a second time. (The TLB 
+flush is required for Pentium 4, Intel Xeon, and P6 family
+processors. Executing the WBINVD instruction is not needed 
+when using Pentium 4, Intel Xeon, and P6 family
+processors, but it may be needed in future systems.)
+<br/>
+<font color=gray face="黑体" size=2>
+* 更新MTRRs
+* Enable所有的range register(通过设置 MTRRdefType中的E flag)。
+如果只有 variable-range register 需要修改并且他们valid bit
+都被clear, 通过设置受影响range的 valid bits.
+* 再次Flush所有的caches和所有的TLBS。(Pentium 4,Intel Xeon,
+P6 family processors需要TLB flush。在Pentium 4, Intel Xeon
+和P6 family 处理器上不需要执行 WBINVD指令，但是在未来的系统中
+可能需要)。
+</font>
+12. Enter the normal cache mode to re-enable caching. (Set 
+the CD and NW flags in control register CR0 to 0.)
+13. Set PGE flag in control register CR4, if cleared in Step 
+6 (above).
+14. Wait for all processors to reach this point.
+15. Enable interrupts.
+<br/>
+<font color=gray face="黑体" size=2>
+* enable normal cache mode来再次enable caching(设置CR0 中
+的CD 和 NW flags为0)
+* 设置CR4 中的 PGE flags, 如果在前面的步骤六清空了该flags的话。
+* 等待所有的处理器执行到该点。
+* Enable interrupts
+</font>
+
+### 11.11.9 Large Page Size Considerations
+The MTRRs provide memory typing for a limited number of 
+regions that have a 4 KByte granularity<sup>粒度</sup> (the same granularity
+as 4-KByte pages). The memory type for a given page is cached
+in the processor’s TLBs. When using large pages (2 MBytes, 
+4 MBytes, or 1 GBytes), a single page-table entry covers 
+multiple 4-KByte granules, each with a single memory type. 
+Because the memory type for a large page is cached in the TLB,
+the processor can behave in an undefined manner if a large page
+is mapped to a region of memory that MTRRs have mapped with 
+multiple memory types.
+<br/>
+<font color=gray face="黑体" size=2>
+MTRRs 为具有4 KByte 粒度的有限大小的region 提供 memory type。(和
+4-KByte page 有相同的粒度)。对于一个给定page的memory type 被
+cached到了 处理器的 TLBs中。当使用large pages时（2 MByte,
+4MByte, 或者1 GBytes), 一个page-table entry 会覆盖多个4-KByte 
+颗粒, 每个带有单独的memory type。因为对于一个缓存在TLB中的large 
+page 只有一个memory type, 如果large page 被映射到一个内存区间，
+MTRR 将该区间映射成多个memory types, 处理器会以未定义的方式运行。
+</font>
+
+Undefined behavior can be avoided by insuring that all MTRR 
+memory-type ranges within a large page are of the same type. 
+If a large page maps to a region of memory containing different
+MTRR-defined memory types, the PCD and PWT flags in the 
+page-table entry should be set for the most conservative<sup>保守的</sup> memory
+type for that range. For example, a large page used for memory
+mapped I/O and regular memory is mapped as UC memory. 
+Alternatively, the operating system can map the region using 
+multiple 4-KByte pages each with its own memory type. 
+<br/>
+<font color=gray face="黑体" size=2>
+未定义的行为可以通过保证 large page 中所有的memory-type range 
+都具有相同的值避免。如果large page 映射到一个内存区间包含了不同的
+MTRR-defined memory type, page-table entry中的PCD和PWT flags
+应该为该range 设置最保守的 memory type。例如, 用于memory mapped
+I/O 的large page和常规的内寸被映射为 UC memory 。或者，操作系统
+可以使用多个 4 KB页映射该区域，每个页都有自己的内存类型。
+</font>
+
+The requirement that all 4-KByte ranges in a large page are of the
+same memory type implies that large pages with different memory
+types may suffer a performance penalty, since they must be 
+marked with the lowest common denominator memory type. The same
+consideration apply to 1 GByte pages, each of which may consist
+of multiple 2-Mbyte ranges.
+<br/>
+<font color=gray face="黑体" size=2>
+大页面中所有 4 KB 范围都属于相同内存类型的要求意味着具有不同内存
+类型的大页面可能会遭受性能损失，因为它们必须使用最低公分母内存类
+型进行标记。相同的考虑适用于 1 GByte 页面，每个页面可能包含多个 
+2 MB 范围
+</font>
+
+The Pentium 4, Intel Xeon, and P6 family processors provide 
+special support for the physical memory range from 0 to 4 MBytes,
+which is potentially<sup>可能存在,出现的;</sup> 
+mapped by both the fixed and variable MTRRs.
+This support is invoked when a Pentium 4, Intel Xeon, or P6 family
+processor detects a large page overlapping the first 1 MByte of
+this memory range with a memory type that conflicts with the 
+fixed MTRRs. Here, the processor maps the memory range as multiple
+4-KByte pages within the TLB. This operation ensures correct 
+behavior at the cost of performance. To avoid this performance
+penalty<sup>处罚，刑罚</sup>, operating-system software should reserve the large page
+option for regions of memory at addresses greater than or equal
+to 4 MBytes. 
+<br/>
+<font color=gray face="黑体" size=2>
+Pentium 4, Intel Xeon, 和 P6 family processors 对于从0~4MByte 的
+phyiscal memory range 提供了特殊的支持, 这个内存区间可能被 fixed
+和variable MTRRs同时映射。当 Pentium 4 , intel Xeon,或者P6 家族
+处理器检测到在这个一个大页内存覆盖了此内存范围的前1MByte, 并且其
+memory type 和fixed MTRRs 中的memory type 冲突。这里，处理器将这个
+memory ranges 映射为多个带有TLB的4-KByte pages。次操作以性能作为
+代价确保正确的行为。为了避免性能处罚，操作系统软件应该为大于等于
+4 MByte 的地址所在的 memory regions 保留 large page 选项。
+</font>
+
+## 11.12 PAGE ATTRIBUTE TABLE (PAT)
+The Page Attribute Table (PAT) extends the IA-32 architecture’s
+page-table format to allow memory types to be assigned to 
+regions of physical memory based on linear address mappings. 
+The PAT is a companion<sup>伙伴;成双成对成套的物品之一</sup>
+feature to the MTRRs; that is, the MTRRs
+allow mapping of memory types to regions of the physical address
+space, where the PAT allows mapping of memory types to pages 
+within the linear address space. The MTRRs are useful for 
+statically describing memory types for physical ranges, and 
+are typically set up by the system BIOS. The PAT extends the 
+functions of the PCD and PWT bits in page tables to allow all
+five of the memory types that can be assigned with the MTRRs 
+(plus one additional memory type) to also be assigned dynamically
+to pages of the linear address space.
+<br/>
+<font color=gray face="黑体" size=2>
+PAT 扩展了 IA-32 architecture’s page-table 格式允许给基于线性地址
+映射的物理内存regions 分配 memory type。PAT是MTRRs 的配套功能;
+也就是说, MTRRs 允许 memory type 映射到 物理地址空间ranges, 而
+PAT 允许memory type 映射到线性地址空间pages上。MTRRs对于静态描述
+phyiscal range 的memory type 是有用的，并且通常的由 system BIOS
+初始化。PAT 扩展了page table 中的PCD和PWT bits允许5个中的所有
+memory types, 这些memory types 可以用于MTRRs分配（外加一种额外的
+memory type) 也能用于动态的分配给线性地址空间的pages。
+</font>
+
+The PAT was introduced to IA-32 architecture on the Pentium III
+processor. It is also available in the Pentium 4 and Intel Xeon
+processors.
+<br/>
+<font color=gray face="黑体" size=2>
+PAT在 Pentium III 处理器的IA-32 架构上引进。同时在Pentium 4 和
+Intel Xeon 处理器上也可以获取该功能。
+</font>
+
+### 11.12.1 Detecting Support for the PAT Feature
+An operating system or executive can detect the availability 
+of the PAT by executing the CPUID instruction with a value of
+1 in the EAX register. Support for the PAT is indicated by 
+the PAT flag (bit 16 of the values returned to EDX register).
+If the PAT is supported, the operating system or executive can
+use the IA32_PAT MSR to program the PAT. When memory types have
+been assigned to entries in the PAT, software can then use of
+the PAT-index bit (PAT) in the page-table and page-directory 
+entries along with the PCD and PWT bits to assign memory types
+from the PAT to individual pages. 
+<br/>
+<font color=gray face="黑体" size=2>
+操作系统或执行程序可以通过执行CPUID instruction，其中EAX =1 ,
+检测PAT 的可用性。通过PAT flags(有EDX返回的值的bit 16)指示PAT
+是否支持。如果PAT 支持，操作系统或执行程序可以使用 IA32_PAT MSR
+编程PAT, 软件可以使用page-table 和page-directory entries中的 
+PAT-index bit(PAT) , 以及entries 中的PCD和 PWT bits 来分配给各自的
+内存页分配PAT中的memory  types。
+types 
+</font>
+
+Note that there is no separate flag or control bit in any of 
+the control registers that enables the PAT. The PAT is always
+enabled on all processors that support it, and the table lookup
+always occurs whenever paging is enabled, in all paging modes.
+<br/>
+<font color=gray face="黑体" size=2>
+注意这里在任何的controls registers 中没有一个单独的flags或者control 
+bits enables PAT。 PAT 总是在所有支持它的处理器上enable，并且在所有
+分页模式下，只要启用分页，就会始终进行table lookup 。
+</font>
+
+### IA32_PAT MSR
+The IA32_PAT MSR is located at MSR address 277H (see Chapter 2,
+“Model-Specific Registers (MSRs)” in the Intel® 64 and IA-32 
+Architectures Software Developer’s Manual, Volume 4). Figure 
+11-9. shows the format of the 64-bit IA32_PAT MSR.
+<br/>
+<font color=gray face="黑体" size=2>
+IA32_PAT MSR在MSR address 227H处(请查看Intel sdm Volume 4, 
+Chapter 2, "Model-Specific Registers(MSRs)" , Figure 11-9
+图示了64-bit IA32_PAT MSR 的格式。
+</font>
+
+The IA32_PAT MSR contains eight page attribute fields: PA0 
+through PA7. The three low-order bits of each field are
+used to specify a memory type. The five high-order bits of 
+each field are reserved, and must be set to all 0s. Each
+of the eight page attribute fields can contain any of the 
+memory type encodings specified in Table 11-10.
+<br/>
+<font color=gray face="黑体" size=2>
+IA32_PAT MSR 包含了8个page attribute 字段: PA0到 PA7。每个字段
+的第三位用于指定一个memory type.每个字段的高5位是保留的，
+并且必须设置为0。8个page attribute 子读那中的每个可以包含
+Table 11-10 中指定的任意编码的memory type。
+</font>
+
+![Figure-11-9](pic/Figure-11-9.png)
+
+Note that for the P6 family processors, the IA32_PAT MSR is 
+named the PAT MSR.
+<br/>
+<font color=gray face="黑体" size=2>
+注意对于P6 family processor, IA32_PAT MSR 被命名为 PAT MSR。
+</font>
+
+![Table-11-10](pic/Table-11-10.png)
+
+### 11.12.3 Selecting a Memory Type from the PAT
+To select a memory type for a page from the PAT, a 3-bit index
+made up of the PAT, PCD, and PWT bits must be encoded in the 
+page-table or page-directory entry for the page. Table 11-11 
+shows the possible encodings of the PAT, PCD, and PWT bits and
+the PAT entry selected with each encoding. The PAT bit is bit 7
+in page-table entries that point to 4-KByte pages and bit 12 
+in paging-structure entries that point to larger pages. The PCD
+and PWT bits are bits 4 and 3, respectively, in paging-structure
+entries that point to pages of any size.
+<br/>
+<font color=gray face="黑体" size=2>
+为了从PAT 所在的page 中选择memory type, 由 PAT, PCD, PWT 位组成的
+3-bits的index 必须在page所在的 page-table或者page-directory 中编码。
+Table 11-11 展示了 PAT PCD和PWT bits可能的编码以及使用每种比那码选择的
+PAT entry。PAT bit在 在指向4-KByte pages的page-table entry 中的 第7位,
+在指向更大page的paging-structures entries的第12位。PCD和PWT bits是
+在指向任意大小page 的page-structures entries中的第3位和第4位。
+</font>
+
+The PAT entry selected for a page is used in conjunction<sup>结合</sup> with
+the MTRR setting for the region of physical memory in which 
+the page is mapped to determine the effective memory type for
+the page, as shown in Table 11-7. 
+<br/>
+<font color=gray face="黑体" size=2>
+为page 选择的PAT entry与 该page 映射到的物理内存所在region 设置的
+MTRR结合使用，用来确认对于该page的有效memory type, 如Table 11-7 所示.
+</font>
+
+![Table-11-11](pic/Table-11-11.png)
+
+### 11.12.4 Programming the PAT
+
+Table 11-12 shows the default setting for each PAT entry 
+following a power up or reset of the processor. The setting
+remain unchanged following a soft reset (INIT reset).
+<br/>
+<font color=gray face="黑体" size=2>
+Table 11-12展示了在处理器power up 或者 reset后，每个PAT entry
+默认的设置。软复位(INIT reset)后该设置保持不变。
+</font>
+
+![Table-11-12](pic/Table-11-12.png)
+
+The values in all the entries of the PAT can be changed by 
+writing to the IA32_PAT MSR using the WRMSR instruction. 
+The IA32_PAT MSR is read and write accessible (use of the 
+RDMSR and WRMSR instructions, respectively) to software 
+operating at a CPL of 0. Table 11-10 shows the allowable 
+encoding of the entries in the PAT. Attempting to write an 
+undefined memory type encoding into the PAT causes a 
+general-protection (#GP) exception to be generated.
+<br/>
+<font color=gray face="黑体" size=2>
+素有entries 中的PAT 可以通过使用WRMSR 指令写入IA_PAT MSR
+改变其值。IA32_PAT MSR 对于运行在CPL 0上的软件来说，read
+和write 操作是有权限访问的。Table 11-10 展示了 PAT的可允许
+的编码值。尝试去写一个向PAT中 写入undefined memory type 编码
+会导致生成一个GP 异常。
+</font>
+
+The operating system is responsible for insuring that changes
+to a PAT entry occur **in a manner**<sup>在一定程度上</sup> 
+that maintains the consistency
+of the processor caches and translation lookaside buffers (TLB).
+This is accomplished<sup>完成;做成功</sup> by following the procedure as specified 
+in Section 11.11.8, “MTRR Considerations in MP Systems,” for 
+changing the value of an MTRR in a multiple processor system.
+It requires a specific sequence of operations that includes 
+flushing the processors caches and TLBs.
+<br/>
+<font color=gray face="黑体" size=2>
+操作系统负责保证当PAT entry发生了一定程度上的更改时，维护
+processor cache 和TLB的一致性。有下面章节11-11-8"MTRR Considerations 
+in MP Systems"描述 完成对多处理器中改变MTRRs 值的过程。
+它需要一个指定的操作序列，包括flush processors caches 和TLBs。
+</font>
+
+The PAT allows any memory type to be specified in the page 
+tables, and therefore it is possible to have a single physical
+page mapped to two or more different linear addresses, each 
+with different memory types. Intel does not support this 
+practice<sup>实践</sup> because it may lead to undefined operations that can
+result in a system failure. In particular, a WC page must never
+be aliased to a cacheable page because WC writes may not check
+the processor caches.
+<br/>
+<font color=gray face="黑体" size=2>
+PAT 允许在page tables 中指定任何memory type，因此可能会出现一个
+physical page 映射到两个或多个线性地址，每个有不同的memory type。
+Intel不支持这样的做法，因为它可能导致undefined operations，这样
+可能会导致system failure(系统出错) 。尤其是，WC page 不能对
+cacheable page 别名因为WC write 不会检查processor caches。
+</font>
+
+When remapping a page that was previously mapped as a cacheable
+memory type to a WC page, an operating system can avoid this 
+type of aliasing by doing the following: 
+<br/>
+<font color=gray face="黑体" size=2>
+当将以前映射为cacheable memory type 重新映射到WC page时，操作系统
+可以通过做下面事情来避免这种别名的类型。
+</font>
+
+1. Remove the previous mapping to a cacheable memory type in 
+the page tables; that is, make them not present.
+2. Flush the TLBs of processors that may have used the mapping,
+even speculatively.
+3. Create a new mapping to the same physical address with a 
+new memory type, for instance, WC.
+4. Flush the caches on all processors that may have used the 
+mapping previously. Note on processors that support 
+self-snooping, CPUID feature flag bit 27, this step is 
+unnecessary.
+<br/>
+<font color=gray face="黑体" size=2>
+* 在所在的page tables中, 解除之前的cacheable memory type 映射关系。
+也就是说，使他们为 not present。
+* flush 用于该映射的的处理器的TLBs，甚至是 speculatively。
+* 为相同的physical address 创建一个新的映射，同时带有new memory type,
+例如WC
+* flush 所有处理器上的caches，该caches用于之前的 mapping。注意在
+支持self-snooping 的处理器上 ,CPUID feature flags bit 27, 该步骤是不
+必要的
+</font>
+
+Operating systems that use a page directory as a page table 
+(to map large pages) and enable page size extensions must 
+carefully scrutinize<sup>仔细的彻查，检查某事务</sup> the 
+use of the PAT index bit for the 4-KByte page-table entries. 
+The PAT index bit for a page-table entry (bit 7)
+corresponds to the page size bit in a page-directory
+entry. Therefore, the operating system can only use PAT entries
+PA0 through PA3 when setting the caching type for a page table
+that is also used as a page directory. If the operating system
+attempts to use PAT entries PA4 through PA7 when using this 
+memory as a page table, it effectively sets the PS bit for the
+access to this memory as a page directory.
+<br/>
+<font color=gray face="黑体" size=2>
+使用page directory 作为 page table (为了映射更大的page) 并且 enable
+了 page size extensions 的操作系统必须仔细的检查 4-KByte page-table
+entries的PAT index bit。page-table entry中的 PAT index bits(bit 7)
+对应于page-directory entry 中的页面大小bits。因此，当为用于page directory
+的page table 设置cache type 时，操作系统只能使用PAT entries的PA0到
+PA3。如果操作系统在使用该memory 作为page table时尝试使用PA4 到PA7 PAT 
+entries, 它会为这次作为page directory 访问该memory有效的设置PS bit 。
+</font>
+
+For compatibility with earlier IA-32 processors that do not
+support the PAT, care should be taken in selecting the encodings
+for entries in the PAT (see Section 11.12.5, “PAT Compatibility 
+with Earlier IA-32 Processors”). 
+<br/>
+<font color=gray face="黑体" size=2>
+为了兼容更早的不支持PAT的 IA-32 processors, 应注意选择PAT条目中
+的编码(请查看Section 11.12.5 "PAT Compatibility with Earlier IA-32
+Processors").
+</font>
+
+### 11.12.5 PAT Compatibility with Earlier IA-32 Processors
+
+For IA-32 processors that support the PAT, the IA32_PAT MSR 
+is always active. That is, the PCD and PWT bits in page-table
+entries and in page-directory entries (that point to pages) 
+are always select a memory type for a page indirectly by 
+selecting an entry in the PAT. They never select the memory 
+type for a page directly as they do in earlier IA-32 processors
+that do not implement the PAT (see Table 11-6).  
+<br/>
+<font color=gray face="黑体" size=2>
+对于支持PAT的 IA-32 processors，IA32_PAT MSR 总是 active。也
+就是说，page-table entries 和 page-directory entries(指向page)
+中的PCD和PWT bits总是间接的通过选择PAT中的entry 选择 page的
+memory type。它从不像之前IA-32处理器那样直接选择页面的内存类型，
+因为IA-32处理器没有实现PAT。
+</font>
+
+To allow compatibility for code written to run on earlier 
+IA-32 processor that do not support the PAT, the PAT mechanism
+has been designed to allow backward compatibility to earlier 
+processors. This  compatibility is provided through the 
+ordering of the PAT, PCD, and PWT bits in the 3-bit PAT 
+entry index. For processors that do not implement the 
+PAT, the PAT index bit (bit 7 in the page-table entries 
+and bit 12 in the page-directory entries) is reserved 
+and set to 0. With the PAT bit reserved, only the
+first four entries of the PAT can be selected with the PCD and
+PWT bits. At power-up or reset (see Table 11-12), these first
+four entries are encoded to select the same memory types as the
+PCD and PWT bits would normally select directly in an IA-32 processor
+that does not implement the PAT. So, if encodings of the first
+four entries in the PAT are left unchanged following a power-up
+or reset, code written to run on earlier IA-32 processors that
+do not implement the PAT will run correctly on IA-32 processors
+that do implement the PAT.
+<br/>
+<font color=gray face="黑体" size=2>
+为了兼容在不支持PAT的早期IA-32处理器上运行的代码, PAT 机制被
+设计为允许向后兼容早期的处理器。这里的兼容性通过PAT entry index中的
+PAT,PCD和PWT bits 的排序来提供的。对于没有实现PAT的处理器来说，
+PAT index bit( page-table entries中的 bit7, page-directory entries
+中的bit 12) 被保留并且设置为0。如果保留PAT位，只有PAT的前4个表项
+可以通过PCD和PWT bits选择。当power-up 或者 reset 时（请看Table 11-12),
+前四个表项被编码为和(1)相同的memory type.这里(1)指的是在没有实现
+PAT 的IA-32处理器中，使用PCD和PWT bits 通常直接选择的memory type。
+所以如果PAT前四个entries中的编码在power-up 或reset后保持不变，
+编写于运行在早期没有实现PAT的IA-32 处理器的代码可以在支持PAT的IA-32
+processor中运行。
+</font>

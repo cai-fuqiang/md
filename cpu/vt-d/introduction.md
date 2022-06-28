@@ -880,4 +880,3 @@ interrupt posting 的硬件支持可以让VMM software以原子方式迁移所�
 的target 到 virtual processor 上的中断, 当virtual processor 
 被调度到另一个逻辑处理器上时。
 </font>
-

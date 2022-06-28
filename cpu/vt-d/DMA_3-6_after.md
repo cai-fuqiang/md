@@ -1090,3 +1090,5 @@ MTRR memory-type 如下被确定:
     + If no fixed or variable memory range matches, then the 
     MTRR memory-type is the default memory-type from the MTRR 
     Default Type Register (see Section 10.4.39). 
+
+

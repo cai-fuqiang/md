@@ -293,105 +293,321 @@ bits 51: HAW are reserved.
 * If either the R or W field of a SL-PML4E is 1, the PS field
 is reserved.
 * If 1-GByte pages are not supported and the R or W fields of
-a SL-PDPE is 1, the PS field is
-reserved.
+a SL-PDPE is 1, the PS field is reserved.
 <br/>
 <font color=gray face="黑体" size=2>
 * 如果paging-structure entry中的R或者W字段是1, bit 51:HAW是reserved
-</br>
-* If the R or W fields of a SL-PDPE is 1, and PS field in that SL-PDPE is 1, bits 29:12 are reserved.
-* If 2-MByte pages are not supported and the R or W fields of a SL-PDE is 1, the PS field is
+* 如果SL-PML4E中的R , W字段为1, PS字段是reserved。(PML4E不支持大页_
+* 如果1-GByte pages不被支持,并且SL-PDPE中的R，W字段为1, PS字段为 reserved.
+</font>
+* If the R or W fields of a SL-PDPE is 1, and PS field in that
+SL-PDPE is 1, bits 29:12 are reserved.
+* If 2-MByte pages are not supported and the R or W fields of
+a SL-PDE is 1, the PS field is reserved.
+* If either the R or W field of a SL-PDE is 1, and the PS 
+field in that SL-PDE is 1, bits 20:12 are reserved.
+<br/>
+<font color=gray face="黑体" size=2>
+* 如果SL-PDPE中的R/W字段为1, 并且该SL-PDPE中的PS字段为1, bits
+29:12 是reserved。
+* 如果2-MByte pages 不支持，并且SL-PDE中的R/W字段为1, PS字段为reserved.
+* 如果SL-PDE中的R/W字段为1,并且SL-PDE中的PS字段为1,bit 
+20:12 为reserved.
+</font>
+* If either the R or W field of a non-leaf paging-structure 
+entry (i.e. SL-PML4E, SL-PDPE, or SL-PDE with PS=0) is 1, the 
+SNP (Snoop) field and the TM (Transient Mapping) field are 
 reserved.
-* If either the R or W field of a SL-PDE is 1, and the PS field in that SL-PDE is 1, bits 20:12 are
+* If either the R or W field of a SL-PTE is 1, and Snoop Control (SC)
+is reported as 0 in Extended Capability Register, the SNP field is
 reserved.
-* If either the R or W field of a non-leaf paging-structure entry (i.e. SL-PML4E, SL-PDPE, or SL-PDE
-with PS=0) is 1, the SNP (Snoop) field and the TM (Transient Mapping) field are reserved.
-* If either the R or W field of a SL-PTE is 1, and Snoop Control (SC) is reported as 0 in Extended
-Capability Register, the SNP field is reserved.
-* If either the R or W field of a SL-PTE is 1, and Device-TLBs (DT) is reported as 0 in Extended
-Capability Register, the TM field is reserved.
+* If either the R or W field of a SL-PTE is 1, and Device-TLBs (DT)
+is reported as 0 in Extended Capability Register, the TM field is
+reserved.
+<br/>
+<font color=gray face="黑体" size=2>
+* 如果non-leaf paging-structure entry中(i.e. SL-PML4E, SL-PDPE或者SL-PDE
+中的PS字段为0)为1, SNP(snoop)字段和TM(Transient Mapping)字段为reserved。
+* 如果SL-PTE中的R/W字段为1, 并且Extended Capability Register 中报告的的
+Snoop Control(SC)为0, SNP字段是reserved.
+* 如果SL-PTE中的R/W字段为1, Extended Capability Register 报告的Device-TLBs（DT）
+为0, SNP字段是reserved.
+</font>
 
 ### 3.7.1 Translation Faults
-Requests-without-PASID can result in second-level translation faults for either of two reasons: (1)
-there is no valid translation for the input address; or (2) there is a valid translation for the input
-address, but its access rights do not permit the access. There is no valid translation if any of the
-following are true:
-• A hardware attempt to access a translation entry (root/extended-root entry, context/extended-
-context entry, or a second-level paging-structure entry) resulted in error.
-• The root-entry or extended-root-entry used to process the request (as described in Section 3.4.2)
-has the relevant present field as 0, has invalid programming, or has a reserved bit set.
-• The context-entry or extended-context-entry used to process the request (as described in
-Section 3.4.3) has the present (P) field as 0, has invalid programming, is programmed to block
+Requests-without-PASID can result in second-level translation
+faults for either of two reasons: 
+(1) there is no valid translation for the input address; or 
+(2) there is a valid translation for the input address, but 
+its access rights do not permit the access. There is no valid
+translation if any of the following are true:
+<br/>
+<font color=gray face="黑体" size=2>
+Requests-without-PASID 会因为以下两种原因造成 second-level 
+translation faults:<br/>
+(1) 对于input address来说，没有合法的translation
+(2) 对于input address来说，有合法的translation, 但是他的访问权限
+不允许本次访问。如果下面的任何条件为真，则算是没有合法的translation
+</font>
+* A hardware attempt to access a translation entry 
+(root/extended-root entry, context/extended-context entry, or
+a second-level paging-structure entry) resulted in error.
+<br/>
+<font color=gray face="黑体" size=2>
+hardware尝试去访问translation entry(root/extended-root entry, 
+context/extended-context entry, 或者 second-level paging-structure
+entry)导致错误。
+</font>
+* The root-entry or extended-root-entry used to process the 
+request (as described in Section 3.4.2) has the relevant<sup>相关的</sup> present
+field as 0, has invalid programming, or has a reserved bit set.
+<br/>
+<font color=gray face="黑体" size=2>
+用于处理request的root-entry 或者 extended-root-entry(在3.4.2章节中
+描述的)相关的present位为0, 或者有invalid 编程，或者设置了reserved
+bit。
+</font>
+* The context-entry or extended-context-entry used to process
+the request (as described in Section 3.4.3) has the present ( P )
+field as 0, has invalid programming, is programmed to block 
 requests-without-PASID, or has a reserved bit set.
-• The input address in the request-without-PASID is above (2X - 1), where X is the minimum of
-MGAW and AGAW corresponding to address-width programmed in the context-entry or extended-
-context-entry.
-• The translation process for that address (as described in Section 3.6) used a second-level paging-
-structure entry in which the R and W fields are both 0 or one that sets a reserved bit.
-If there is a valid translation for an input address, its access rights are determined as described in
-Section 3.7.2. Depending on capabilities supported by remapping hardware and endpoint device,
-translations faults can be treated as non-recoverable errors or recoverable faults (see Chapter 7 for
-details).
+<br/>
+<font color=gray face="黑体" size=2>
+用于处理器request的context-entry 或者extended-context-entry 中present
+(P) 字段为0, 或者有非法编程，或者编程阻塞了request-without-PASID,或者
+设置了reserved bit.
+</font>
+* The input address in the request-without-PASID is above 
+(2<sup>x</sup> - 1), where X is the minimum of MGAW and AGAW corresponding to
+address-width programmed in the context-entry or extended-context-entry.
+<br/>
+<font color=gray face="黑体" size=2>
+request-without-PASID中的input address大于(2^x -1), 这里的x是MGAW和AGAW的最小值
+对应于在context-entry 或者extended-context-entry编程的address-width
+</font>
+* The translation process for that address (as described in 
+Section 3.6) used a second-level paging-structure entry in which
+the R and W fields are both 0 or one that sets a reserved bit.
+<br/>
+<font color=gray face="黑体" size=2>
+对于该地址的 translation 过程使用second-level paging-structure entry, 
+其中R&W 字段都为0， 或者某个设置了reserved bits.
+</font>
+
+If there is a valid translation for an input address, its access
+rights are determined as described in Section 3.7.2. Depending on
+capabilities supported by remapping hardware and endpoint device,
+translations faults can be treated as non-recoverable errors or
+recoverable faults (see Chapter 7 for details).
+<br/>
+<font color=gray face="黑体" size=2>
+如果对于input address 有一个合法的translation, 他的访问权限由Section
+3.7.2决定。依赖于remapping hardware 和endpoint device 支持的 
+capabilities, translations faults可以被当作 non-recoverable errors
+或者 recoverable faults(请查看Chapter 7 了解更多细节)
+</font>
 
 ### 3.7.2 Access Rights
-The accesses permitted for a request-without-PASID whose input address is successfully translated
-through second-level translation is determined by the attributes of the request and the access rights
-specified by the second-level paging-structure entries controlling the translation.
-Devices can issue requests-without-PASID for reads, writes, or atomics. The following describes how
-second-level translation determines access rights for such requests:
-• Read request without PASID:
-— Reads are allowed from any input address with a valid translation for which the Read (R) field
-is 1 in every paging-structure entry controlling the translation.
-• Write request without PASID:
-— Writes are allowed to any input address with a valid translation for which the Write (W) field is
-1 in every paging-structure entry controlling the translation.
-• Atomics request without PASID:
-— Atomics requests are allowed from any input address with a valid translation for which the
-Read (R) and Write (W) fields are both 1 in every paging-structure entry controlling the
-translation.
-Remapping hardware may cache information from the second-level paging-structure entries in
-translation caches. These caches may include information about access rights. Remapping hardware
-may enforce access rights based on these caches instead of on the paging structures in memory. This
-fact implies that, if software modifies a paging-structure entry to change access rights, the hardware
-might not use that change for a subsequent access to an affected input address. Refer to Chapter 6
-for details on hardware translation caching and how software can enforce consistency with translation
-caches when modifying paging structures in memory.
+The accesses permitted for a request-without-PASID whose input
+address is successfully translated through second-level 
+translation is determined by the attributes of the request 
+and the access rights specified by the second-level paging-structure 
+entries controlling the translation.
+<br/>
+<font color=gray face="黑体" size=2>
+对于 其input address已经通过second-level translation 成功的translated
+的request-without-PASID的访问许可由request的 attributes决定，并且
+其访问权限由控制该translation的second-level paging-structure 指定。
+</font>
+
+Devices can issue requests-without-PASID for reads, writes, or
+atomics. The following describes how second-level translation
+determines access rights for such requests:
+<br/>
+<font color=gray face="黑体" size=2>
+Device 可以提交 reads, write, 或者atomic的request-without-PASID.
+西面描述了second-level translation如何决定这些requests的访问权限:
+</font>
+
+* Read request without PASID:
+	+ Reads are allowed from any input address with a valid 
+	translation for which the Read ( R ) field is 1 in every 
+	paging-structure entry controlling the translation.
+	<br/>
+	<font color=gray face="黑体" size=2>
+	对于来自控制该 input address 的读请求都是允许的，
+	其中input address 来自于其translation每个paging-structure entry
+	Read( R )字段为1，并且是一个合法的translation。
+	</font>
+* Write request without PASID:
+	+ Writes are allowed to any input address with a valid 
+	translation for which the Write (W) field is 1 in every 
+	paging-structure entry controlling the translation.
+	<br/>
+	<font color=gray face="黑体" size=2>
+	除了Write字段为1 其余同上。
+	</font>
+* Atomics request without PASID:
+	+ Atomics requests are allowed from any input address with 
+	a valid translation for which the Read (R) and Write (W) 
+	fields are both 1 in every paging-structure entry controlling
+	the translation.
+	<br/>
+	<font color=gray face="黑体" size=2>
+	除了Write Read 字段都为1 其余同上。
+	</font>
+
+Remapping hardware may cache information from the second-level
+paging-structure entries in translation caches. These caches 
+may include information about access rights. Remapping hardware
+may enforce access rights based on these caches instead of on
+the paging structures in memory. This fact implies that, if 
+software modifies a paging-structure entry to change access 
+rights, the hardware might not use that change for a subsequent
+access to an affected input address. Refer to Chapter 6 for 
+details on hardware translation caching and how software 
+can enforce consistency with translation caches when modifying
+paging structures in memory. 
+<br/>
+<font color=gray face="黑体" size=2>
+remapping hardware 可能缓存来自于trnaslation caches中的second-level
+paging-structure entries的信息。这些cache可能包括关于访问权限的信息。
+Remapping hardware强制使用基于这些cache的访问权限，而不是来自于内存中
+的paging structures。这样做的影响是，如果software 修改了 paging-structure
+entry 去改变访问权限，hardware 可能不会使用这次的改变的值去处理接下来
+的对受影响的input address的访问。参考Chapter 6了解关于hardware translation
+cacheing和当修改了内存中的paging structures软件如何强制保持translation 
+cache 的一致性更多细节。
+</font>
 
 ### 3.7.3 Snoop Behavior
-When processing requests-without-PASID through second-level translation, the snoop behavior for
-various accesses are specified as follows:
-• Access to extended-root and extended-context-entries are snooped if the Coherency (C) field in
-Extended Capability Register (see Section 10.4.3) is reported as 1. These accesses are not
-required to be snooped if the field is reported as 0.
-• Accesses to second-level paging-entries (SL-PML4E, SL-PDPE, SL-PDE, SL-PTE) are snooped if the
-Coherency (C) field in Extended Capability Register (see Section 10.4.3) is reported as 1. These
-accesses are not required to be snooped if the field is reported as 0.
-• Accesses to a page mapped through second-level translation has snoop behavior as follows:
-— If the Snoop Control (SC) field in extended capability Register is reported as 0, snoop
-behavior for access to the page mapped through second-level translation is determined by the
-no-snoop attribute in the request.
-— If the SC field in Extended Capability Register is reported as 1, the snoop behavior for access
-to the translated address is controlled by the value of the Snoop (SNP) field in the leaf
-paging-structure entry controlling the second-level translation. If the SNP field in the paging-
-structure entry is 1, the processor caches are snooped independent of the no-snoop attribute
+When processing requests-without-PASID through second-level 
+translation, the snoop behavior for various accesses are 
+specified as follows: 
+<br/>
+<font color=gray face="黑体" size=2>
+当通过 second-level translation 处理request-without-PASID，
+对于不同访问的snoop behavior如下指定:
+</font>
+* Access to extended-root and extended-context-entries are 
+snooped if the Coherency ( C ) field in Extended Capability 
+Register (see Section 10.4.3) is reported as 1. These 
+accesses are not required to be snooped if the field 
+is reported as 0.
+<br/>
+<font color=gray face="黑体" size=2>
+如果Extended Capability Register(请查看10.4.3)中的Coherency(C)
+字段为被报告为1，访问呢extended-root 和 extended-context-entries
+是snooped。如果该字段被报告为0, 这些访问不需要是snooped。
+</font>
+* Accesses to second-level paging-entries (SL-PML4E, SL-PDPE,
+SL-PDE, SL-PTE) are snooped if the Coherency ( C ) field in 
+Extended Capability Register (see Section 10.4.3) is reported
+as 1. These accesses are not required to be snooped if the 
+field is reported as 0.
+<br/>
+<font color=gray face="黑体" size=2>
+如果Extended Capability Register (请查看Section 10.4.3) 中的
+Coherency (C)字段报告为1, 访问 second-level paging-entries(SL-PML4E,
+SLPDPE,SL-PDE,SL-PTE) 是snooped。如果这些字段报告为0， 那么这些
+访问不需要是snooped
+</font>
+* Accesses to a page mapped through second-level translation 
+has snoop behavior as follows:
+<br/>
+<font color=gray face="黑体" size=2>
+访问通过second-level translation 映射的page ，有如下的snoop行为:
+</font>
+	+ If the Snoop Control (SC) field in extended capability 
+	Register is reported as 0, snoop behavior for access to the 
+	page mapped through second-level translation is determined 
+	by the no-snoop attribute in the request.
+	<br/>
+	<font color=gray face="黑体" size=2>
+	如果extend capability Register中的Snoop Control (SC) field 
+	报告为0, 对于访问通过second-level translation 映射的页来说，
+	snoop behavior由request中的 no-snoop attribute 确定。
+	</font>
+	+ If the SC field in Extended Capability Register is reported
+	as 1, the snoop behavior for access to the translated address
+	is controlled by the value of the Snoop (SNP) field in the 
+	leaf paging-structure entry controlling the second-level 
+	translation. If the SNP field in the paging- structure entry
+	is 1, the processor caches are snooped independent of the 
+	no-snoop attribute .
+	<br/>
+	<font color=gray face="黑体" size=2>
+	如果Extended Capability Register 中的SC字段报告为1, 对于访问该
+	translated address 的snoop behavior有 控制second-level translation
+	的leaf paging-structure entry中的Snoop (SNP)字段的值控制。
+	如果该paging-structure entry中的SNP 字段为1, 处理器caches将是snooped
+	并且独立于no-snoop attribute。
+	</font>
 
 ### 3.7.4 Memory Typing
-This section describes how second-level translation contributes to determination of memory typing for
-requests-without-PASID.
-• Memory-type is ignored for memory accesses from remapping requests from devices operating
-outside the processor coherency domain.
-• Memory-type applies for memory accesses from remapping requests from devices operating
-inside the processor coherency domain.
-When processing requests-without-PASID from devices operating in the processor coherency domain,
-the memory type for any access through second-level translation is computed as follows:
-• If cache-disable (CD) field in the extended-context-entry used to process the request is 1, all
-accesses use memory-type of uncacheable (UC).
-• If cache-disable (CD) is 0 in the extended-context-entry, or if the context-entry is used, the
-memory-type for accesses is computed as follows:
-— Access to root/extended-root entries and context/extended-context-entries use memory-type
-of uncacheable (UC).
-— Access to second-level translation entries (SL-PML4E, SL-PDPE, SL-PDE, SL-PTE) and the final
-page use memory-type of write-back (WB).in the request. If the SNP field in the paging-structure entry is 0, the snoop behavior follows
-the no-snoop attribute in the request.
+This section describes how second-level translation contributes
+to determination of memory typing for requests-without-PASID.
+<br/>
+<font color=gray face="黑体" size=2>
+该章节描述了second-level translation 如何决定request-without-PASID
+的memory type
+</font>
+* Memory-type is ignored for memory accesses from remapping 
+requests from devices operating outside the processor coherency
+domain.
+<br/>
+<font color=gray face="黑体" size=2>
+对于来自于processor coherency domains之外的设备的remapping request
+的内存访问 会忽略Memory-type
+</font>
+* Memory-type applies for memory accesses from remapping 
+requests from devices operating inside the processor coherency
+domain.
+<br/>
+<font color=gray face="黑体" size=2>
+Mmeory-type适用于来自于运行在processor coherency domain 之内的
+设备的remapping requests的内存访问。
+</font>
 
+When processing requests-without-PASID from devices operating
+in the processor coherency domain, the memory type for any 
+access through second-level translation is computed as follows:
+<br/>
+<font color=gray face="黑体" size=2>
+当处理来自运行在processor coherency domains 的设备的 request-
+without-PASID, 对于任何通过second-level translation 的memory type
+如下计算:
+</font>
+* If cache-disable (CD) field in the extended-context-entry 
+used to process the request is 1, all accesses use memory-type
+of uncacheable (UC).
+<br/>
+<font color=gray face="黑体" size=2>
+如果用于处理request的extended-context-entry 中的 cache-disable(CD)
+字段为1, 所有访问使用 uncacheable(UC)的memory-type。
+</font>
+* If cache-disable (CD) is 0 in the extended-context-entry, or
+if the context-entry is used, the memory-type for accesses is 
+computed as follows:
+<br/>
+<font color=gray face="黑体" size=2>
+如果extended-context-entry 中的cache-disable(CD) 为0, 或者如果
+context-entry 被使用，对于这些访问的memory-type如下计算:
+</font>
+	+ Access to root/extended-root entries and 
+	context/extended-context-entries use memory-type
+	of uncacheable (UC).
+	<br/>
+	<font color=gray face="黑体" size=2>
+	访问 root/extended-root entries和 context/extended-context-
+	entries 使用uncacheable(UC)的memory-type
+	</font>
+	+ Access to second-level translation entries (SL-PML4E, 
+	SL-PDPE, SL-PDE, SL-PTE) and the final page use memory-type 
+	of write-back (WB).
+	<br/>
+	<font color=gray face="黑体" size=2>
+	访问second-level translation entries(SL-PML4E, SL-PDPE,SL-PDE,
+	SL-PTE)和最终的page 使用的扎write-back(WB)的memory-type。
+	</font>
 

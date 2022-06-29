@@ -75,19 +75,44 @@ translation或者second-level translation 的任何阶段都可能造成
 fault。在某个level 中的Translation faults可能由下面两种原因造成<br/>
 (1)对于相应的input address 没有合法的translation<br/>
 (2)对于响应的input address,有合法的translation 但是他的访问权限
-不允许本次访问<br/>
-如果下面的任何一个条件为真，则没有合法的translation: </font>
+不允许本次访问
+<br/>
+如果下面的任何一个条件为真，则没有合法的translation: 
+</font>
+
 * The Root Table Type (RTT) field in Root-table Address 
-register (RTADDR_REG) is 0
-* The input address in the request-with-PASID is not canonical
+register ( RTADDR_REG ) is 0
+<br/>
+<font color=gray face="黑体" size=2>
+Root-table Address register(RTADDR_REG) 中的RTT字段为0
+(表明是root-entry而不是extended-root-entry)
+</font>
+* The input address in the request-with-PASID is not
+canonical<sup>标准的;依照规则的</sup>
 (i.e., address bits 63:48 not same value as address bit 47).
+<br/>
+<font color=gray face="黑体" size=2>
+request-with-PASID的input address不是标准的(例如, address中的63:48
+bits 的值和bit47不一样
+</font>
 * A hardware attempt to access a translation entry (extended-
 root-entry, extended-context-entry, PASID-table entry, first-
 level paging-structure entry, second-level paging-structure 
 entry) resulted in error.
+<br/>
+<font color=gray face="黑体" size=2>
+硬件尝试访问translation entry(extended-root-entry, extended-context-entry,
+PASID-table entry, first-level paging-structure entry, second-level
+paging-structure entry)导致错误。
+</font>
 * The extended-root-entry used to process the request (as noted
 in Section 3.4.2) has the relevant present field as 0, has 
 invalid programming, or has a reserved bit set.
+<br/>
+<font color=gray face="黑体" size=2>
+用于处理request的extended-root-entry(Section 3.4.2中提到的) 中
+相关的present字段为0, 或者有非法编程，或者设置了 reserved bit.
+</font>
 * The extended-context-entry used to process the request (as 
 noted in Section 3.4.3) has the P field as 0, PASIDE field as 
 0, ERE field as 0 (for requests with Execute-Requested (ER) 
@@ -95,35 +120,86 @@ field Set), SMEP field as 1 (for requests with Execute-Requests
 (ER) and Privileged-mode-Requested (PR) fields Set), has invalid
 programming, T field is programmed to block requests-with-PASID,
 or has a reserved bit set.
+<br/>
+<font color=gray face="黑体" size=2>
+用于处理request的 extended-context-entry (Section 3.4.3中提到的)
+中的P field为0, 或者 PASID 字段为0, 或者ERE 字段为0(对于Execute-
+Requested(ER)字段设置的requests), SMEP字段为1 (对于ER和 Privileged-
+mode-Requested (PR) 字段设置的request），或者有非法编程，T字段
+编程为会阻塞 rqeuest-with-PASID的情况，或者设置了 reserved bits.
+</font>
 * The PASID-entry used to process the request (as noted in 
 Section 3.6) has the P field as 0, or has the SRE field as 0 
 (for requests with Privileged-mode-Requested (PR) field Set).
+<br/>
+<font color=gray face="黑体" size=2>
+用于处理request的PASID-entry(Section 3.6提到的) 有相关P 字段为0,
+或者SRE字段为0(对于PR字段设置的 request来说)
+</font>
 * The first-level translation process for the address in the 
 request-with-PASID (as noted in Section 3.6) used a first-level
 paging-structure entry in which the P field is 0 or one that 
 sets a reserved bit.
+<br/>
+<font color=gray face="黑体" size=2>
+在first-level translation 处理request-with-PASID的过程中使用的
+first-level paging-structure entry中的P字段为0, 或者其中一个设置
+了reserved 位.
+</font>
 * Input address for any of the second-level translation stages
-is above (2X - 1), where X is the minimum of MGAW and AGAW 
+is above (2<sup>x</sup> - 1), where X is the minimum of MGAW and AGAW 
 corresponding to the address-width programmed in the 
 extended-context-entry used.
+<br/>
+<font color=gray face="黑体" size=2>
+对于上面second-level translation 阶段中的任何input address超过了
+( 2 ^ x -1) ，这里的X是MGAW和AGAW中的最小值，对应在所使用的extended-
+context-entry中的编程的address-width。
+</font>
 * The second-level translation (as noted in Section 3.6) for 
 address of a paging-structure entry (PASID-entry, PML4E, PDPE,
 PDE, PTE) used a second-level paging-structure entry in which
 both the R and W field is 0, or one that sets a reserved bit.
+<br/>
+<font color=gray face="黑体" size=2>
+second-level translation (Section 3.6中提到的)中用于paging-structure 
+entry的寻址(first-level)(PASID-entry, PML4E,PDPE, PDE, PTE)使用的second-level
+paging-structure entry 中的R，W字段都为0,或者其中某一个设置了
+reserved bit.
+</font>
 * The second-level translation (as noted in Section 3.6) for 
 output address from first-level translation (address of final
 page) used a second-level paging-structure entry in which both
 the R and W field is 0, or has a reserved field set.
+<br/>
+<font color=gray face="黑体" size=2>
+对于second-level translation中的来自于first-level translation
+的output address (final page address) 使用的second-level paging-
+structure entry中的R,W字段都为0,或者设置了reserved bits.
+</font>
 
 If there is a valid second-level translation for output address
 from first-level translation (address of final page), its access
 rights are determined as described in Section 3.8.2.
+<br/>
+<font color=gray face="黑体" size=2>
+如果对于来自于first-level translation 的output address有一个
+合法的second-level translation ，他的访问权限如Section 3.8.2中描述
+确定
+</font>
 
 Depending on the capabilities supported by remapping hardware
 units and the endpoint device, translations faults may be 
 treated as non-recoverable errors or recoverable page faults.
 Chapter 7 provides detailed hardware behavior on translation 
 faults and reporting to software.
+<br/>
+<font color=gray face="黑体" size=2>
+依赖于remapping hardware units和endpoint device中支持的 capabilities,
+translation faults可能会被当作 non-recoverable errors或者 recoverable
+page faults对待。Chapter 7 提供了translation faults和报告给软件
+的这些硬件行为的细节。
+</font>
 
 ### 3.8.2 Access Rights
 For requests-with-PASID subjected to nested translation, access rights are checked at both first and
@@ -172,18 +248,22 @@ software can enforce consistency with translation caches when modifying paging s
 memory.
 
 ### 3.8.3 Snoop Behavior
-When processing requests-with-PASID through nested translation, the snoop behavior for various
-accesses are specified as follows:
-• Access to extended-root and extended-context-entries are snooped if the Coherency (C) field in
-Extended Capability Register (see Section 10.4.3) is reported as 1. These accesses are not
-required to be snooped if the field is reported as 0.
-• Accesses to second-level paging-entries (SL-PML4E, SL-PDPE, SL-PDE, SL-PTE) are snooped if the
-Coherency (C) field in Extended Capability Register (see Section 10.4.3) is reported as 1. These
-accesses are not required to be snooped if the field is reported as 0.
-• Access to PASID-table entries are always snooped.
-• Accesses to first-level paging-entries (PML4E, PDPE, PDE, PTE) are always snooped.
-• Access to the page mapped through nested (first-level and second-level) translation is always
-snooped.
+When processing requests-with-PASID through nested translation,
+the snoop behavior for various accesses are specified as follows:
+* Access to extended-root and extended-context-entries are 
+snooped if the Coherency (C) field in Extended Capability 
+Register (see Section 10.4.3) is reported as 1. These accesses
+are not required to be snooped if the field is reported as 0.
+* Accesses to second-level paging-entries (SL-PML4E, SL-PDPE,
+SL-PDE, SL-PTE) are snooped if the Coherency (C) field in 
+Extended Capability Register (see Section 10.4.3) is reported
+as 1. These accesses are not required to be snooped if the 
+field is reported as 0.
+* Access to PASID-table entries are always snooped.
+* Accesses to first-level paging-entries (PML4E, PDPE, PDE, 
+PTE) are always snooped.
+* Access to the page mapped through nested (first-level and 
+second-level) translation is always snooped.
 
 ### 3.8.4 Memory Typing
 This section describes how nested translation contributes to determination of memory typing for

@@ -1,0 +1,5 @@
+c7c9c56ca26f7b9458711b2d78b60b60e0d38ba7
+	x86, apicv: add virtual interrupt delivery support	
+
+95ba82731374eb1c2af4dd442526c4b314f0e8b6
+	KVM: SVM: Add NMI injection support

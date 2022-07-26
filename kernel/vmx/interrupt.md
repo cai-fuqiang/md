@@ -5,15 +5,45 @@ kvm_vm_ioctl
 	kvm_vm_ioctl_create_vcpu
 		1. kvm_arch_vcpu_create
 			kvm_x86_ops->vcpu_create : vmx_create_vcpu
+				vmx_vcpu_load
+				vmx_vcpu_setup
 				kvm_vcpu_init
 					kvm_arch_vcpu_init
 						kvm_create_lapic
 		2. kvm_arch_vcpu_setup
 			kvm_vcpu_reset
 				kvm_lapic_reset
+			kvm_x86_ops->vcpu_reset(vcpu, init_event); : vmx_vcpu_reset
 ```
 ## 1 分支
 先看1分支
+
+### vmx_vcpu_setup
+
+在`vmx_vcpu_setup`中会初始化 `posted interrupt descripter`
+```cpp
+static void vmx_vcpu_setup(struct vcpu_vmx *vmx)  
+{
+	...
+	if (kvm_vcpu_apicv_active(&vmx->vcpu)) {                        
+		vmcs_write64(EOI_EXIT_BITMAP0, 0);                          
+    	vmcs_write64(EOI_EXIT_BITMAP1, 0);                          
+    	vmcs_write64(EOI_EXIT_BITMAP2, 0);                          
+    	vmcs_write64(EOI_EXIT_BITMAP3, 0);
+
+    	vmcs_write16(GUEST_INTR_STATUS, 0);
+		//==============(1)======================
+    	vmcs_write16(POSTED_INTR_NV, POSTED_INTR_VECTOR);           
+    	vmcs_write64(POSTED_INTR_DESC_ADDR, __pa((&vmx->pi_desc))); 
+	}
+	...
+}
+```
+
+在`posted-interrupt notification vector`字段写入`POSTED_INTR_NV`向量, 
+在`posted-interrupt descripter address`处写入`vmx->pi_desc`的物理地址。
+
+### kvm_arch_vcpu_init
 在 `kvm_arch_vcpu_init`中, 会执行
 ```cpp
 int kvm_arch_vcpu_init(struct kvm_vcpu *vcpu)
@@ -263,6 +293,7 @@ void kvm_lapic_reset(struct kvm_vcpu *vcpu, bool init_event)
 2. 更新local timer
 
 最后部分
+
 ```cpp
 void kvm_lapic_reset(struct kvm_vcpu *vcpu, bool init_event)
 {
@@ -294,8 +325,99 @@ void kvm_lapic_reset(struct kvm_vcpu *vcpu, bool init_event)
 }
 ```
 1. 重置 post interrupt descripter
-2. 更新RVI, SVI(这个竟然不是只读的)
+```cpp
+static void vmx_apicv_post_state_restore(struct kvm_vcpu *vcpu)
+{                                                              
+    struct vcpu_vmx *vmx = to_vmx(vcpu);                       
+	//clear on
+    pi_clear_on(&vmx->pi_desc);
+    memset(vmx->pi_desc.pir, 0, sizeof(vmx->pi_desc.pir));
+}
+```
+2. 更新RVI, SVI/Guest Interrupt Status (这个竟然不是只读的)
 
+### vmx_vcpu_reset
+```cpp
+static void vmx_vcpu_reset(struct kvm_vcpu *vcpu, bool init_event)
+{
+	...
+	//==================(1)=======================
+	if (cpu_has_vmx_tpr_shadow() && !init_event) {
+		vmcs_write64(VIRTUAL_APIC_PAGE_ADDR, 0);
+    	if (cpu_need_tpr_shadow(vcpu))
+    	    vmcs_write64(VIRTUAL_APIC_PAGE_ADDR,
+					__pa(vcpu->arch.apic->regs));
+    	vmcs_write32(TPR_THRESHOLD, 0);
+	}
+
+	//==================(2)=======================
+	kvm_make_request(KVM_REQ_APIC_PAGE_RELOAD, vcpu);
+	...
+}
+```
+1. 先看是否支持TPR SHADOW,，如果支持的话，先将
+`VIRTUAL_APIC_PAGE_ADDR`字段清0, 再判断 是否需要TPR SHADOW
+的功能，如果需要，则将`vcpu->arch.apic->regs`写入
+`VIRTUAL_APIC_PAGE_ADDR`字段
+
+2. 在这里，创建了一个 KVM_REQ_APIC_PAGE_RELOAD的 request，
+该request会在 `vcpu_enter_guest`函数中处理
+
+```cpp
+static int vcpu_enter_guest(struct kvm_vcpu *vcpu)    
+{
+	...
+	if (kvm_request_pending(vcpu)) {
+	...
+		if (kvm_check_request(KVM_REQ_APIC_PAGE_RELOAD, vcpu))  
+		    kvm_vcpu_reload_apic_access_page(vcpu);
+		}
+	...
+	}
+	...
+}
+```
+
+`kvm_vcpu_reload_apic_access_page`:
+
+```cpp
+void kvm_vcpu_reload_apic_access_page(struct kvm_vcpu *vcpu)
+{
+    struct page *page = NULL;                                            
+
+    if (!lapic_in_kernel(vcpu))                                          
+        return;                                                          
+
+    if (!kvm_x86_ops->set_apic_access_page_addr)                         
+        return;                                                          
+	//==========================(1)===============================
+    page = gfn_to_page(vcpu->kvm, APIC_DEFAULT_PHYS_BASE >> PAGE_SHIFT); 
+    if (is_error_page(page))                                             
+        return;                                                          
+    kvm_x86_ops->set_apic_access_page_addr(vcpu, page_to_phys(page));    
+
+    /*                                                                   
+    ¦* Do not pin apic access page in memory, the MMU notifier           
+    ¦* will call us again if it is migrated or swapped out.              
+    ¦*/                                                                  
+    put_page(page);                                                      
+}                                                                   
+```
+
+`APIC-access page`是一个 物理地址(hpa), 所以这里要将gpa->hpa, 然后将hpa写入
+VMCS中`APIC-access page`字段，如下:
+
+`vmx_set_apic_access_page_addr`:
+
+```cpp
+static void vmx_set_apic_access_page_addr(struct kvm_vcpu *vcpu, hpa_t hpa) 
+{                                                                           
+    if (!is_guest_mode(vcpu)) {                                             
+        vmcs_write64(APIC_ACCESS_ADDR, hpa);                                
+        vmx_flush_tlb(vcpu, true);                                          
+    }                                                                       
+}                                                                           
+```
 # 附录
 
 ##  enable_apicv

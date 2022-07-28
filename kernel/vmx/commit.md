@@ -1,0 +1,36 @@
+# kvm_vcpu_kick
+```
+commit 6b7e2d0991489559a1df4500d77f7b76c4607ed0
+Author: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+Date:   Wed Jan 12 15:40:31 2011 +0800
+
+    KVM: Add "exiting guest mode" state
+
+commit 32f8840064d88cc3f6e85203aec7b6b57bebcb97
+Author: Marcelo Tosatti <mtosatti@redhat.com>
+Date:   Thu May 7 17:55:12 2009 -0300
+
+    KVM: use smp_send_reschedule in kvm_vcpu_kick
+```
+
+
+# vmx_deliver_posted_interrupt
+```
+commit b95234c840045b7c72380fd14c59416af28fcb02
+Author: Paolo Bonzini <pbonzini@redhat.com>
+Date:   Mon Dec 19 13:57:33 2016 +0100
+
+    kvm: x86: do not use KVM_REQ_EVENT for APICv interrupt injection
+
+commit bf9f6ac8d74969690df1485b33b7c238ca9f2269
+Author: Feng Wu <feng.wu@intel.com>
+Date:   Fri Sep 18 22:29:55 2015 +0800
+
+    KVM: Update Posted-Interrupts Descriptor when vCPU is blocked
+```
+
+# virtual interrupt delivery
+```
+c7c9c56ca26f7b9458711b2d78b60b60e0d38ba7
+    x86, apicv: add virtual interrupt delivery support
+```

@@ -27,6 +27,13 @@ Author: Feng Wu <feng.wu@intel.com>
 Date:   Fri Sep 18 22:29:55 2015 +0800
 
     KVM: Update Posted-Interrupts Descriptor when vCPU is blocked
+
+
+commit a20ed54d6e470bf0d28921b7aadb6ca0da0ff0c3
+Author: Yang Zhang <yang.z.zhang@Intel.com>
+Date:   Thu Apr 11 19:25:15 2013 +0800
+
+    KVM: VMX: Add the deliver posted interrupt algorithm
 ```
 
 # virtual interrupt delivery

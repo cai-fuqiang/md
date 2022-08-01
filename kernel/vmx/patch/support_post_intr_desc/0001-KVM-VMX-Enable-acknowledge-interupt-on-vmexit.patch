@@ -1,0 +1,312 @@
+From a547c6db4d2f16ba5ce8e7054bffad6acc248d40 Mon Sep 17 00:00:00 2001
+From: Yang Zhang <yang.z.zhang@Intel.com>
+Date: Thu, 11 Apr 2013 19:25:10 +0800
+Subject: [PATCH 1/7] KVM: VMX: Enable acknowledge interupt on vmexit
+The "acknowledge interrupt on exit" feature controls processor behavior
+for external interrupt acknowledgement. When this control is set, the
+processor acknowledges the interrupt controller to acquire the
+interrupt vector on VM exit.
+
+After enabling this feature, an interrupt which arrived when target cpu is
+running in vmx non-root mode will be handled by vmx handler instead of handler
+in idt. Currently, vmx handler only fakes(伪造) an interrupt stack and jump to idt
+table to let real handler to handle it. Further, we will recognize the interrupt
+and only delivery the interrupt which not belong to current vcpu through idt table.
+The interrupt which belonged to current vcpu will be handled inside vmx handler.
+This will reduce the interrupt handle cost of KVM.
+
+Also, interrupt enable logic is changed if this feature is turnning on:
+Before this patch, hypervior call local_irq_enable() to enable it directly.
+Now IF bit is set on interrupt stack frame, and will be enabled on a return from
+interrupt handler if exterrupt interrupt exists. If no external interrupt, still
+call local_irq_enable() to enable it.
+
+Refer to Intel SDM volum 3, chapter 33.2.
+
+Signed-off-by: Yang Zhang <yang.z.zhang@Intel.com>
+Reviewed-by: Gleb Natapov <gleb@redhat.com>
+Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
+---
+ arch/x86/include/asm/kvm_host.h |  1 +
+ arch/x86/kvm/svm.c              |  6 ++++
+ arch/x86/kvm/vmx.c              | 58 ++++++++++++++++++++++++++++++---
+ arch/x86/kvm/x86.c              |  4 ++-
+ 4 files changed, 64 insertions(+), 5 deletions(-)
+
+fuqiang NOTE:
+在intel sdm中的 26.2.1.1 中讲到, 如果pocess posted interrupts VM-execution
+controls为1, acknowledges interrupt on exit，必须为1
+
+intel sdm 27.1 中讲到，在`acknowledges interrupt on exit`为0,为1的区别:
+下面为原话:
+An external interrupt does not acknowledge the interrupt controller
+and the interrupt remains pending, unless the “acknowledge interrupt
+on exit” VM-exit control is 1. In such a case, the interrupt 
+controller is acknowledged and the interrupt is no longer pending.
+
+这里的acknowledge 像是 对interrupt controller 的回应，表示cpu已经接收
+到了interrupt, 不需要在保持pending。手册Figure 10.4 中展示了local APIC 
+structure， 其中和CPU交互的有这样几类信号，INTA, INTR, EXINT以及
+INIT,NMI,SMI，这里INTA是From CPU core方向的。可能于之相关，还需要看下这块知识。
+
+联想下，为什么使能`pocess posted interrupts`为什么要一定使能`acknowledges
+interrupt on exit`, 对于后者来说，比起其表面的功能，更重要的是在VMX non-root 
+mode中可以ack intr, 并获取其vectors的能力，中断控制器发出中断信号后，其后面的
+处理会由处理器来做，这里实际上就是修改了VMX non-root mode中对于中断的处理逻辑，
+从intel sdm 29.6来看，post interrupt 的处理需要ack intr, 并且得到pyhsical 
+vector number,并且可能去向local APIC EOI register 写0.
+
+所以无论non-root mode中收到的phyical vector,是否等于posted-interrupt nofication
+vector, 该interrupt都不再pendding，如果不像等，在VM-exit后，相关的中断信息会写入
+`VM-exit interruption information`。kvm需要在vm-exit后，从软件层面根据响应的中断
+信息完成代码跳转,并且在跳转前，构造一个和硬件处理中断那样的栈。（压入EFLAGS, CS, 
+EIP, Error Code)
+
+如果不使能`acknowledge interrupt on exit`,cpu会在可以接收interrupt的情况下，处理中断。
+实际上也就是Interrupt windows开启的情况下，但是kernel 会在vm-entry之前去disable
+interrupt, 所以不会在vm-exits开始就收到interrupt，而会在enable interrupt后。这时
+cpu将自动根据idt 表中的entry跳转到相应的interrupt-handler。
+
+diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
+index 82f1dc67782f..68d438630dd3 100644
+--- a/arch/x86/include/asm/kvm_host.h
++++ b/arch/x86/include/asm/kvm_host.h
+@@ -727,6 +727,7 @@ struct kvm_x86_ops {
+ 	int (*check_intercept)(struct kvm_vcpu *vcpu,
+ 			       struct x86_instruction_info *info,
+ 			       enum x86_intercept_stage stage);
++	void (*handle_external_intr)(struct kvm_vcpu *vcpu);
+ };
+ 
+ struct kvm_arch_async_pf {
+diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
+index 7a46c1f46861..2f8fe3f06837 100644
+--- a/arch/x86/kvm/svm.c
++++ b/arch/x86/kvm/svm.c
+@@ -4233,6 +4233,11 @@ static int svm_check_intercept(struct kvm_vcpu *vcpu,
+ 	return ret;
+ }
+ 
++static void svm_handle_external_intr(struct kvm_vcpu *vcpu)
++{
++	local_irq_enable();
++}
++
+ static struct kvm_x86_ops svm_x86_ops = {
+ 	.cpu_has_kvm_support = has_svm,
+ 	.disabled_by_bios = is_disabled,
+@@ -4328,6 +4333,7 @@ static struct kvm_x86_ops svm_x86_ops = {
+ 	.set_tdp_cr3 = set_tdp_cr3,
+ 
+ 	.check_intercept = svm_check_intercept,
++	.handle_external_intr = svm_handle_external_intr,
+ };
+ 
+ static int __init svm_init(void)
+diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
+index 71755573b7ca..7a7605f0444b 100644
+--- a/arch/x86/kvm/vmx.c
++++ b/arch/x86/kvm/vmx.c
+@@ -378,6 +378,7 @@ struct vcpu_vmx {
+ 	struct shared_msr_entry *guest_msrs;
+ 	int                   nmsrs;
+ 	int                   save_nmsrs;
++	unsigned long	      host_idt_base;
+ #ifdef CONFIG_X86_64
+ 	u64 		      msr_host_kernel_gs_base;
+ 	u64 		      msr_guest_kernel_gs_base;
+@@ -2627,7 +2628,8 @@ static __init int setup_vmcs_config(struct vmcs_config *vmcs_conf)
+ #ifdef CONFIG_X86_64
+ 	min |= VM_EXIT_HOST_ADDR_SPACE_SIZE;
+ #endif
+-	opt = VM_EXIT_SAVE_IA32_PAT | VM_EXIT_LOAD_IA32_PAT;
++	opt = VM_EXIT_SAVE_IA32_PAT | VM_EXIT_LOAD_IA32_PAT |
++		VM_EXIT_ACK_INTR_ON_EXIT;
+ 	if (adjust_vmx_controls(min, opt, MSR_IA32_VMX_EXIT_CTLS,
+ 				&_vmexit_control) < 0)
+ 		return -EIO;
+@@ -3879,7 +3881,7 @@ static void vmx_disable_intercept_msr_write_x2apic(u32 msr)
+  * Note that host-state that does change is set elsewhere. E.g., host-state
+  * that is set differently for each CPU is set in vmx_vcpu_load(), not here.
+  */
+-static void vmx_set_constant_host_state(void)
++static void vmx_set_constant_host_state(struct vcpu_vmx *vmx)
+ {
+ 	u32 low32, high32;
+ 	unsigned long tmpl;
+@@ -3907,6 +3909,7 @@ static void vmx_set_constant_host_state(void)
+ 
+ 	native_store_idt(&dt);
+ 	vmcs_writel(HOST_IDTR_BASE, dt.address);   /* 22.2.4 */
++	vmx->host_idt_base = dt.address;
+ 
+ 	vmcs_writel(HOST_RIP, vmx_return); /* 22.2.5 */
+ 
+@@ -4039,7 +4042,7 @@ static int vmx_vcpu_setup(struct vcpu_vmx *vmx)
+ 
+ 	vmcs_write16(HOST_FS_SELECTOR, 0);            /* 22.2.4 */
+ 	vmcs_write16(HOST_GS_SELECTOR, 0);            /* 22.2.4 */
+-	vmx_set_constant_host_state();
++	vmx_set_constant_host_state(vmx);
+ #ifdef CONFIG_X86_64
+ 	rdmsrl(MSR_FS_BASE, a);
+ 	vmcs_writel(HOST_FS_BASE, a); /* 22.2.4 */
+@@ -6399,6 +6402,52 @@ static void vmx_complete_atomic_exit(struct vcpu_vmx *vmx)
+ 	}
+ }
+ 
++static void vmx_handle_external_intr(struct kvm_vcpu *vcpu)
++{
++	u32 exit_intr_info = vmcs_read32(VM_EXIT_INTR_INFO);
++
++	/*
++	 * If external interrupt exists, IF bit is set in rflags/eflags on the
++	 * interrupt stack frame, and interrupt will be enabled on a return
++	 * from interrupt handler.
++	 */
++	if ((exit_intr_info & (INTR_INFO_VALID_MASK | INTR_INFO_INTR_TYPE_MASK))
++			== (INTR_INFO_VALID_MASK | INTR_TYPE_EXT_INTR)) {
++		unsigned int vector;
++		unsigned long entry;
++		gate_desc *desc;
++		struct vcpu_vmx *vmx = to_vmx(vcpu);
++#ifdef CONFIG_X86_64
++		unsigned long tmp;
++#endif
++
++		vector =  exit_intr_info & INTR_INFO_VECTOR_MASK;
++		desc = (gate_desc *)vmx->host_idt_base + vector;
++		entry = gate_offset(*desc);
++		asm volatile(
++#ifdef CONFIG_X86_64
++			"mov %%" _ASM_SP ", %[sp]\n\t"
++			"and $0xfffffffffffffff0, %%" _ASM_SP "\n\t"
++			"push $%c[ss]\n\t"
++			"push %[sp]\n\t"
++#endif
++			"pushf\n\t"
++			"orl $0x200, (%%" _ASM_SP ")\n\t"
++			__ASM_SIZE(push) " $%c[cs]\n\t"
++			"call *%[entry]\n\t"
++			:
++#ifdef CONFIG_X86_64
++			[sp]"=&r"(tmp)
++#endif
++			:
++			[entry]"r"(entry),
++			[ss]"i"(__KERNEL_DS),
++			[cs]"i"(__KERNEL_CS)
++			);
++	} else
++		local_irq_enable();
++}
++
+/*
+fuqiang NOTE:
+这里有一段内嵌汇编，简单说下：
+内嵌汇编的格式为: 
+asm("acssembly code" : output locations: input locations: chaged registers)
+引号中的代码均为, acessembly code, 我们一行行分析下:
+
+1. "mov %%" _ASM_SP, ", %[sp]\n\t"
+该行代码可以看到，是使用"" 引起来的，但是__ASM_SP没有，__ASM_SP
+是对SP寄存器的抽象，在编译为CONFIG_X86_32时，为"esp",在编译为
+CONFIG_X86_64时为"rsp", 总定义如下:
+```
+#define _ASM_SP     __ASM_REG(sp)
+#define __ASM_REG(reg)         __ASM_SEL_RAW(e##reg, r##reg)
+#ifdef __ASSEMBLY__
+# define __ASM_FORM(x)  x
+# define __ASM_FORM_RAW(x)     x
+# define __ASM_FORM_COMMA(x) x,
+#else
+# define __ASM_FORM(x)  " " #x " "
+# define __ASM_FORM_RAW(x)     #x
+# define __ASM_FORM_COMMA(x) " " #x ","
+#endif
+
+#ifndef __x86_64__
+/* 32 bit */
+# define __ASM_SEL(a,b) __ASM_FORM(a)
+# define __ASM_SEL_RAW(a,b) __ASM_FORM_RAW(a)
+#else
+/* 64 bit */
+# define __ASM_SEL(a,b) __ASM_FORM(b)
+# define __ASM_SEL_RAW(a,b) __ASM_FORM_RAW(b)
+#endif
+```
+__ASSEMBLY__ 是一个编译宏，这个在编译汇编代码时加上，区分
+c代码和汇编代码，对于寄存器的引用，（因为汇编代码总是待引号的)
+
+%[sp] 实际上是在 output locations处, 对应的代码为[sp]"=&r"(tmp)
+扩展格式中，可以从寄存器和内存位置给输入值和输出值赋值。
+格式为:
+"constranint"(variable)，variable是c代码中声明的变量，constranint
+定义把变量放到哪里去(对于输入值), 从哪里传送变量(对于输出值), 这里指
+输出值。使用它定义把变量放到到寄存器中还是内存中。
+
+"=&r"解释:
+=&为输出描述符
+= 表示只能写入操作数
+& 表示在内联函数完成之前，可以删除或者重新使用操作数
+
+r为约束，表示:使用任何可用的寄存器
+
+[sp] 为占位符，类似于 C代码中的宏，本身没有任何意义，只是去代表后面
+的内容。
+
+所以这里表示，mov rsp, tmp
+
+2. "and $0xfffffffffffffff0, %%" _ASM_SP "\n\t"
+and 0xfffffffffffffff0, rsp
+3. "push $%c[ss]\n\t"
+来自于输入部:
+[ss]"i"(__KERNEL_DS)
+i表示使用立即整数值，这里__KERNEL_DS为一个宏，代表一个立即数
+而%c没有搞懂。 指令大概是 pushq $__KERNEL_DS
+4. push %[sp]
+push tmp 
+4. pushf
+push rflags
+4. "orl $0x200, (%%" _ASM_SP ")\n\t"
+orl $0x200, rsp
+ */
+
+ static void vmx_recover_nmi_blocking(struct vcpu_vmx *vmx)
+ {
+ 	u32 exit_intr_info;
+@@ -7041,7 +7090,7 @@ static void prepare_vmcs02(struct kvm_vcpu *vcpu, struct vmcs12 *vmcs12)
+ 	 * Other fields are different per CPU, and will be set later when
+ 	 * vmx_vcpu_load() is called, and when vmx_save_host_state() is called.
+ 	 */
+-	vmx_set_constant_host_state();
++	vmx_set_constant_host_state(vmx);
+ 
+ 	/*
+ 	 * HOST_RSP is normally set correctly in vmx_vcpu_run() just before
+@@ -7718,6 +7767,7 @@ static struct kvm_x86_ops vmx_x86_ops = {
+ 	.set_tdp_cr3 = vmx_set_cr3,
+ 
+ 	.check_intercept = vmx_check_intercept,
++	.handle_external_intr = vmx_handle_external_intr,
+ };
+ 
+ static int __init vmx_init(void)
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index ae9744d03c83..1562671a8e18 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -5820,7 +5820,9 @@ static int vcpu_enter_guest(struct kvm_vcpu *vcpu)
+ 
+ 	vcpu->mode = OUTSIDE_GUEST_MODE;
+ 	smp_wmb();
+-	local_irq_enable();
++
++	/* Interrupt is enabled by handle_external_intr() */
++	kvm_x86_ops->handle_external_intr(vcpu);
+ 
+ 	++vcpu->stat.exits;
+ 
+-- 
+2.36.1
+

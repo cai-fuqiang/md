@@ -36,6 +36,24 @@ Date:   Thu Apr 11 19:25:15 2013 +0800
     KVM: VMX: Add the deliver posted interrupt algorithm
 ```
 
+
+# 支持post interrupt Descriptor
+```
+commit a547c6db4d2f16ba5ce8e7054bffad6acc248d40
+Author: Yang Zhang <yang.z.zhang@Intel.com>
+Date:   Thu Apr 11 19:25:10 2013 +0800
+
+    KVM: VMX: Enable acknowledge interupt on vmexit
+
+...
+
+commit 5a71785dde307f6ac80e83c0ad3fd694912010a1
+Author: Yang Zhang <yang.z.zhang@Intel.com>
+Date:   Thu Apr 11 19:25:16 2013 +0800
+
+    KVM: VMX: Use posted interrupt to deliver virtual interrupt
+```
+
 # virtual interrupt delivery
 ```
 c7c9c56ca26f7b9458711b2d78b60b60e0d38ba7

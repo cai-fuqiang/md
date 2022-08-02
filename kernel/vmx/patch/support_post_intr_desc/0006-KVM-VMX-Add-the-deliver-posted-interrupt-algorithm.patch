@@ -26,8 +26,8 @@ index 68d438630dd3..599f98b612d4 100644
  	void (*hwapic_isr_update)(struct kvm *kvm, int isr);
  	void (*load_eoi_exitmap)(struct kvm_vcpu *vcpu, u64 *eoi_exit_bitmap);
  	void (*set_virtual_x2apic_mode)(struct kvm_vcpu *vcpu, bool set);
-+	void (*deliver_posted_interrupt)(struct kvm_vcpu *vcpu, int vector);
-+	void (*sync_pir_to_irr)(struct kvm_vcpu *vcpu);
++	void (*deliver_posted_interrupt)(struct kvm_vcpu *vcpu, int vector); //用于软件deliver_posted_interrupt
++	void (*sync_pir_to_irr)(struct kvm_vcpu *vcpu); //在vmentry时，将pir flush到irr
  	int (*set_tss_addr)(struct kvm *kvm, unsigned int addr);
  	int (*get_tdp_level)(void);
  	u64 (*get_mt_mask)(struct kvm_vcpu *vcpu, gfn_t gfn, bool is_mmio);
@@ -47,7 +47,7 @@ index d197579435d0..dbf74c922aa1 100644
 +	for (i = 0; i <= 7; i++) {
 +		pir_val = xchg(&pir[i], 0);
 +		if (pir_val)
-+			*((u32 *)(apic->regs + APIC_IRR + i * 0x10)) |= pir_val;
++			*((u32 *)(apic->regs + APIC_IRR + i * 0x10)) |= pir_val; //将pir的值或到VIRR上
 +	}
 +}
 +EXPORT_SYMBOL_GPL(kvm_apic_update_irr);
@@ -160,12 +160,12 @@ index 8535519d0352..3a14d8a0ee46 100644
 +		return;
 +
 +	r = pi_test_and_set_on(&vmx->pi_desc);
-+	kvm_make_request(KVM_REQ_EVENT, vcpu);
++	kvm_make_request(KVM_REQ_EVENT, vcpu); //这里为什么要make_request呢, 可能之前的逻辑写在中断注入流程中了
 +	if (!r && (vcpu->mode == IN_GUEST_MODE))
-+		apic->send_IPI_mask(get_cpu_mask(vcpu->cpu),
++		apic->send_IPI_mask(get_cpu_mask(vcpu->cpu), //如果是IN_GUEST_MODE, 发送POSTED_INTR_VECTOR 由cpu去处理
 +				POSTED_INTR_VECTOR);
 +	else
-+		kvm_vcpu_kick(vcpu);
++		kvm_vcpu_kick(vcpu); 		//kick下, 让其
 +}
 +
 +static void vmx_sync_pir_to_irr(struct kvm_vcpu *vcpu)

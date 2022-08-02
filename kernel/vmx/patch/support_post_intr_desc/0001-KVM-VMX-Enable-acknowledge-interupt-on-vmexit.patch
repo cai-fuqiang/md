@@ -269,7 +269,13 @@ push tmp
 4. pushf
 push rflags
 4. "orl $0x200, (%%" _ASM_SP ")\n\t"
-orl $0x200, rsp
+orl $0x200, rsp, 这里为什么进行或操作，不了解，后来patch
+f2485b3e0c6c0aa3a9546babc2fad3739e964ebb 将其删除
+5. pushq $[cs]
+push %[cs]
+
+6. call *%[entry]
+call *(entry), entry指向地址
  */
 
  static void vmx_recover_nmi_blocking(struct vcpu_vmx *vmx)

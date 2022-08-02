@@ -11,6 +11,11 @@ running and transparent to OS. But in some cases, the interrupt will arrive
 when target vcpu is scheduled out. And host will see it. So we need to
 register a dump handler to handle it.
 
+本来post interrupt 应该直接递送到guest中，但是可能vcpu schedule out,
+host 就发现了这个中断, 所以该patch新增了一个IDT entry来处理这个中断，
+在新增的中断处理函数中，什么也没有做，知识增加了下kvm_posted_intr_ipis的
+计数。
+
 Signed-off-by: Yang Zhang <yang.z.zhang@Intel.com>
 Acked-by: Ingo Molnar <mingo@kernel.org>
 Reviewed-by: Gleb Natapov <gleb@redhat.com>

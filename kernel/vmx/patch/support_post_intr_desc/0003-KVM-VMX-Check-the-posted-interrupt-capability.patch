@@ -13,6 +13,8 @@ Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
  arch/x86/kvm/vmx.c         | 82 ++++++++++++++++++++++++++++----------
  2 files changed, 66 insertions(+), 20 deletions(-)
 
+该patch用于使能 post interrupt feature
+
 diff --git a/arch/x86/include/asm/vmx.h b/arch/x86/include/asm/vmx.h
 index fc1c3134473b..6f07f1999138 100644
 --- a/arch/x86/include/asm/vmx.h

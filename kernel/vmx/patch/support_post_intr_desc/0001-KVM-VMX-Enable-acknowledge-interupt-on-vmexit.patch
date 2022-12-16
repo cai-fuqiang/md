@@ -67,6 +67,8 @@ EIP, Error Code)
 interrupt, 所以不会在vm-exits开始就收到interrupt，而会在enable interrupt后。这时
 cpu将自动根据idt 表中的entry跳转到相应的interrupt-handler。
 
+PS: intel sdm 6.12.1.3 中提到，穿过中断门，异常门，都会clear EFLAGS中的IF位
+
 diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
 index 82f1dc67782f..68d438630dd3 100644
 --- a/arch/x86/include/asm/kvm_host.h

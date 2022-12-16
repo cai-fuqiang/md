@@ -56,6 +56,15 @@ Date:   Thu Apr 11 19:25:16 2013 +0800
 
 # virtual interrupt delivery
 ```
-c7c9c56ca26f7b9458711b2d78b60b60e0d38ba7
+mail-list:
+https://lore.kernel.org/all/1358331672-32384-1-git-send-email-yang.z.zhang@intel.com/
+
+83d4c286931c9d28c5be21bac3c73a2332cab681	[1/3]
+    x86, apicv: add APICv register virtualization support
+
+8d14695f9542e9e0195d6e41ddaa52c32322adf5	[2/3]
+    x86, apicv: add virtual x2apic support
+
+c7c9c56ca26f7b9458711b2d78b60b60e0d38ba7	[3/3]
     x86, apicv: add virtual interrupt delivery support
 ```

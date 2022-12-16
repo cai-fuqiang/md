@@ -1,6 +1,8 @@
 # install yay
 sudo pacman -S yay
 
+# install opensshd
+yay -S sshd
 # install neovim
 yay -S neovim
 
@@ -29,5 +31,19 @@ python get-pip.py
 yay -S alacritty
 
 #  goldendict
+yay -S goldendict-git
 
-# automake autoconf make libvorbis
+# build software
+automake autoconf make libvorbis patch
+
+# base-devel
+yay -Syyu base-devel
+
+# zsh
+yay -S zsh
+
+# flameshot
+yay -S flameshot
+
+# qv2ray
+yay -S v2ray qv2ray

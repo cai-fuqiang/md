@@ -23,6 +23,8 @@ mov的原因感觉如下:
 kernel build objtool cmd
 ```
 ./tools/objtool/objtool orc generate  --module --no-fp  --retpoline "/root/wangfuqiang/kernel_test/orc/.tmp_proc-test.o";
+set args orc generate  --module --no-fp  --retpoline "/root/wangfuqiang/kernel_test/orc/.tmp_proc-test.o"
+set args orc generate  --module --no-fp  --retpoline "/root/wangfuqiang/kernel_test/orc/c_test/main.o"
 ```
 获取编译参数:
 ```

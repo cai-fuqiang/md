@@ -210,6 +210,138 @@ static void ixgbe_reset_subtask(struct ixgbe_adapter *adapter)
   调入, 产生多次打印，在这个过程中，不知道什么原因，导致系统挂了（没有vmcore/calltrace，
   不好分析为什么挂掉)
 
+# 早期日志分析
+根据永安传过来的早期日志，会有如下打印:
+![early log](pic/early_log.jpg)
+
+早期日志中，可以看到会有`NIC Link is Down`相关打印, 
+** 但是, 两个触发Down 的网卡，和Ecc Err的网卡不是一个网卡, 
+并且中间差了14s, 所以很可能该问题产生和拔网线没有关系**, 
+但是我们还是分析下kernel代码流程
+
+## EICR LSC field
+上面也提到过EICR中的ECC字段，该字段表示触发中断的原因是
+遇到了ECC 错误。
+
+而该寄存器还有一个字段`LSC`该字段表示链路状态变化
+(from up to down, or from down to up)
+
+![EICR_LSC](pic/EICR_LSC.png)
+
+## 查看相关kernel代码
+路径有几个，但是最可能的路径，还是通过msix interrupt上报:
+代码如下:
+```cpp
+static irqreturn_t ixgbe_msix_other(int irq, void *data)
+{
+	...
+	if (eicr & IXGBE_EICR_LSC)
+	        ixgbe_check_lsc(adapter);
+	...
+}
+
+static void ixgbe_check_lsc(struct ixgbe_adapter *adapter)
+{
+        struct ixgbe_hw *hw = &adapter->hw;
+
+        adapter->lsc_int++;
+        adapter->flags |= IXGBE_FLAG_NEED_LINK_UPDATE;
+        adapter->link_check_timeout = jiffies;
+        if (!test_bit(__IXGBE_DOWN, &adapter->state)) {
+                IXGBE_WRITE_REG(hw, IXGBE_EIMC, IXGBE_EIMC_LSC);
+                IXGBE_WRITE_FLUSH(hw);
+                ixgbe_service_event_schedule(adapter);
+        }
+}
+```
+
+上面看过`ixgbe_service_event_schedule`的代码, 这里稍微列一些代码:
+```cpp
+static void ixgbe_service_event_schedule(struct ixgbe_adapter *adapter)
+{
+        if (!test_bit(__IXGBE_DOWN, &adapter->state) &&
+           !test_bit(__IXGBE_REMOVING, &adapter->state) &&
+           !test_and_set_bit(__IXGBE_SERVICE_SCHED, &adapter->state))
+                queue_work(ixgbe_wq, &adapter->service_task);
+}
+static void ixgbe_service_task(struct work_struct *work)
+{
+	...
+	ixgbe_reset_subtask(adapter);
+	...
+	ixgbe_watchdog_subtask(adapter);
+	...
+}
+static void ixgbe_watchdog_subtask(struct ixgbe_adapter *adapter)
+{
+        /* if interface is down, removing or resetting, do nothing */
+        if (test_bit(__IXGBE_DOWN, &adapter->state) ||
+        ¦   test_bit(__IXGBE_REMOVING, &adapter->state) ||
+        ¦   test_bit(__IXGBE_RESETTING, &adapter->state))
+                return;
+
+        ixgbe_watchdog_update_link(adapter);
+
+        if (adapter->link_up)
+                ixgbe_watchdog_link_is_up(adapter);
+        else
+                ixgbe_watchdog_link_is_down(adapter);
+
+        ixgbe_check_for_bad_vf(adapter);
+        ixgbe_spoof_check(adapter);
+        ixgbe_update_stats(adapter);
+
+        ixgbe_watchdog_flush_tx(adapter);
+}
+```
+
+之前分析过，如果ECC err路径进入了`ixgbe_reset_subtask`, 但是lsc的报的中断，为什么
+没有打印呢，这是因为，Ecc err在`ixgbe_msix_other`中会设置`__IXGBE_RESET_REQUESTED`位，
+但是lsc的流程不会设置，所以，会提前return。代码如下:
+```cpp
+static void ixgbe_reset_subtask(struct ixgbe_adapter *adapter)
+{
+	...
+	if (!test_and_clear_bit(__IXGBE_RESET_REQUESTED, &adapter->state))
+	        return;
+	...
+	netdev_err(adapter->netdev, "Reset adapter\n");
+	...
+}
+```
+在`ixgbe_watchdog_subtask`流程中，回去看`adapter->link_up`的状态，实际就是之前网卡
+的状态，之前是up状态的话，现在状态改变了，就应该将状态置为down，反之同理。
+我们再来看下`ixgbe_watchdog_link_is_down`代码:(adapter);
+```cpp
+static void ixgbe_watchdog_link_is_down(struct ixgbe_adapter *adapter)
+{
+	struct net_device *netdev = adapter->netdev;
+	struct ixgbe_hw *hw = &adapter->hw;
+	
+	adapter->link_up = false;
+	adapter->link_speed = 0;
+	
+	/* only continue if link was up previously */
+	if (!netif_carrier_ok(netdev))
+	        return;
+	
+	/* poll for SFP+ cable when link is down */
+	if (ixgbe_is_sfp(hw) && hw->mac.type == ixgbe_mac_82598EB)
+	        adapter->flags2 |= IXGBE_FLAG2_SEARCH_FOR_SFP;
+	
+	if (test_bit(__IXGBE_PTP_RUNNING, &adapter->state))
+	        ixgbe_ptp_start_cyclecounter(adapter);
+	
+	e_info(drv, "NIC Link is Down\n");
+	netif_carrier_off(netdev);
+
+	/* ping all the active vfs to let them know link has changed */
+	ixgbe_ping_all_vfs(adapter);
+}
+```
+这里会将`adapter->link_up`设置为false，并且将`link_speed`设置为0, 然后打印
+`NIC Link is Down`。
+
 # ECC error interrupt
 
 ECC error interrupt是硬件报的，在82599 datasheet中有描述(来自

@@ -1,228 +1,96 @@
-# mov rsp, rbp
-* 没有mov的: `intel_pt_handle_vmx`
-* 有mov的: `__schedule`
+# ORC unwind
+orc 和frame pointer 一样都用于堆栈回溯。我们先来看下frame pointer
+的实现。
 
-mov的原因感觉如下:
-```
-0xffffffffb5c605f0 <__schedule>:        push   %rbp
-0xffffffffb5c605f1 <__schedule+1>:      mov    %rsp,%rbp
-0xffffffffb5c605f4 <__schedule+4>:      push   %r15
-0xffffffffb5c605f6 <__schedule+6>:      push   %r14
-0xffffffffb5c605f8 <__schedule+8>:      push   %r13
-0xffffffffb5c605fa <__schedule+10>:     mov    %edi,%r13d
-0xffffffffb5c605fd <__schedule+13>:     push   %r12
-0xffffffffb5c605ff <__schedule+15>:     push   %rbx
-0xffffffffb5c60600 <__schedule+16>:     sub    $0x30,%rsp
-0xffffffffb5c60604 <__schedule+20>:     mov    %gs:0x28,%rax
-0xffffffffb5c6060d <__schedule+29>:     mov    %rax,-0x30(%rbp) <-----(1)
-```
-(1) 这个地方会将rbp
-
-
-# objtool 测试
-kernel build objtool cmd
-```
-./tools/objtool/objtool orc generate  --module --no-fp  --retpoline "/root/wangfuqiang/kernel_test/orc/.tmp_proc-test.o";
-set args orc generate  --module --no-fp  --retpoline "/root/wangfuqiang/kernel_test/orc/.tmp_proc-test.o"
-set args orc generate  --module --no-fp  --retpoline "/root/wangfuqiang/kernel_test/orc/c_test/main.o"
-```
-获取编译参数:
-```
-gcc -Wp,-MD,/root/wangfuqiang/kernel_test/orc/.proc-test.o.d	\
-	-nostdinc -isystem /usr/lib/gcc/x86_64-redhat-linux/8/include	\
-	-I./arch/x86/include -I./arch/x86/include/generated	\
-	-I./include/drm-backport -I./include -I./arch/x86/include/uapi  \
-	-I./arch/x86/include/generated/uapi -I./include/uapi -I./include/generated/uapi  \
-	-include ./include/linux/kconfig.h -include ./include/linux/compiler_types.h  \
-	-D__KERNEL__ -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing   \
-	-fno-common -fshort-wchar -Werror-implicit-function-declaration -Wno-format-security   \
-	-std=gnu89 -fno-PIE -DCC_HAVE_ASM_GOTO -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -mno-avx   \
-	-m64 -falign-jumps=1 -falign-loops=1 -mno-80387 -mno-fp-ret-in-387 -mpreferred-stack-boundary=3   \
-	-mskip-rax-setup -mtune=generic -mno-red-zone -mcmodel=kernel -funit-at-a-time   \
-	-DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -DCONFIG_AS_CFI_SECTIONS=1   \
-	-DCONFIG_AS_FXSAVEQ=1 -DCONFIG_AS_SSSE3=1 -DCONFIG_AS_CRC32=1 -DCONFIG_AS_AVX=1   \
-	-DCONFIG_AS_AVX2=1 -DCONFIG_AS_AVX512=1 -DCONFIG_AS_SHA1_NI=1 -DCONFIG_AS_SHA256_NI=1   \
-	-pipe -Wno-sign-compare -fno-asynchronous-unwind-tables -mindirect-branch=thunk-extern   \
-	-mindirect-branch-register -fno-jump-tables -fno-delete-null-pointer-checks   \
-	-Wno-frame-address -Wno-format-truncation -Wno-format-overflow   \
-	-Wno-int-in-bool-context -O2 --param=allow-store-data-races=0   \
-	-Wframe-larger-than=2048 -fstack-protector-strong -Wno-unused-but-set-variable   \
-	-Wno-unused-const-variable -fno-var-tracking-assignments -g -gdwarf-4   \
-	-pg -mrecord-mcount -mfentry -DCC_USING_FENTRY -fno-inline-functions-called-once   \
-	-Wdeclaration-after-statement -Wno-pointer-sign -Wno-stringop-truncation   \
-	-fno-strict-overflow -fno-merge-all-constants -fmerge-constants   \
-	-fno-stack-check -fconserve-stack -Werror=implicit-int -Werror=strict-prototypes   \
-	-Werror=date-time -Werror=incompatible-pointer-types -Werror=designated-init   \
-	-fmacro-prefix-map=./= -Wno-packed-not-aligned  -DMODULE    \
-	-DKBUILD_BASENAME='"proc_test"' -DKBUILD_MODNAME='"proctest"'   \
-	-c -o /root/wangfuqiang/kernel_test/orc/.tmp_proc-test.o /root/wangfuqiang/kernel_test/orc/proc-test.c
-```
-可以看到是O2的编译, 并且没有`-fno-optimize-sibling-calls`
-用gcc翻译成汇编看下
-```
-my_init:
-.LFB1893:
-        .loc 1 17 1 is_stmt 1 view -0
-        .cfi_startproc
-1:      call    __fentry__
-        .section __mcount_loc, "a",@progbits
-        .quad 1b
-        .previous
-        .loc 1 18 5 view .LVU12
-        .loc 1 8 2 view .LVU13
-        .loc 1 9 2 view .LVU14
-        .loc 1 9 14 view .LVU15
-        .loc 1 13 2 view .LVU16
-        .loc 1 19 5 view .LVU17
-        .loc 1 20 1 is_stmt 0 view .LVU18
-        xorl    %eax, %eax
-        ret
-        .cfi_endproc
-```
-可以看到仍然有dwarf相关的注释
-
-修改`script/Makefile.build`， 使其在编译时中断：
-```
-diff --git a/scripts/Makefile.build b/scripts/Makefile.build
-index 723ea41..99e210d 100644
---- a/scripts/Makefile.build
-+++ b/scripts/Makefile.build
-@@ -272,7 +272,7 @@ endif
- # 'OBJECT_FILES_NON_STANDARD_foo.o := 'n': override directory skip for a file
- cmd_objtool = $(if $(patsubst y%,, \
-        $(OBJECT_FILES_NON_STANDARD_$(basetarget).o)$(OBJECT_FILES_NON_STANDARD)n), \
--       $(__objtool_obj) $(objtool_args) "$(objtool_o)";)
-+       exit;$(__objtool_obj) $(objtool_args) "$(objtool_o)";)
- objtool_obj = $(if $(patsubst y%,, \
-        $(OBJECT_FILES_NON_STANDARD_$(basetarget).o)$(OBJECT_FILES_NON_STANDARD)n), \
-        $(__objtool_obj))
-```
-
-产生`.tmp_proc-test.o`
-但是通过`readelf -wF .tmp_proc-test.o`，来看, dwarf相关table不存在
-```
-[root@bogon orc]# readelf -wF .tmp_proc-test.o
-Contents of the .debug_frame section:
-
-
-00000000 0000000000000014 ffffffff CIE "" cf=1 df=-8 ra=16
-   LOC           CFA      ra
-0000000000000000 rsp+8    c-8
-
-00000018 0000000000000014 00000000 FDE cie=00000000 pc=0000000000000000..000000000000000d
-
-00000030 0000000000000014 00000000 FDE cie=00000000 pc=0000000000000000..0000000000000008
-
-00000048 0000000000000014 00000000 FDE cie=00000000 pc=0000000000000000..0000000000000001
-```
-
-## 自己做测试
-```
+## frame pointer
+我们编写一个小程序来看下:
+```cpp
 #include <stdio.h>
-int func()
+void func2()
 {
-        return 0;
+        return;
+}
+void func1()
+{
+        func2();
+        return;
 }
 int main()
 {
+        func1();
         return 0;
 }
 ```
-反汇编看下:
+使用 -O0 编译选项编译，然后反编译看下:
 ```
-func:
-.LFB0:
-        .cfi_startproc
-        pushq   %rbp
-        .cfi_def_cfa_offset 16
-        .cfi_offset 6, -16
-        movq    %rsp, %rbp
-        .cfi_def_cfa_register 6
-        movl    $0, %eax
-        popq    %rbp
-        .cfi_def_cfa 7, 8
-        ret
-        .cfi_endproc
+0000000000001119 <func2>:
+    1119:       55                      push   %rbp
+    111a:       48 89 e5                mov    %rsp,%rbp
+    111d:       90                      nop
+    111e:       5d                      pop    %rbp
+    111f:       c3                      ret
+
+0000000000001120 <func1>:
+    1120:       55                      push   %rbp
+    1121:       48 89 e5                mov    %rsp,%rbp
+    1124:       b8 00 00 00 00          mov    $0x0,%eax
+    1129:       e8 eb ff ff ff          call   1119 <func2>
+    112e:       90                      nop
+    112f:       5d                      pop    %rbp
+    1130:       c3                      ret
+
+0000000000001131 <main>:
+    1131:       55                      push   %rbp
+    1132:       48 89 e5                mov    %rsp,%rbp
+    1135:       b8 00 00 00 00          mov    $0x0,%eax
+    113a:       e8 e1 ff ff ff          call   1120 <func1>
+    113f:       b8 00 00 00 00          mov    $0x0,%eax
+    1144:       5d                      pop    %rbp
+    1145:       c3                      ret
 ```
-里面有堆栈操作，也有cfi相关注释。
-然后通过`readelf -wF`看下:
+可以看到，在函数开始都会去执行下面两条指令
 ```
-.eh_frame 节的内容:
-
-
-00000000 0000000000000014 00000000 CIE "zR" cf=1 df=-8 ra=16
-   LOC           CFA      ra
-0000000000000000 rsp+8    c-8
-
-00000018 0000000000000018 0000001c FDE cie=00000000 pc=0000000000000000..00000000000000ab
-   LOC           CFA      ra
-0000000000000000 rsp+8    c-8
-0000000000000007 rsp+432  c-8
-00000000000000a5 rsp+8    c-8
-00000000000000a6 rsp+432  c-8
-
-00000034 0000000000000018 00000038 FDE cie=00000000 pc=0000000000000000..0000000000000022
-   LOC           CFA      ra
-0000000000000000 rsp+8    c-8
-0000000000000004 rsp+16   c-8
-0000000000000021 rsp+8    c-8
+push %rbp ===1
+mov %rsp, %rbp ====2
 ```
-可以发现有内容。
-假如说，我们通过-O2编译下:
-```
-func:
-.LFB11:
-        .cfi_startproc
-        xorl    %eax, %eax
-        ret
-        .cfi_endproc
-```
-可以看到这些东西给优化了。该函数没有堆栈操作，也就不需要相关注释了。
-在通过`readelf -wF`看下
-```
-.eh_frame 节的内容:
+堆栈回溯，主要的两个寄存器，sp, ip, 我们分别说下:
+* 关于sp，这里push的 rbp, 就是上一级函数执行到push %rbp 之后的sp值, 
+ 这个比较好理解，可以看底下的图
+* 关于ip，其实这个开头是固定的，也就是说，`mov %rsp, %rbp`这个操作一定发生在
+`push %rbp`之后，不能有其他的堆栈操作。这样就固定了ip和sp之间的关系
 
+> NOTE
+>
+> 这里举个例子:
+>
+> ```
+> 0xffffffffb1c605f0 <__schedule>:        push   %rbp
+> 0xffffffffb1c605f1 <__schedule+1>:      mov    %rsp,%rbp
+> 0xffffffffb1c605f4 <__schedule+4>:      push   %r15
+> 0xffffffffb1c605f6 <__schedule+6>:      push   %r14
+> ```
+> 可以看到, 在`__schedule`函数中，还需要保存其他的寄存器，例如
+> r15, r14 。但是 mov 操作，还是紧跟着 push %rbp之后，这样固定下来
+> 之后，就方便之后的堆栈回溯分析，因为固定了保存堆栈的位置，这个位置
+> - 16 正好是ra 的位置（return address) 也就是调用者调用call指令
+> 存放ip的位置
 
-00000000 0000000000000014 00000000 CIE "zR" cf=1 df=-8 ra=16
-   LOC           CFA      ra
-0000000000000000 rsp+8    c-8
+我们先来结合反汇编看下:
+* func2: 假设执行到111a 偏移(func2+0x0)，这时执行完了`push %rbp`，此时sp指向的内存
+ 存放的是rbp, rbp中的值，是为执行到func1函数执行到1121的sp的值，NOTE 中也提到，
+ 这个位置是固定的，那这个位置 - 16, 正好可以获取到 ip 的位置。这样就可以找到func1调用
+call指令的ip, sp
+* func1: 通过func1 传过来的 rbp ip, 我们主要再利用rbp, 找到上一级的sp, ip。
+ rbp指向的内存正好是上一级的sp, 而ip的位置和sp的位置
+ 又是固定的，所以就可以一直往上找。
 
-00000018 0000000000000010 0000001c FDE cie=00000000 pc=0000000000000000..0000000000000003
-
-0000002c 0000000000000010 00000030 FDE cie=00000000 pc=0000000000000000..0000000000000003
+但是这里有一个问题，第一级函数func2，我们必须知道存放rbp时的位置，而这时%rbp可能指向的不是存放上一级sp的位置
+例如:
 ```
-可以发现，也是这样的输出。kernel也是同样的情况。
-我们把kernel代码变复杂，使其访问堆栈:
-
+0xffffffffb1c605f0 <__schedule>:        push   %rbp      <===在这个时候需要堆栈回溯
+0xffffffffb1c605f1 <__schedule+1>:      mov    %rsp,%rbp
 ```
-int add_num(void)
-{
-        int a[100];
-        int ret = 0;
-        int i = 0;
-        for (i = 0; i < 100; i++) {
-                a[i] = i;
-        }
-        for (i = 0; i < 100; i++) {
-                ret += a[i];
-        }
-        return ret;
-}
-```
-我们再编译看下:
-```
-00000000 0000000000000014 ffffffff CIE "" cf=1 df=-8 ra=16
-   LOC           CFA      ra
-0000000000000000 rsp+8    c-8
+这个时候很可能在堆栈回溯时，就把上一级函数越过了。
 
-00000018 0000000000000024 00000000 FDE cie=00000000 pc=0000000000000000..0000000000000063
-   LOC           CFA      ra
-0000000000000000 rsp+8    c-8
-000000000000000c rsp+416  c-8
-000000000000005d rsp+8    c-8
-000000000000005e rsp+416  c-8
+我们再来看个图, 更清晰些:
 
-00000040 0000000000000014 00000000 FDE cie=00000000 pc=0000000000000000..000000000000000a
-
-00000058 0000000000000014 00000000 FDE cie=00000000 pc=0000000000000000..0000000000000001
-```

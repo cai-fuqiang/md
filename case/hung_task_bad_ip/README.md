@@ -243,5 +243,3 @@ static void __sched notrace __schedule(bool preempt)
 ```
 1. 会根据是否抢占和prev->state是否是TASK_RUNNING, 选择更新`nivcsw`或`nvcsw`
 2. 在进程切换的时候，将切出进程的上述成员`++`
-
-

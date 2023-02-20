@@ -343,5 +343,165 @@ check()
   arch_initial_func_cfi_state()  //初始化CFI state
   decode_sections()		//去解码指令
   validate_retpoline		//做一些retpoline 的validate工作，暂时不看
-  validate_functions		//做一些function的 vaildate
+  validate_functions		//(1)做一些function的 vaildate
 ```
+
+我们主要分析下(1)(2)(3)代码
+## validate_functions()
+```cpp
+static int validate_functions(struct objtool_file *file)
+{
+        struct section *sec;
+        struct symbol *func;
+        struct instruction *insn;
+        struct insn_state state;
+        int ret, warnings = 0;
+
+        clear_insn_state(&state);
+	//将cfa设置为arch_initial_func_cfi_state()中初始化的CFI state
+        state.cfa = initial_func_cfi.cfa;
+        memcpy(&state.regs, &initial_func_cfi.regs,
+              CFI_NUM_REGS * sizeof(struct cfi_reg));
+        state.stack_size = initial_func_cfi.cfa.offset;
+
+	//遍历每个段
+        for_each_sec(file, sec) {
+		//遍历每个段中的symbol
+                list_for_each_entry(func, &sec->symbol_list, list) {
+			//必须是STT_FUNC类型
+                        if (func->type != STT_FUNC || func->pfunc != func)
+                                continue;
+			//找到该function的第一条指令
+                        insn = find_insn(file, sec, func->offset);
+                        if (!insn || insn->ignore)
+                                continue;
+			//去验证branch 里面的所有指令, 我们再下面的分析会看到
+                        ret = validate_branch(file, insn, state);
+                        warnings += ret;
+                }
+        }
+
+        return warnings;
+}
+```
+
+我们知道`validate_functions`有`validate function`的功能，同时还会去更新CFI state
+
+## validate_branch
+```cpp
+static int validate_branch(struct objtool_file *file, struct instruction *first,
+                        	struct insn_state state)
+{
+	...
+	while(1) {
+		...
+		if (insn->hint) {
+			... //一般函数不会走这个路径
+		} else {
+			//将指令赋值为state， 这里实际上类似于memcpy,
+			//并不是用指针指向
+			//NOTE: state指的是这条指令执行之前的CFI state
+			//类似于RIP = insn_address时CFI state
+			insn->state = state;
+		}
+		...
+		switch (insn->type) {
+		...
+		case INSN_JUMP_CONDITIONAL:
+		case INSN_JUMP_UNCONDITIONAL:
+		        if (insn->jump_dest &&
+		        ¦   (!func || !insn->jump_dest->func ||
+		        ¦    insn->jump_dest->func->pfunc == func)) {
+				//================(1)==================
+		                ret = validate_branch(file, insn->jump_dest,
+		                                ¦     state);
+		                if (ret)
+		                        return 1;
+		
+		        } else if (func && has_modified_stack_frame(&state)) {
+		                WARN_FUNC("sibling call from callable "
+					"instruction with modified stack frame",
+		                         sec, insn->offset);
+		                return 1;
+		        }
+		
+		        if (insn->type == INSN_JUMP_UNCONDITIONAL)
+		                return 0;
+		
+		        break;
+
+		case INSN_STACK:
+        		if (update_insn_state(insn, &state))
+        		        return 1;
+			break;
+
+		default:
+		        break;
+		}
+		...
+		insn = next_insn;
+	}
+	return 0;
+
+}
+```
+这里insn->type有很多，我们主要关注两个
+* INSN_JUMP...: 这里包括无条件跳转，和带条件跳转，可见在(1)调了递归，
+`insn->jump_dest`作为first insn传入，如果是带条件跳转，可能会出现两个分支，
+但是都本着jmp指令本身不会影响CFI state
+	+ jmp : 将当前state作为jmp后的指令的state，但是这个递归需要返回，jmp后的
+		分支不一定能回来，所以这里只能传值，不能传址
+	+ no jmp : 将当前state作为jmp下一条指令的state<br/>
+但是这里会有一个问题，假设出现了如下指令:
+```
+test %rax, %rax
+jne  1f
+2:
+ret
+1:
+push %rbx
+jmp 2b
+```
+假设第二条指令jne跳转了，但是由于底下会有push指令改变CFI state，再次
+回到2,和jne没有跳转的CFI state不一样。按照CFI的设计不能去处理这种问题，
+即便是frame pointer也不能去处理。所以我认为是GCC去避免了这样的指令翻译，
+让每个offset的指令在所有分支下，CFI state都是一样的。
+
+* INSN_STACK:
+这些指令和堆栈相关，或者和栈寄存器(rsp,rbp)，相关, 主要处理函数为`update_insn_state()`,
+在分析这个函数之前，我们先来思考下，对于orc 来说 CFI state包括什么，其实最主要
+CFI base，CFI offset。
+我们来简单看下这个函数:
+
+```cpp
+static int update_insn_state(struct instruction *insn, struct insn_state *state)
+{
+	struct stack_op *op = &insn->stack_op;
+	struct cfi_reg *cfa = &state->cfa;
+	struct cfi_reg *regs = state->regs;
+	...
+	switch (op->dest.type) {
+	case OP_DEST_REG:
+		switch (op->src.type) {
+		...
+		case OP_SRC_ADD:
+			 if (op->dest.reg == CFI_SP && op->src.reg == CFI_SP) {
+         			/* add imm, %rsp */
+         			state->stack_size -= op->src.offset;
+         			if (cfa->base == CFI_SP)
+         			        cfa->offset -= op->src.offset;
+         			break;
+			}
+			...
+		}
+		...
+	}
+	...
+}
+```
+这里分支有点多，我们只看一个简单的分支, `OP_DEST_REG` 表示dest 为寄存器操作,
+`OP_SRC_ADD` 则表示对源操作数进行add操作。
+`op->dest.reg == CFI_SP == op->src.reg`则表示源操为立即数，目的操作数为RSP,
+这时回去查看当前的CFI base是否还是RSP，如果是现在offset变了，就去修改offset，
+offset的变化和base的变化正好相反，这里可以理解为 base + offset = CFI（固定）
+CFI是一个相对固定的值。

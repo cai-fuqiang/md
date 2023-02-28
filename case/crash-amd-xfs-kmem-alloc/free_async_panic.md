@@ -68,7 +68,35 @@ kfree stack
     ffffb0ba31c77db8: ffff8a927e1b9d80 ffffb0ba31c77e70
     ffffb0ba31c77dc8: ffffffffba7d4d1a
 ```
+`ffffb0ba31c77d80`地址为发生异常是cpu进行对齐的地址，也可以从`ffffb0ba31c77d70(esp)`
+里面的值看出来(`ffffb0ba31c77d98`)
+查看`free_async`代码
+```cpp
+static void free_async(struct async *as)
+{
+        int i;
 
+        put_pid(as->pid);
+        if (as->cred)
+                put_cred(as->cred);
+        for (i = 0; i < as->urb->num_sgs; i++) {
+                if (sg_page(&as->urb->sg[i]))
+                        kfree(sg_virt(&as->urb->sg[i]));
+        }
+
+        kfree(as->urb->sg);
+        if (as->usbm == NULL)
+                kfree(as->urb->transfer_buffer);	//这里触发异常
+        else
+                dec_usb_memory_use_count(as->usbm, &as->usbm->urb_use_count);
+
+        kfree(as->urb->setup_packet);
+        usb_free_urb(as->urb);
+        usbfs_decrease_memory_usage(as->mem_usage);
+        kfree(as);
+}
+```
+可以看出，`as->urb->transfer_buffer`有问题，查看反汇编, 
 ```
 0xffffffffba7d32b2 <free_async+210>:    mov    0x40(%rbx),%rax
 0xffffffffba7d32b6 <free_async+214>:    mov    0x68(%rax),%rdi
@@ -77,7 +105,8 @@ crash> x/1xg (0xffff8a927e1b9d80+0x40)
 crash> x/1xg (0xffff8a92627a6600+0x68)
 0xffff8a92627a6668:     0xffff8a9104090304
 ```
-可以看到也是pt_regs里面的`ffff8a9104090304`
+这里rbx是as, 可以通过堆栈得到，`transfer_buffer`也可以查看内存得出，
+或者通过pt_regs得出来: `ffff8a9104090304`
 ```
 crash> vtop 0xffff8a9104090304
 VIRTUAL           PHYSICAL
@@ -94,8 +123,10 @@ PAGE DIRECTORY: 55b7205067
       PAGE         PHYSICAL      MAPPING       INDEX CNT FLAGS
 fffffa9db3102400 8cc4090000                0        0  0 157ffffc0000000
 ```
+该地址, 是一个1GB的大页，但是并没有人使用(CNT=0)，所以可以简单判断为，该
+地址是一个非法地址（软件层面）
 
-# as
+再查看相关数据结构:
 ```
 struct async {
   asynclist = {
@@ -165,4 +196,13 @@ struct urb {
   complete = 0xffffffffba7d25c0,
   iso_frame_desc = 0xffff8a92627a66c0
 }
+```
+可以看出，
+search 该地址
+```
+15417dca70: ffff8a9104090304
+15417dcba8: ffff8a9104090304
+15417dcd10: ffff8a9104090304
+55b6bd1f48: ffff8a9104090304
+8e227a6668: ffff8a9104090304
 ```

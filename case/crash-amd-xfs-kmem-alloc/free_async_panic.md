@@ -197,7 +197,6 @@ struct urb {
   iso_frame_desc = 0xffff8a92627a66c0
 }
 ```
-可以看出，
 search 该地址
 ```
 15417dca70: ffff8a9104090304
@@ -205,4 +204,123 @@ search 该地址
 15417dcd10: ffff8a9104090304
 55b6bd1f48: ffff8a9104090304
 8e227a6668: ffff8a9104090304
+```
+查看相关page
+```
+crash> kmem 15417dca70
+   VMAP_AREA         VM_STRUCT                 ADDRESS RANGE                SIZE
+ffff8a198dd6f6c0  ffff8aac56c65a80  ffffb0ba31c74000 - ffffb0ba31c79000    20480
+
+      PAGE         PHYSICAL      MAPPING       INDEX CNT FLAGS
+fffffa9bd505f700 15417dc000                0        0  1 17ffffc0000000
+
+crash> kmem 15417dcba8
+   VMAP_AREA         VM_STRUCT                 ADDRESS RANGE                SIZE
+ffff8a198dd6f6c0  ffff8aac56c65a80  ffffb0ba31c74000 - ffffb0ba31c79000    20480
+
+      PAGE         PHYSICAL      MAPPING       INDEX CNT FLAGS
+fffffa9bd505f700 15417dc000                0        0  1 17ffffc0000000
+
+crash> kmem  15417dcd10
+   VMAP_AREA         VM_STRUCT                 ADDRESS RANGE                SIZE
+ffff8a198dd6f6c0  ffff8aac56c65a80  ffffb0ba31c74000 - ffffb0ba31c79000    20480
+
+      PAGE         PHYSICAL      MAPPING       INDEX CNT FLAGS
+fffffa9bd505f700 15417dc000                0        0  1 17ffffc0000000
+
+crash> kmem 55b6bd1f48
+      PAGE         PHYSICAL      MAPPING       INDEX CNT FLAGS
+fffffa9cd6daf440 55b6bd1000                0        0  1 d7ffffc0000800 reserved
+
+crash> kmem 8e227a6668
+CACHE             OBJSIZE  ALLOCATED     TOTAL  SLABS  SSIZE  NAME
+ffff8a0547c0ec00      192      20133     50694   1207     8k  kmalloc-192
+  SLAB              MEMORY            NODE  TOTAL  ALLOCATED  FREE
+  fffffa9db889e980  ffff8a92627a6000     5     42         34     8
+  FREE / [ALLOCATED]
+  [ffff8a92627a6600]
+
+      PAGE         PHYSICAL      MAPPING       INDEX CNT FLAGS
+fffffa9db889e980 8e227a6000 ffff8a0547c0ec00 ffff8a92627a63c0  1 157ffffc0008100 slab,head
+```
+
+查看第一个地址
+```
+0xffff8a19817dca50:     0xffff8a1c5da61b20(shmem_inode_cache)(mm/shmem.c:3586)      0xffff8a92627a7380(kmalloc-192)
+0xffff8a19817dca60:     0xffffffffba7d32bf(free_async+223 devio.c: 388)      0xffffb0ba31c77e70
+0xffff8a19817dca70:     0xffff8a9104090304(1)      0x0000000000000000
+0xffff8a19817dca80:     0xfffffa9db3102400      0xffff8a1c5d1ad280(files_cache)
+0xffff8a19817dca90:     0xffff8a6437ceda00(filp)(fs/file_table.c:361)      0xfffffa9db3102408
+0xffff8a19817dcaa0:     0xffff8a92627a6600      0x0000000000000000
+0xffff8a19817dcab0:     0xffff8a9104090308(1.1)      0x000075fb40000000
+0xffff8a19817dcac0:     0xffffffffffffffff      0xffffffffba489ac8(ffffffffba489ac8 (T) kfree+328 slub.c:3900)
+0xffff8a19817dcad0:     0x0000000000000010      0x0000000000010246
+0xffff8a19817dcae0:     0x0000000000000000      0x0000000000000046
+0xffff8a19817dcaf0:     0xffffb0ba31c77ce8      0x0000000000000002
+0xffff8a19817dcb00:     0x0000000000000004      0x0000000000000001
+0xffff8a19817dcb10:     0xffff8a1c5dea6400(kmalloc-1k)      0x0000000000000000
+0xffff8a19817dcb20:     0xffffffffba2587ce(ffffffffba2587ce (T) machine_kexec+446 machine_kexec_64.c: 436)      0x0000aee05a332800
+0xffff8a19817dcb30:     0xffff8a0440000000      0x000000005f003000
+0xffff8a19817dcb40:     0xffff8a049f003000      0x000000005f002000
+0xffff8a19817dcb50:     0x7ed8320b58300800      0x56d7aee05a332800
+0xffff8a19817dcb60:     0xffffb0ba31c77ce8      0xffffb0ba31c77b80
+0xffff8a19817dcb70:     0xffffb0ba31c77ce8      0xffffffffba355ffd(ffffffffba355ffd (T) __crash_kexec+109 kexec_core.c: 956)
+0xffff8a19817dcb80:     0x0000000000000000	
+
+0xffff8a19817dcb88:	0xffff8a1c5da61b20(shmem_inode_cache)
+0xffff8a19817dcb90:     0xffff8a92627a7380(kmalloc-192)      0xffffffffba7d32bf (ffffffffba7d32bf (t) free_async+223 devio.c: 388)
+0xffff8a19817dcba0:     0xffffb0ba31c77e70      0xffff8a9104090304(2)
+0xffff8a19817dcbd0:     0xfffffa9db3102408      0xffff8a92627a6600
+0xffff8a19817dcbe0:     0x0000000000000000      0xffff8a9104090308(2.1)
+0xffff8a19817dcbf0:     0x000075fb40000000      0xffffffffffffffff
+0xffff8a19817dcc00:     0xffffffffba489ac8      0x0000000000000010
+0xffff8a19817dcc10:     0x0000000000010246      0xffffb0ba31c77d98
+0xffff8a19817dcc20:     0x0000000000000018      0x56d7aee05a332800
+0xffff8a19817dcc30:     0xffffb0ba31c77ce8      0x000000000000000b
+0xffff8a19817dcc40:     0xffffffffba356edd      0xffffffffbb26e787
+0xffff8a19817dcc50:     0x0000000000000246      0xffffffffba220e7d
+0xffff8a19817dcc60:     0x0000000000000006      0xffff8a1c528a17c0
+0xffff8a19817dcc70:     0x0000000000000000      0xffffffffba21d6dc
+0xffff8a19817dcc80:     0xffffffffbb26e787      0xffffffffba489ac8
+0xffff8a19817dcc90:     0xffffb0ba31c77ce8      0x0000000000000000
+0xffff8a19817dcca0:     0x0000000000000000      0x0000000000000000
+0xffff8a19817dccb0:     0x0000000000000000      0x0000000000000000
+0xffff8a19817dccc0:     0xffffffffba21dfa6      0xffffffffba489ac8
+0xffff8a19817dccd0:     0x0000000000000000      0x0000000000000000
+0xffff8a19817dcce0:     0xffffffffbac00cc4      0x0000000000000000
+
+0xffff8a19817dccf0:     0xffff8a1c5da61b20(shmem_inode_cache)      0xffff8a92627a7380(kmalloc-192)
+0xffff8a19817dcd00:     0xffffffffba7d32bf(free_async+233)      0xffffb0ba31c77e70
+0xffff8a19817dcd10:     0xffff8a9104090304(3)      0x0000000000000000
+
+0xffff8a19817dcd20:     0xfffffa9db3102400      0xffff8a1c5d1ad280
+0xffff8a19817dcd30:     0xffff8a6437ceda00      0xfffffa9db3102408
+```
+
+```
+////////////1/////////////
+crash> kmem 0xffff8a1c5d1ad280
+CACHE             OBJSIZE  ALLOCATED     TOTAL  SLABS  SSIZE  NAME
+ffff8a1cc7c16780      704        645      5336    116    32k  files_cache
+  SLAB              MEMORY            NODE  TOTAL  ALLOCATED  FREE
+  fffffa9be0746a00  ffff8a1c5d1a8000     0     46         43     3
+  FREE / [ALLOCATED]
+  [ffff8a1c5d1ad280]
+
+////////////2/////////////
+      PAGE         PHYSICAL      MAPPING       INDEX CNT FLAGS
+fffffa9be0746b40 181d1ad000 dead000000000400        0  0 17ffffc0000000
+
+crash> kmem 0xffff8a6437ceda00
+CACHE             OBJSIZE  ALLOCATED     TOTAL  SLABS  SSIZE  NAME
+ffff8a1cc7c14c80      256      16553     36480   1140     8k  filp
+  SLAB              MEMORY            NODE  TOTAL  ALLOCATED  FREE
+  fffffa9cffdf3b00  ffff8a6437cec000     3     32         32     0
+  FREE / [ALLOCATED]
+  [ffff8a6437ceda00]
+
+      PAGE         PHYSICAL      MAPPING       INDEX CNT FLAGS
+fffffa9cffdf3b40 5ff7ced000 dead000000000400        0  0 d7ffffc0000000
+
+////////////3/////////////
 ```

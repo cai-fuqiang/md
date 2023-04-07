@@ -493,6 +493,8 @@ kernel，有相同的`_stext symbol address`, 在通过该方式获取va_bits信
 将判断的_stext的bits, 从`PAGE_OFFSET_xxx`从由低到高，改为有高到低，这样感觉不太对，
 可能在低版本的kernel上会有问题(kernel 不支持 commit `arm64: kdump: add VMCOREINFO's 
 for user-space tools`, 需要做进一步测试。
+
+(测试结果请见附2)
 # kexec-tools版本
 我们来看下，相关kexec-tools的版本支持情况:
 |kexec-tools版本| 是否支持 通过NUMBER(VA_BITS)获取信息|
@@ -574,3 +576,47 @@ ffff`, 调整低地址:
 
 48 & 52 bits 支持虚拟地址空间大小:
 > A 48-bit VA range defines an address space of 256TB. A 52-bit VA range defines an address space of 4PB.
+
+## 附 2. 对上面纠结的问题做的进一步测试
+首先对4.18.0-372 kernel做改动，删除在vmcore中提供`NUMBER(VA_BITS)`相关代码, 如下:
+```cpp
+[root@build linux-4.18.0-372.19.1.el8_6]# diff -Naru arch/arm64/kernel/crash_core.c.old arch/arm64/kernel/crash_core.c
+--- arch/arm64/kernel/crash_core.c.old  2023-04-07 16:46:13.512910368 +0800
++++ arch/arm64/kernel/crash_core.c      2023-04-07 08:57:53.253046220 +0800
+@@ -17,7 +17,7 @@
+
+ void arch_crash_save_vmcoreinfo(void)
+ {
+-       VMCOREINFO_NUMBER(VA_BITS);
++       //VMCOREINFO_NUMBER(VA_BITS);
+        /* Please note VMCOREINFO_NUMBER() uses "%d", not "%x" */
+        vmcoreinfo_append_str("NUMBER(kimage_voffset)=0x%llx\n",
+                                                kimage_voffset);
+```
+
+将kernel config 由`CONFIG_ARM64_VA_BITS_48=y`修改为`CONFIG_ARM64_VA_BITS_42=y`
+
+修改后，重启kernel查看`kernel _stext symbol` 地址:
+```
+[root@node-1 127.0.0.1-2023-04-07-16:34:22]# cat /proc/kallsyms |grep _stext
+fffffe0010081000 T _stext
+```
+可以看到va发生了变化。
+
+然后修改makedumpfile,增加一些调试信息，我们来看下相关打印:
+```
+//=======================(1)==========================
+Apr 07 16:34:22 node-1.domain.tld kdump.sh[815]: get_versiondep_info_arm64: the VA_BITS is -1 the , NOT_FOUND_NUMBER is -1
+//=======================(2)==========================
+Apr 07 16:34:22 node-1.domain.tld kdump.sh[815]: get_stext_symbol: [wang] : enter get_stext_symbol
+Apr 07 16:34:22 node-1.domain.tld kdump.sh[815]: get_stext_symbol: [wang] : kallsyms = fffffea406481000
+Apr 07 16:34:22 node-1.domain.tld kdump.sh[815]: get_stext_symbol: [wang] : line: fffffea406481000      T       _stext
+Apr 07 16:34:22 node-1.domain.tld kdump.sh[815]: get_va_bits_from_stext_arm64: [wang] : the stext is fffffea406481000
+Apr 07 16:34:22 node-1.domain.tld kdump.sh[815]: get_va_bits_from_stext_arm64: [wang] : va_bits       : 48 (guess from _stext)
+```
+可以看到:
+1. 在修改kernel后，makedumpfile获取不到`NUMBER(VA_BITS)`
+2. 获取不到后，从`/proc/kallsyms`获取_stext的符号地址，猜测kernel的配置
+3. 通过计算，得到了错误的va_bits: 48, 正确应该为42
+
+**所以，上游社区的这个改动，导致了makedumpfile对低版本的kernel不兼容**

@@ -88,8 +88,79 @@ https://forum.proxmox.com/threads/pve-6-0-7-ixgbe-firmware-errors.58592/
 ```
 
 # 查看红帽知识库
+![redhat](pic/redhat.png)
 
-# 安装5.12.5驱动
+红帽知识库中认为是驱动加了对固件异常的检测代码导致，但是最终原因还是
+固件有问题，建议更新最新的固件
+
+# 查看相关代码
+改代码源于 kernel upstream commit :
+```
+commit 59dd45d550c518a2c297b2888f194633cb8e5700
+Author: Sebastian Basierski <sebastianx.basierski@intel.com>
+Date:   Tue Jul 31 18:04:10 2018 +0200
+
+    ixgbe: firmware recovery mode
+
+    Add check for FW NVM recovery mode during driver initialization and
+    service task. If in recovery mode, log message and unregister device
+
+...
++/**
++ * ixgbe_check_fw_error - Check firmware for errors
++ * @adapter: the adapter private structure
++ *
++ * Check firmware errors in register FWSM
++ */
++static bool ixgbe_check_fw_error(struct ixgbe_adapter *adapter)
++{
++       struct ixgbe_hw *hw = &adapter->hw;
++       u32 fwsm;
++
++       /* read fwsm.ext_err_ind register and log errors */
++       fwsm = IXGBE_READ_REG(hw, IXGBE_FWSM(hw));
++
++       if (fwsm & IXGBE_FWSM_EXT_ERR_IND_MASK ||
++           !(fwsm & IXGBE_FWSM_FW_VAL_BIT))
++               e_dev_warn("Warning firmware error detected FWSM: 0x%08X\n",
++                          fwsm);
++
++       if (hw->mac.ops.fw_recovery_mode && hw->mac.ops.fw_recovery_mode(hw)) {
++               e_dev_err("Firmware recovery mode detected. Limiting functionality. Refer to the Intel(R) Ethernet Adapters and Devices User Guide for details on firmware recovery mode.\n");
++               return true;
++       }
++
++       return false;
++}
++
+ /**
+  * ixgbe_service_task - manages and runs subtasks
+  * @work: pointer to work_struct containing our data
+@@ -7792,6 +7819,15 @@ static void ixgbe_service_task(struct work_struct *work)
+                ixgbe_service_event_complete(adapter);
+                return;
+        }
++       if (ixgbe_check_fw_error(adapter)) {
++               if (!test_bit(__IXGBE_DOWN, &adapter->state)) {
++                       rtnl_lock();
++                       unregister_netdev(adapter->netdev);
++                       rtnl_unlock();
++               }
++               ixgbe_service_event_complete(adapter);
++               return;
++       }
+        if (adapter->flags2 & IXGBE_FLAG2_UDP_TUN_REREG_NEEDED) {
+
+...
+```
+
+在改patch中回去检测fw的错误，但是只会报warn打印，并不会去报`unregister_netdev`。
+
+可以看到改patch的提交时间是2018.07.31, 而`4.18.0-147`中带的ixgbe驱动合入了这个patch，
+但是intel 5.6.3 ixgbe驱动包，并没有合入这个patch。所以不会报这个错误。
+
+# PS: 测试了下两个版本的驱动
+## 安装5.12.5驱动
 ```
 [root@localhost ixgbe-5.12.5]# ethtool -i enp5s0f1
 driver: ixgbe
@@ -104,7 +175,7 @@ supports-register-dump: yes
 supports-priv-flags: yes
 ```
 
-# kernel本身驱动
+## kernel本身驱动
 ```
 [root@localhost ixgbe]# ethtool -i enp5s0f1
 driver: ixgbe
@@ -118,3 +189,5 @@ supports-eeprom-access: yes
 supports-register-dump: yes
 supports-priv-flags: yes
 ```
+可以看到，安装驱动前后，firmware-version值改变了，但是自是字节序的改变，
+个人认为，前后firmware-version并没有改变。

@@ -2,23 +2,25 @@
 ## drbd
 nvr:kmod-drbd-kmodtool-9.1.7-7.es8_4.k372
 ## ice
-nvr:kmod-ice-kmodtool-1.9.11-1.es8_20.k372
+nvr:kmod-ice-kmodtool-1.11.14-1.es8_0.k372
+<!--
 ## ixgbe
 nvr:kmod-ixgbe-kmodtool-5.15.2-0.es8_11.k372
+-->
 ## megaraid_sas
-nvr:kmod-megaraid_sas-kmodtool-07.719.04.00-2.es8_10.k372
+nvr:kmod-megaraid_sas-kmodtool-07.724.02.00-1.es8_0.k372
 ## mlnx-ofa_kernel
 nvr:kmod-mlnx-ofa_kernel-kmodtool-5.4-3.6.8.1.es8_4.k372
 ## ngbe
-nvr:kmod-ngbe-kmodtool-1.2.2-1.es8_11.k372
+nvr:kmod-ngbe-kmodtool-1.2.4-1.es8_0.k372
 ## openvswitch
 nvr:kmod-openvswitch-kmodtool-2.16.2-2.es8_2.k372
 ## qla2xxx
-nvr:kmod-qla2xxx-kmodtool-10.02.06.200-0.es8_12.k372
+nvr:kmod-qla2xxx-kmodtool-10.02.09.00-1.es8_0.k372
 ## sfc
-nvr:kmod-sfc-kmodtool-5.3.12.1021-2.es8_15.k372
+nvr:kmod-sfc-kmodtool-5.3.13.1006-1.es8_0.k372
 ## txgbe
-nvr:kmod-txgbe-kmodtool-1.3.2-1.es8_15.k372
+nvr:kmod-txgbe-kmodtool-1.3.4-1.es8_0.k372
 
 
 # 安装步骤
@@ -43,14 +45,14 @@ nvr:kmod-mlnx-ofa_kernel-kmodtool-5.4-3.6.8.1.es8_4.k372: kmod-mlnx-ofa_kernel, 
 nvr:mlnx-tools-5.2.0-0.es8_0: mlnx-tools
 
 nvr:kmod-drbd-kmodtool-9.1.7-7.es8_4.k372
-nvr:kmod-ice-kmodtool-1.9.11-1.es8_20.k372
-nvr:kmod-ixgbe-kmodtool-5.15.2-0.es8_11.k372
-nvr:kmod-megaraid_sas-kmodtool-07.719.04.00-2.es8_10.k372
-nvr:kmod-ngbe-kmodtool-1.2.2-1.es8_11.k372
+nvr:kmod-ice-kmodtool-1.11.14-1.es8_0.k372
+nvr:kmod-megaraid_sas-kmodtool-07.724.02.00-1.es8_0.k372
+nvr:kmod-ngbe-kmodtool-1.2.4-1.es8_0.k372
 nvr:kmod-openvswitch-kmodtool-2.16.2-2.es8_2.k372
-nvr:kmod-qla2xxx-kmodtool-10.02.06.200-0.es8_12.k372
-nvr:kmod-sfc-kmodtool-5.3.12.1021-2.es8_15.k372
-nvr:kmod-txgbe-kmodtool-1.3.2-1.es8_15.k372
+nvr:kmod-qla2xxx-kmodtool-10.02.09.00-1.es8_0.k372
+nvr:kmod-sfc-kmodtool-5.3.13.1006-1.es8_0.k372
+nvr:kmod-txgbe-kmodtool-1.3.4-1.es8_0.k372
+
 5. 安装防止网卡重命名的包: http://koji.easystack.io/taskinfo?taskID=28273 :  rename_ethname
 6. 安装完成后，请帮忙注意下有没有rpm命令报错，如果没有重启节点
 

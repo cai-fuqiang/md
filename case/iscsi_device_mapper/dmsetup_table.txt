@@ -1,0 +1,15 @@
+mpathr: 0 629145600 multipath 1 queue_if_no_path 0 2 1 round-robin 0 4 1 65:176 1 65:192 1 65:160 1 65:208 1 round-robin 0 4 1 66:0 1 65:240 1 66:16 1 65:224 1
+mpathac1: 0 8192000 linear 251:11 16384
+mpathq: 0 419430400 multipath 1 queue_if_no_path 1 alua 2 1 round-robin 0 4 1 65:64 1 65:48 1 65:80 1 65:32 1 round-robin 0 4 1 65:144 1 65:96 1 65:112 1 65:128 1
+mpathp: 0 419430400 multipath 1 queue_if_no_path 1 alua 2 1 round-robin 0 4 1 8:160 1 8:176 1 8:192 1 8:208 1 round-robin 0 4 1 8:224 1 65:0 1 8:240 1 65:16 1
+mpathae: 0 2147483648 multipath 1 queue_if_no_path 1 alua 1 1 round-robin 0 4 1 68:240 1 69:16 1 68:224 1 69:0 1
+mpathad: 0 629145600 multipath 1 queue_if_no_path 1 alua 1 1 round-robin 0 4 1 68:192 1 68:176 1 68:208 1 68:160 1
+mpathac: 0 419430400 multipath 1 queue_if_no_path 1 alua 2 1 round-robin 0 4 1 68:128 1 68:144 1 68:112 1 68:48 1 round-robin 0 4 1 68:64 1 68:96 1 68:32 1 68:80 1
+os-root: 0 552812544 linear 8:132 2048
+mpathv: 0 2147483648 multipath 1 queue_if_no_path 0 2 1 round-robin 0 4 1 67:240 1 67:208 1 67:176 1 68:0 1 round-robin 0 4 1 67:224 1 67:160 1 67:192 1 68:16 1
+mpathu: 0 629145600 multipath 1 queue_if_no_path 0 2 1 round-robin 0 4 1 67:128 1 67:112 1 67:96 1 67:64 1 round-robin 0 4 1 67:80 1 67:144 1 67:48 1 67:32 1
+mpathq1: 0 8192000 linear 251:3 16384
+mpatht: 0 419430400 multipath 1 queue_if_no_path 1 alua 2 1 round-robin 0 4 1 66:224 1 66:192 1 66:160 1 67:16 1 round-robin 0 4 1 66:208 1 67:0 1 66:176 1 66:240 1
+mpaths: 0 2147483648 multipath 1 queue_if_no_path 0 2 1 round-robin 0 4 1 66:80 1 66:96 1 66:32 1 66:64 1 round-robin 0 4 1 66:144 1 66:128 1 66:48 1 66:112 1
+mpatht1: 0 8192000 linear 251:7 16384
+docker-containerd_root: 0 374259712 linear 8:133 2048

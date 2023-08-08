@@ -1,0 +1,692 @@
+[root@node-23 dev]# sudo iscsiadm --mode session --op show -P3
+iSCSI Transport Class version 2.0-870
+version 6.2.0.876-7
+Target: iqn.2021-09.easystack-ess.tgt1.node-7 (non-flash)
+        Current Portal: 172.45.50.7:3260,1
+        Persistent Portal: 172.45.50.7:3260,1
+                **********
+                Interface:
+                **********
+                Iface Name: default
+                Iface Transport: tcp
+                Iface Initiatorname: iqn.2013-07.cn.easystack:esnode0000023
+                Iface IPaddress: 172.45.50.17
+                Iface HWaddress: default
+                Iface Netdev: default
+                SID: 37
+                iSCSI Connection State: LOGGED IN
+                iSCSI Session State: LOGGED_IN
+                Internal iscsid Session State: NO CHANGE
+                *********
+                Timeouts:
+                *********
+                Recovery Timeout: 5
+                Target Reset Timeout: 30
+                LUN Reset Timeout: 30
+                Abort Timeout: 15
+                *****
+                CHAP:
+                *****
+                username: <empty>
+                password: ********
+                username_in: <empty>
+                password_in: ********
+                ************************
+                Negotiated iSCSI params:
+                ************************
+                HeaderDigest: None
+                DataDigest: None
+                MaxRecvDataSegmentLength: 262144
+                MaxXmitDataSegmentLength: 262144
+                FirstBurstLength: 65536
+                MaxBurstLength: 262144
+                ImmediateData: Yes
+                InitialR2T: Yes
+                MaxOutstandingR2T: 1
+                ************************
+                Attached SCSI devices:
+                ************************
+                Host Number: 16 State: running
+                scsi16 Channel 00 Id 0 Lun: 16
+                        Attached scsi disk sdk          State: running
+                scsi16 Channel 00 Id 0 Lun: 17
+                        Attached scsi disk sdu          State: running
+                scsi16 Channel 00 Id 0 Lun: 18
+                        Attached scsi disk sdau         State: running
+                scsi16 Channel 00 Id 0 Lun: 19
+                        Attached scsi disk sdab         State: running
+                scsi16 Channel 00 Id 0 Lun: 22
+                        Attached scsi disk sdbl         State: running
+                scsi16 Channel 00 Id 0 Lun: 29
+                        Attached scsi disk sdbu         State: running
+                scsi16 Channel 00 Id 0 Lun: 31
+                        Attached scsi disk sdcb         State: running
+        Current Portal: 172.45.50.7:3263,1
+        Persistent Portal: 172.45.50.7:3263,1
+                **********
+                Interface:
+                **********
+                Iface Name: default
+                Iface Transport: tcp
+                Iface Initiatorname: iqn.2013-07.cn.easystack:esnode0000023
+                Iface IPaddress: 172.45.50.17
+                Iface HWaddress: default
+                Iface Netdev: default
+                SID: 38
+                iSCSI Connection State: LOGGED IN
+                iSCSI Session State: LOGGED_IN
+                Internal iscsid Session State: NO CHANGE
+                *********
+                Timeouts:
+                *********
+                Recovery Timeout: 5
+                Target Reset Timeout: 30
+                LUN Reset Timeout: 30
+                Abort Timeout: 15
+                *****
+                CHAP:
+                *****
+                username: <empty>
+                password: ********
+                username_in: <empty>
+                password_in: ********
+                ************************
+                Negotiated iSCSI params:
+                ************************
+                HeaderDigest: None
+                DataDigest: None
+                MaxRecvDataSegmentLength: 262144
+                MaxXmitDataSegmentLength: 262144
+                FirstBurstLength: 65536
+                MaxBurstLength: 262144
+                ImmediateData: Yes
+                InitialR2T: Yes
+                MaxOutstandingR2T: 1
+                ************************
+                Attached SCSI devices:
+                ************************
+                Host Number: 17 State: running
+                scsi17 Channel 00 Id 0 Lun: 16
+                        Attached scsi disk sdl          State: running
+                scsi17 Channel 00 Id 0 Lun: 17
+                        Attached scsi disk sdt          State: running
+                scsi17 Channel 00 Id 0 Lun: 18
+                        Attached scsi disk sdas         State: running
+                scsi17 Channel 00 Id 0 Lun: 19
+                        Attached scsi disk sdac         State: running
+                scsi17 Channel 00 Id 0 Lun: 22
+                        Attached scsi disk sdbj         State: running
+                scsi17 Channel 00 Id 0 Lun: 29
+                        Attached scsi disk sdbv         State: running
+                scsi17 Channel 00 Id 0 Lun: 31
+                        Attached scsi disk sdcd         State: running
+        Current Portal: 172.45.50.7:3262,1
+        Persistent Portal: 172.45.50.7:3262,1
+                **********
+                Interface:
+                **********
+                Iface Name: default
+                Iface Transport: tcp
+                Iface Initiatorname: iqn.2013-07.cn.easystack:esnode0000023
+                Iface IPaddress: 172.45.50.17
+                Iface HWaddress: default
+                Iface Netdev: default
+                SID: 39
+                iSCSI Connection State: LOGGED IN
+                iSCSI Session State: LOGGED_IN
+                Internal iscsid Session State: NO CHANGE
+                *********
+                Timeouts:
+                *********
+                Recovery Timeout: 5
+                Target Reset Timeout: 30
+                LUN Reset Timeout: 30
+                Abort Timeout: 15
+                *****
+                CHAP:
+                *****
+                username: <empty>
+                password: ********
+                username_in: <empty>
+                password_in: ********
+                ************************
+                Negotiated iSCSI params:
+                ************************
+                HeaderDigest: None
+                DataDigest: None
+                MaxRecvDataSegmentLength: 262144
+                MaxXmitDataSegmentLength: 262144
+                FirstBurstLength: 65536
+                MaxBurstLength: 262144
+                ImmediateData: Yes
+                InitialR2T: Yes
+                MaxOutstandingR2T: 1
+                ************************
+                Attached SCSI devices:
+                ************************
+                Host Number: 18 State: running
+                scsi18 Channel 00 Id 0 Lun: 16
+                        Attached scsi disk sdm          State: running
+                scsi18 Channel 00 Id 0 Lun: 17
+                        Attached scsi disk sdv          State: running
+                scsi18 Channel 00 Id 0 Lun: 18
+                        Attached scsi disk sdaq         State: running
+                scsi18 Channel 00 Id 0 Lun: 19
+                        Attached scsi disk sdaa         State: running
+                scsi18 Channel 00 Id 0 Lun: 22
+                        Attached scsi disk sdbh         State: running
+                scsi18 Channel 00 Id 0 Lun: 29
+                        Attached scsi disk sdbt         State: running
+                scsi18 Channel 00 Id 0 Lun: 31
+                        Attached scsi disk sdca         State: running
+Target: iqn.2021-09.easystack-ess.tgt1.node-9 (non-flash)
+        Current Portal: 172.45.50.9:3260,1
+        Persistent Portal: 172.45.50.9:3260,1
+                **********
+                Interface:
+                **********
+                Iface Name: default
+                Iface Transport: tcp
+                Iface Initiatorname: iqn.2013-07.cn.easystack:esnode0000023
+                Iface IPaddress: 172.45.50.17
+                Iface HWaddress: default
+                Iface Netdev: default
+                SID: 40
+                iSCSI Connection State: LOGGED IN
+                iSCSI Session State: LOGGED_IN
+                Internal iscsid Session State: NO CHANGE
+                *********
+                Timeouts:
+                *********
+                Recovery Timeout: 5
+                Target Reset Timeout: 30
+                LUN Reset Timeout: 30
+                Abort Timeout: 15
+                *****
+                CHAP:
+                *****
+                username: <empty>
+                password: ********
+                username_in: <empty>
+                password_in: ********
+                ************************
+                Negotiated iSCSI params:
+                ************************
+                HeaderDigest: None
+                DataDigest: None
+                MaxRecvDataSegmentLength: 262144
+                MaxXmitDataSegmentLength: 262144
+                FirstBurstLength: 65536
+                MaxBurstLength: 262144
+                ImmediateData: Yes
+                InitialR2T: Yes
+                MaxOutstandingR2T: 1
+                ************************
+                Attached SCSI devices:
+                ************************
+                Host Number: 19 State: running
+                scsi19 Channel 00 Id 0 Lun: 16
+                        Attached scsi disk sdo          State: running
+                scsi19 Channel 00 Id 0 Lun: 20
+                        Attached scsi disk sdbb         State: running
+                scsi19 Channel 00 Id 0 Lun: 21
+                        Attached scsi disk sdap         State: running
+Target: iqn.2021-09.easystack-ess.tgt1.node-7 (non-flash)
+        Current Portal: 172.45.50.7:3261,1
+        Persistent Portal: 172.45.50.7:3261,1
+                **********
+                Interface:
+                **********
+                Iface Name: default
+                Iface Transport: tcp
+                Iface Initiatorname: iqn.2013-07.cn.easystack:esnode0000023
+                Iface IPaddress: 172.45.50.17
+                Iface HWaddress: default
+                Iface Netdev: default
+                SID: 41
+                iSCSI Connection State: LOGGED IN
+                iSCSI Session State: LOGGED_IN
+                Internal iscsid Session State: NO CHANGE
+                *********
+                Timeouts:
+                *********
+                Recovery Timeout: 5
+                Target Reset Timeout: 30
+                LUN Reset Timeout: 30
+                Abort Timeout: 15
+                *****
+                CHAP:
+                *****
+                username: <empty>
+                password: ********
+                username_in: <empty>
+                password_in: ********
+                ************************
+                Negotiated iSCSI params:
+                ************************
+                HeaderDigest: None
+                DataDigest: None
+                MaxRecvDataSegmentLength: 262144
+                MaxXmitDataSegmentLength: 262144
+                FirstBurstLength: 65536
+                MaxBurstLength: 262144
+                ImmediateData: Yes
+                InitialR2T: Yes
+                MaxOutstandingR2T: 1
+                ************************
+                Attached SCSI devices:
+                ************************
+                Host Number: 20 State: running
+                scsi20 Channel 00 Id 0 Lun: 16
+                        Attached scsi disk sdn          State: running
+                scsi20 Channel 00 Id 0 Lun: 17
+                        Attached scsi disk sds          State: running
+                scsi20 Channel 00 Id 0 Lun: 18
+                        Attached scsi disk sdax         State: running
+                scsi20 Channel 00 Id 0 Lun: 19
+                        Attached scsi disk sdad         State: running
+                scsi20 Channel 00 Id 0 Lun: 22
+                        Attached scsi disk sdbm         State: running
+                scsi20 Channel 00 Id 0 Lun: 29
+                        Attached scsi disk sdbp         State: running
+                scsi20 Channel 00 Id 0 Lun: 31
+                        Attached scsi disk sdcc         State: running
+Target: iqn.2021-09.easystack-ess.tgt1.node-9 (non-flash)
+        Current Portal: 172.45.50.9:3263,1
+        Persistent Portal: 172.45.50.9:3263,1
+                **********
+                Interface:
+                **********
+                Iface Name: default
+                Iface Transport: tcp
+                Iface Initiatorname: iqn.2013-07.cn.easystack:esnode0000023
+                Iface IPaddress: 172.45.50.17
+                Iface HWaddress: default
+                Iface Netdev: default
+                SID: 42
+                iSCSI Connection State: LOGGED IN
+                iSCSI Session State: LOGGED_IN
+                Internal iscsid Session State: NO CHANGE
+                *********
+                Timeouts:
+                *********
+                Recovery Timeout: 5
+                Target Reset Timeout: 30
+                LUN Reset Timeout: 30
+                Abort Timeout: 15
+                *****
+                CHAP:
+                *****
+                username: <empty>
+                password: ********
+                username_in: <empty>
+                password_in: ********
+                ************************
+                Negotiated iSCSI params:
+                ************************
+                HeaderDigest: None
+                DataDigest: None
+                MaxRecvDataSegmentLength: 262144
+                MaxXmitDataSegmentLength: 262144
+                FirstBurstLength: 65536
+                MaxBurstLength: 262144
+                ImmediateData: Yes
+                InitialR2T: Yes
+                MaxOutstandingR2T: 1
+                ************************
+                Attached SCSI devices:
+                ************************
+                Host Number: 21 State: running
+                scsi21 Channel 00 Id 0 Lun: 16
+                        Attached scsi disk sdq          State: running
+                scsi21 Channel 00 Id 0 Lun: 20
+                        Attached scsi disk sdbf         State: running
+                scsi21 Channel 00 Id 0 Lun: 21
+                        Attached scsi disk sdao         State: running
+        Current Portal: 172.45.50.9:3261,1
+        Persistent Portal: 172.45.50.9:3261,1
+                **********
+                Interface:
+                **********
+                Iface Name: default
+                Iface Transport: tcp
+                Iface Initiatorname: iqn.2013-07.cn.easystack:esnode0000023
+                Iface IPaddress: 172.45.50.17
+                Iface HWaddress: default
+                Iface Netdev: default
+                SID: 43
+                iSCSI Connection State: LOGGED IN
+                iSCSI Session State: LOGGED_IN
+                Internal iscsid Session State: NO CHANGE
+                *********
+                Timeouts:
+                *********
+                Recovery Timeout: 5
+                Target Reset Timeout: 30
+                LUN Reset Timeout: 30
+                Abort Timeout: 15
+                *****
+                CHAP:
+                *****
+                username: <empty>
+                password: ********
+                username_in: <empty>
+                password_in: ********
+                ************************
+                Negotiated iSCSI params:
+                ************************
+                HeaderDigest: None
+                DataDigest: None
+                MaxRecvDataSegmentLength: 262144
+                MaxXmitDataSegmentLength: 262144
+                FirstBurstLength: 65536
+                MaxBurstLength: 262144
+                ImmediateData: Yes
+                InitialR2T: Yes
+                MaxOutstandingR2T: 1
+                ************************
+                Attached SCSI devices:
+                ************************
+                Host Number: 22 State: running
+                scsi22 Channel 00 Id 0 Lun: 16
+                        Attached scsi disk sdp          State: running
+                scsi22 Channel 00 Id 0 Lun: 20
+                        Attached scsi disk sdaz         State: running
+                scsi22 Channel 00 Id 0 Lun: 21
+                        Attached scsi disk sdaj         State: running
+        Current Portal: 172.45.50.9:3262,1
+        Persistent Portal: 172.45.50.9:3262,1
+                **********
+                Interface:
+                **********
+                Iface Name: default
+                Iface Transport: tcp
+                Iface Initiatorname: iqn.2013-07.cn.easystack:esnode0000023
+                Iface IPaddress: 172.45.50.17
+                Iface HWaddress: default
+                Iface Netdev: default
+                SID: 44
+                iSCSI Connection State: LOGGED IN
+                iSCSI Session State: LOGGED_IN
+                Internal iscsid Session State: NO CHANGE
+                *********
+                Timeouts:
+                *********
+                Recovery Timeout: 5
+                Target Reset Timeout: 30
+                LUN Reset Timeout: 30
+                Abort Timeout: 15
+                *****
+                CHAP:
+                *****
+                username: <empty>
+                password: ********
+                username_in: <empty>
+                password_in: ********
+                ************************
+                Negotiated iSCSI params:
+                ************************
+                HeaderDigest: None
+                DataDigest: None
+                MaxRecvDataSegmentLength: 262144
+                MaxXmitDataSegmentLength: 262144
+                FirstBurstLength: 65536
+                MaxBurstLength: 262144
+                ImmediateData: Yes
+                InitialR2T: Yes
+                MaxOutstandingR2T: 1
+                ************************
+                Attached SCSI devices:
+                ************************
+                Host Number: 23 State: running
+                scsi23 Channel 00 Id 0 Lun: 16
+                        Attached scsi disk sdr          State: running
+                scsi23 Channel 00 Id 0 Lun: 20
+                        Attached scsi disk sday         State: running
+                scsi23 Channel 00 Id 0 Lun: 21
+                        Attached scsi disk sdan         State: running
+Target: iqn.2021-09.easystack-ess.tgt1.node-8 (non-flash)
+        Current Portal: 172.45.50.8:3263,1
+        Persistent Portal: 172.45.50.8:3263,1
+                **********
+                Interface:
+                **********
+                Iface Name: default
+                Iface Transport: tcp
+                Iface Initiatorname: iqn.2013-07.cn.easystack:esnode0000023
+                Iface IPaddress: 172.45.50.17
+                Iface HWaddress: default
+                Iface Netdev: default
+                SID: 45
+                iSCSI Connection State: LOGGED IN
+                iSCSI Session State: LOGGED_IN
+                Internal iscsid Session State: NO CHANGE
+                *********
+                Timeouts:
+                *********
+                Recovery Timeout: 5
+                Target Reset Timeout: 30
+                LUN Reset Timeout: 30
+                Abort Timeout: 15
+                *****
+                CHAP:
+                *****
+                username: <empty>
+                password: ********
+                username_in: <empty>
+                password_in: ********
+                ************************
+                Negotiated iSCSI params:
+                ************************
+                HeaderDigest: None
+                DataDigest: None
+                MaxRecvDataSegmentLength: 262144
+                MaxXmitDataSegmentLength: 262144
+                FirstBurstLength: 65536
+                MaxBurstLength: 262144
+                ImmediateData: Yes
+                InitialR2T: Yes
+                MaxOutstandingR2T: 1
+                ************************
+                Attached SCSI devices:
+                ************************
+                Host Number: 24 State: running
+                scsi24 Channel 00 Id 0 Lun: 17
+                        Attached scsi disk sdz          State: running
+                scsi24 Channel 00 Id 0 Lun: 18
+                        Attached scsi disk sdat         State: running
+                scsi24 Channel 00 Id 0 Lun: 19
+                        Attached scsi disk sdag         State: running
+                scsi24 Channel 00 Id 0 Lun: 20
+                        Attached scsi disk sdbe         State: running
+                scsi24 Channel 00 Id 0 Lun: 21
+                        Attached scsi disk sdal         State: running
+                scsi24 Channel 00 Id 0 Lun: 22
+                        Attached scsi disk sdbk         State: running
+                scsi24 Channel 00 Id 0 Lun: 29
+                        Attached scsi disk sdbq         State: running
+                scsi24 Channel 00 Id 0 Lun: 30
+                        Attached scsi disk sdby         State: running
+        Current Portal: 172.45.50.8:3261,1
+        Persistent Portal: 172.45.50.8:3261,1
+                **********
+                Interface:
+                **********
+                Iface Name: default
+                Iface Transport: tcp
+                Iface Initiatorname: iqn.2013-07.cn.easystack:esnode0000023
+                Iface IPaddress: 172.45.50.17
+                Iface HWaddress: default
+                Iface Netdev: default
+                SID: 46
+                iSCSI Connection State: LOGGED IN
+                iSCSI Session State: LOGGED_IN
+                Internal iscsid Session State: NO CHANGE
+                *********
+                Timeouts:
+                *********
+                Recovery Timeout: 5
+                Target Reset Timeout: 30
+                LUN Reset Timeout: 30
+                Abort Timeout: 15
+                *****
+                CHAP:
+                *****
+                username: <empty>
+                password: ********
+                username_in: <empty>
+                password_in: ********
+                ************************
+                Negotiated iSCSI params:
+                ************************
+                HeaderDigest: None
+                DataDigest: None
+                MaxRecvDataSegmentLength: 262144
+                MaxXmitDataSegmentLength: 262144
+                FirstBurstLength: 65536
+                MaxBurstLength: 262144
+                ImmediateData: Yes
+                InitialR2T: Yes
+                MaxOutstandingR2T: 1
+                ************************
+                Attached SCSI devices:
+                ************************
+                Host Number: 25 State: running
+                scsi25 Channel 00 Id 0 Lun: 17
+                        Attached scsi disk sdw          State: running
+                scsi25 Channel 00 Id 0 Lun: 18
+                        Attached scsi disk sdaw         State: running
+                scsi25 Channel 00 Id 0 Lun: 19
+                        Attached scsi disk sdaf         State: running
+                scsi25 Channel 00 Id 0 Lun: 20
+                        Attached scsi disk sdbd         State: running
+                scsi25 Channel 00 Id 0 Lun: 21
+                        Attached scsi disk sdam         State: running
+                scsi25 Channel 00 Id 0 Lun: 22
+                        Attached scsi disk sdbg         State: running
+                scsi25 Channel 00 Id 0 Lun: 29
+                        Attached scsi disk sdbs         State: running
+                scsi25 Channel 00 Id 0 Lun: 30
+                        Attached scsi disk sdbx         State: running
+        Current Portal: 172.45.50.8:3260,1
+        Persistent Portal: 172.45.50.8:3260,1
+                **********
+                Interface:
+                **********
+                Iface Name: default
+                Iface Transport: tcp
+                Iface Initiatorname: iqn.2013-07.cn.easystack:esnode0000023
+                Iface IPaddress: 172.45.50.17
+                Iface HWaddress: default
+                Iface Netdev: default
+                SID: 47
+                iSCSI Connection State: LOGGED IN
+                iSCSI Session State: LOGGED_IN
+                Internal iscsid Session State: NO CHANGE
+                *********
+                Timeouts:
+                *********
+                Recovery Timeout: 5
+                Target Reset Timeout: 30
+                LUN Reset Timeout: 30
+                Abort Timeout: 15
+                *****
+                CHAP:
+                *****
+                username: <empty>
+                password: ********
+                username_in: <empty>
+                password_in: ********
+                ************************
+                Negotiated iSCSI params:
+                ************************
+                HeaderDigest: None
+                DataDigest: None
+                MaxRecvDataSegmentLength: 262144
+                MaxXmitDataSegmentLength: 262144
+                FirstBurstLength: 65536
+                MaxBurstLength: 262144
+                ImmediateData: Yes
+                InitialR2T: Yes
+                MaxOutstandingR2T: 1
+                ************************
+                Attached SCSI devices:
+                ************************
+                Host Number: 26 State: running
+                scsi26 Channel 00 Id 0 Lun: 17
+                        Attached scsi disk sdx          State: running
+                scsi26 Channel 00 Id 0 Lun: 18
+                        Attached scsi disk sdar         State: running
+                scsi26 Channel 00 Id 0 Lun: 19
+                        Attached scsi disk sdah         State: running
+                scsi26 Channel 00 Id 0 Lun: 20
+                        Attached scsi disk sdbc         State: running
+                scsi26 Channel 00 Id 0 Lun: 21
+                        Attached scsi disk sdai         State: running
+                scsi26 Channel 00 Id 0 Lun: 22
+                        Attached scsi disk sdbi         State: running
+                scsi26 Channel 00 Id 0 Lun: 29
+                        Attached scsi disk sdbo         State: running
+                scsi26 Channel 00 Id 0 Lun: 30
+                        Attached scsi disk sdbz         State: running
+        Current Portal: 172.45.50.8:3262,1
+        Persistent Portal: 172.45.50.8:3262,1
+                **********
+                Interface:
+                **********
+                Iface Name: default
+                Iface Transport: tcp
+                Iface Initiatorname: iqn.2013-07.cn.easystack:esnode0000023
+                Iface IPaddress: 172.45.50.17
+                Iface HWaddress: default
+                Iface Netdev: default
+                SID: 48
+                iSCSI Connection State: LOGGED IN
+                iSCSI Session State: LOGGED_IN
+                Internal iscsid Session State: NO CHANGE
+                *********
+                Timeouts:
+                *********
+                Recovery Timeout: 5
+                Target Reset Timeout: 30
+                LUN Reset Timeout: 30
+                Abort Timeout: 15
+                *****
+                CHAP:
+                *****
+                username: <empty>
+                password: ********
+                username_in: <empty>
+                password_in: ********
+                ************************
+                Negotiated iSCSI params:
+                ************************
+                HeaderDigest: None
+                DataDigest: None
+                MaxRecvDataSegmentLength: 262144
+                MaxXmitDataSegmentLength: 262144
+                FirstBurstLength: 65536
+                MaxBurstLength: 262144
+                ImmediateData: Yes
+                InitialR2T: Yes
+                MaxOutstandingR2T: 1
+                ************************
+                Attached SCSI devices:
+                ************************
+                Host Number: 27 State: running
+                scsi27 Channel 00 Id 0 Lun: 17
+                        Attached scsi disk sdy          State: running
+                scsi27 Channel 00 Id 0 Lun: 18
+                        Attached scsi disk sdav         State: running
+                scsi27 Channel 00 Id 0 Lun: 19
+                        Attached scsi disk sdae         State: running
+                scsi27 Channel 00 Id 0 Lun: 20
+                        Attached scsi disk sdba         State: running
+                scsi27 Channel 00 Id 0 Lun: 21
+                        Attached scsi disk sdak         State: running
+                scsi27 Channel 00 Id 0 Lun: 22
+                        Attached scsi disk sdbn         State: running
+                scsi27 Channel 00 Id 0 Lun: 29
+                        Attached scsi disk sdbr         State: running
+                scsi27 Channel 00 Id 0 Lun: 30
+                        Attached scsi disk sdbw         State: running

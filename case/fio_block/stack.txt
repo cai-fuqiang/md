@@ -1,0 +1,65 @@
+Thread 6 (Thread 0xffffaf68e980 (LWP 1124618)):
+#0  futex_wait_cancelable (private=0, expected=0, futex_word=0xaaaad4762860 <qemu_pause_cond+40>) at ../sysdeps/unix/sysv/linux/futex-internal.h:88
+#1  __pthread_cond_wait_common (abstime=0x0, mutex=0xaaaad4762870 <qemu_global_mutex>, cond=0xaaaad4762838 <qemu_pause_cond>) at pthread_cond_wait.c:502
+#2  __pthread_cond_wait (cond=0xaaaad4762838 <qemu_pause_cond>, mutex=mutex@entry=0xaaaad4762870 <qemu_global_mutex>) at pthread_cond_wait.c:655
+#3  0x0000aaaad42b2294 in qemu_cond_wait_impl (cond=<optimized out>, mutex=0xaaaad4762870 <qemu_global_mutex>,
+    file=0xaaaad43539d8 "/home/wang/rpmbuild/BUILD/qemu-4.2.0/cpus.c", line=1943) at util/qemu-thread-posix.c:173
+#4  0x0000aaaad3f70dcc in pause_all_vcpus () at /usr/src/debug/qemu-kvm-4.2.0-59.el8_6.wang3.aarch64/cpus.c:1943
+#5  0x0000ffffffff0000 in ?? ()
+Backtrace stopped: previous frame identical to this frame (corrupt stack?)
+
+Thread 5 (Thread 0xffffaec5e980 (LWP 1124527)):
+#0  __lll_lock_wait (futex=futex@entry=0xaaaad4762870 <qemu_global_mutex>, private=0) at lowlevellock.c:43
+#1  0x0000ffffb6709e78 in __GI___pthread_mutex_lock (mutex=mutex@entry=0xaaaad4762870 <qemu_global_mutex>) at pthread_mutex_lock.c:80
+#2  0x0000aaaad42b1f1c in qemu_mutex_lock_impl (mutex=0xaaaad4762870 <qemu_global_mutex>,
+    file=0xaaaad43568a0 "/home/wang/rpmbuild/BUILD/qemu-4.2.0/accel/kvm/kvm-all.c", line=2441) at util/qemu-thread-posix.c:78
+#3  0x0000aaaad3f70024 in qemu_mutex_lock_iothread_impl (file=<optimized out>, line=<optimized out>)
+    at /usr/src/debug/qemu-kvm-4.2.0-59.el8_6.wang3.aarch64/cpus.c:1899
+#4  0x0000aaaad3f8c1bc in kvm_cpu_exec (cpu=0xaaaaf8d05560) at /usr/src/debug/qemu-kvm-4.2.0-59.el8_6.wang3.aarch64/accel/kvm/kvm-all.c:2441
+#5  0x0000aaaad3f702d8 in qemu_kvm_cpu_thread_fn (arg=<optimized out>) at /usr/src/debug/qemu-kvm-4.2.0-59.el8_6.wang3.aarch64/cpus.c:1318
+#6  0x0000aaaad42b1df4 in qemu_thread_start (args=0xaaaaf8d52700) at util/qemu-thread-posix.c:519
+#7  0x0000ffffb6707800 in start_thread (arg=0xaaaad42b1da0 <qemu_thread_start>) at pthread_create.c:479
+#8  0x0000ffffb66517dc in thread_start () at ../sysdeps/unix/sysv/linux/aarch64/clone.S:78
+
+Thread 4 (Thread 0xffffafffe980 (LWP 1124523)):
+#0  0x0000ffffb6647dd8 in __GI___poll (fds=0xaaaaf8ca15f0, nfds=4, timeout=<optimized out>) at ../sysdeps/unix/sysv/linux/poll.c:41
+#1  0x0000ffffb6e0e1c8 in g_main_context_iterate.isra () from target:/lib64/libglib-2.0.so.0
+#2  0x0000ffffb6e0e5e8 in g_main_loop_run () from target:/lib64/libglib-2.0.so.0
+#3  0x0000aaaad40e0afc in iothread_run (opaque=0xaaaaf8c0bf60) at iothread.c:82
+#4  0x0000aaaad42b1df4 in qemu_thread_start (args=0xaaaaf8cd8690) at util/qemu-thread-posix.c:519
+--Type <RET> for more, q to quit, c to continue without paging--
+#5  0x0000ffffb6707800 in start_thread (arg=0xaaaad42b1da0 <qemu_thread_start>) at pthread_create.c:479
+#6  0x0000ffffb66517dc in thread_start () at ../sysdeps/unix/sysv/linux/aarch64/clone.S:78
+
+Thread 3 (Thread 0xffffb4e7e980 (LWP 1124519)):
+#0  0x0000ffffb65b3970 in __GI___sigtimedwait (set=set@entry=0xaaaaf8c44770, info=info@entry=0xffffb4e7dfc8, timeout=timeout@entry=0x0)
+    at ../sysdeps/unix/sysv/linux/sigtimedwait.c:29
+#1  0x0000ffffb671254c in __sigwait (set=set@entry=0xaaaaf8c44770, sig=sig@entry=0xffffb4e7e0a4) at ../sysdeps/unix/sysv/linux/sigwait.c:28
+#2  0x0000aaaad42b01b4 in sigwait_compat (opaque=0xaaaaf8c44770) at util/compatfd.c:35
+#3  0x0000aaaad42b1df4 in qemu_thread_start (args=0xaaaaf8c535a0) at util/qemu-thread-posix.c:519
+#4  0x0000ffffb6707800 in start_thread (arg=0xaaaad42b1da0 <qemu_thread_start>) at pthread_create.c:479
+#5  0x0000ffffb66517dc in thread_start () at ../sysdeps/unix/sysv/linux/aarch64/clone.S:78
+
+Thread 2 (Thread 0xffffb568e980 (LWP 1124518)):
+#0  syscall () at ../sysdeps/unix/sysv/linux/aarch64/syscall.S:38
+#1  0x0000aaaad42b2830 in qemu_futex_wait (val=<optimized out>, f=<optimized out>)
+    at /usr/src/debug/qemu-kvm-4.2.0-59.el8_6.wang3.aarch64/include/qemu/futex.h:29
+#2  qemu_event_wait (ev=ev@entry=0xaaaad4791f08 <rcu_call_ready_event>) at util/qemu-thread-posix.c:459
+#3  0x0000aaaad42c471c in call_rcu_thread (opaque=<optimized out>) at util/rcu.c:260
+#4  0x0000aaaad42b1df4 in qemu_thread_start (args=0xaaaaf8ba10b0) at util/qemu-thread-posix.c:519
+#5  0x0000ffffb6707800 in start_thread (arg=0xaaaad42b1da0 <qemu_thread_start>) at pthread_create.c:479
+#6  0x0000ffffb66517dc in thread_start () at ../sysdeps/unix/sysv/linux/aarch64/clone.S:78
+
+Thread 1 (Thread 0xffffb5d58820 (LWP 1124476)):
+#0  0x0000aaaad3fa7f54 in virtio_blk_req_complete (req=0xaaaafadd8e90, status=0 '\000')
+    at /usr/src/debug/qemu-kvm-4.2.0-59.el8_6.wang3.aarch64/hw/block/virtio-blk.c:77
+#1  0x0000aaaad3fa8f28 in virtio_blk_rw_complete (opaque=<optimized out>, ret=0)
+    at /usr/src/debug/qemu-kvm-4.2.0-59.el8_6.wang3.aarch64/hw/block/virtio-blk.c:150
+#2  0x0000aaaad42169cc in blk_aio_complete (acb=0xaaaafadc1340) at block/block-backend.c:1375
+#3  0x0000aaaad42c5ee0 in coroutine_trampoline (i0=<optimized out>, i1=<optimized out>) at util/coroutine-ucontext.c:115
+#4  0x0000ffffb65c1f90 in ?? () at ../sysdeps/unix/sysv/linux/aarch64/setcontext.S:123 from target:/lib64/libc.so.6
+--Type <RET> for more, q to quit, c to continue without paging--
+Backtrace stopped: not enough registers or memory available to unwind further
+
+
+

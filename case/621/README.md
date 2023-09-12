@@ -57,11 +57,13 @@ kmod-txgbe
 ```
 2. 预留够/boot分区空间:  rm -f /boot/initramfs-4.18.0-147.5.1.es8_24.x86_64kdump.img
 3. 安装新kernel以及 mlnx 网卡驱动包， 包含:
-nvr:kernel-4.18.0-372.19.1.es8_2:  kernel,  kernel-core, kernel-modules , kernel-modules-extra
+nvr:kernel-4.18.0-372.19.1.es8_3:  kernel,  kernel-core, kernel-modules , kernel-modules-extra
+> http://koji.easystack.io/buildinfo?buildID=3855
+
 4. 安装新的mlnx网卡驱动包以及其依赖包:
+```
 nvr:kmod-mlnx-ofa_kernel-kmodtool-5.4-3.6.8.1.es8_4.k372: kmod-mlnx-ofa_kernel, mlnx-ofa_kernel
 nvr:mlnx-tools-5.2.0-0.es8_0: mlnx-tools
-
 nvr:kmod-drbd-kmodtool-9.1.7-7.es8_4.k372
 nvr:kmod-ice-kmodtool-1.11.14-1.es8_0.k372
 nvr:kmod-megaraid_sas-kmodtool-07.724.02.00-1.es8_0.k372
@@ -70,7 +72,7 @@ nvr:kmod-openvswitch-kmodtool-2.16.2-2.es8_2.k372
 nvr:kmod-qla2xxx-kmodtool-10.02.09.00-1.es8_0.k372
 nvr:kmod-sfc-kmodtool-5.3.13.1006-1.es8_0.k372
 nvr:kmod-txgbe-kmodtool-1.3.4-1.es8_0.k372
-
+```
 5. 安装防止网卡重命名的包: http://koji.easystack.io/taskinfo?taskID=28273 :  rename_ethname
 6. 安装完成后，请帮忙注意下有没有rpm命令报错，如果没有重启节点
 

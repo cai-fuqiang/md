@@ -1,27 +1,45 @@
 # 驱动
 ## drbd
 nvr:kmod-drbd-kmodtool-9.1.7-7.es8_4.k372
+
+http://koji.easystack.io/buildinfo?buildID=3713
+
 ## ice
 nvr:kmod-ice-kmodtool-1.11.14-1.es8_0.k372
+
+http://koji.easystack.io/buildinfo?buildID=3814
 <!--
 ## ixgbe
 nvr:kmod-ixgbe-kmodtool-5.15.2-0.es8_11.k372
 -->
 ## megaraid_sas
 nvr:kmod-megaraid_sas-kmodtool-07.724.02.00-1.es8_0.k372
+
+http://koji.easystack.io/buildinfo?buildID=3812
 ## mlnx-ofa_kernel
 nvr:kmod-mlnx-ofa_kernel-kmodtool-5.4-3.6.8.1.es8_4.k372
+
+http://koji.easystack.io/buildinfo?buildID=3780
 ## ngbe
 nvr:kmod-ngbe-kmodtool-1.2.4-1.es8_0.k372
+
+http://koji.easystack.io/buildinfo?buildID=3835
 ## openvswitch
 nvr:kmod-openvswitch-kmodtool-2.16.2-2.es8_2.k372
+
+http://koji.easystack.io/buildinfo?buildID=3715
 ## qla2xxx
 nvr:kmod-qla2xxx-kmodtool-10.02.09.00-1.es8_0.k372
+
+http://koji.easystack.io/buildinfo?buildID=3813
 ## sfc
 nvr:kmod-sfc-kmodtool-5.3.13.1006-1.es8_0.k372
+
+http://koji.easystack.io/buildinfo?buildID=3840
 ## txgbe
 nvr:kmod-txgbe-kmodtool-1.3.4-1.es8_0.k372
 
+http://koji.easystack.io/buildinfo?buildID=3834
 
 # 安装步骤
 1. 卸载老的驱动: 

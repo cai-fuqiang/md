@@ -273,4 +273,157 @@ void virtio_blk_data_plane_stop(VirtIODevice *vdev)
 可以看到在 `virtio_blk_data_plane_stop()`执行后，虽然将 guest notify close 了，
 但是还是允许 guest通过 direct inject msi 的方式注入中断。
 
-那么这里为什么要允许呢，因为还有qemu已经下发的io
+那么这里为什么要允许呢，因为执行到这的时候，还有qemu已经下发的io还没有返回。
+qemu这边有相关的接口用于等待block设备的io返回。
+```cpp
+void bdrv_drain_all(void)           //用于等待所有blk设备io返回
+void blk_drain(BlockBackend *blk)   //等待一个io设备io返回
+```
+具体细节不再展开。
+
+那么我们看下，在什么时候，执行相关等待函数呢?
+```
+do_vm_stop
+  pause_all_vcpus       //暂停所有vcpu
+  vm_state_notify
+    virtio_blk_data_plane_stop  //virtio-blk change status notify
+    vm_change_state_handler     //GIC-v3 change status notify
+  bdrv_drain_all        //等待所有blk设备io返回
+```
+从上面流程看，等待blk 设备 io返回 在GICv3 change status notify (save
+lpi pending tables）之后执行，如果判断该io需要注入中断到kvm，则注入
+kvm的中断将丢失。
+
+# 上游patch
+在上游代码中，发现了该patch:
+```
+commit a937f8e8577babc32b24d4f518cb336c013cd14f
+Author: Stefan Hajnoczi <stefanha@redhat.com>
+Date:   Wed Nov 2 14:23:37 2022 -0400
+
+    virtio-blk: simplify virtio_blk_dma_restart_cb()
+...
+@@ -325,8 +317,13 @@ void virtio_blk_data_plane_stop(VirtIODevice *vdev)
+     aio_context_acquire(s->ctx);
+     aio_wait_bh_oneshot(s->ctx, virtio_blk_data_plane_stop_bh, s);
+
+-    /* Drain and try to switch bs back to the QEMU main loop. If other users
+-     * keep the BlockBackend in the iothread, that's ok */
++    /* Wait for virtio_blk_dma_restart_bh() and in flight I/O to complete */
++    blk_drain(s->conf->conf.blk);
++
++    /*
++     * Try to switch bs back to the QEMU main loop. If other users keep the
++     * BlockBackend in the iothread, that's ok
+...
+```
+可以看到其在 `virtio_blk_data_plane_stop()`中增加了等待io返回的流程。
+需要注意的是，该patch仅解决了virtio-blk设备的中断丢失，可能还有其他的
+设备也存在这个问题。个人觉得可以在 `vm_change_state_handler()`中增加
+`bdrv_drain_all()`流程，但是即便这样也只是解决了block设备的中断丢失问题，
+不清楚其他的设备是否存在该问题。
+
+# x86 ?
+该问题可以在x86上复现么? 我没来看下x86是如何处理的。
+我们先来思考下，x86的中断状态保存在哪些地方:
+
+* virtual-APIC page
+* rvi
+* pid
+
+我们分别来看下:
+
+## virtual-APIC page
+guest 对于 apic register的访问，会落在 apic-access page中(memory-based),
+而对于该地址的访问，最终会访问到virtual-APIC page, 而这个page，我们来
+看下什么时候申请的:
+```cpp
+int kvm_create_lapic(struct kvm_vcpu *vcpu, int timer_advance_ns)
+{
+        struct kvm_lapic *apic;
+
+        ASSERT(vcpu != NULL);
+        apic_debug("apic_init %d\n", vcpu->vcpu_id);
+
+        apic = kzalloc(sizeof(*apic), GFP_KERNEL_ACCOUNT);
+        if (!apic)
+                goto nomem;
+
+        vcpu->arch.apic = apic;
+        //该地方申请
+        apic->regs = (void *)get_zeroed_page(GFP_KERNEL_ACCOUNT);
+        ...
+        kvm_iodevice_init(&apic->dev, &apic_mmio_ops);
+        ...
+}
+```
+
+可以看到，并没有和guest内存做映射。那么迁移的时候，还需要做另外的动作。
+在下面的路径中会获取apic的寄存器状态:
+```
+kvm_vcpu_ioctl
+  kvm_arch_vcpu_ioctl
+    kvm_vcpu_ioctl_get_lapic
+```
+
+我们来看下该函数:
+```cpp
+static int kvm_vcpu_ioctl_get_lapic(struct kvm_vcpu *vcpu,
+                                    struct kvm_lapic_state *s)
+{
+        if (vcpu->arch.apicv_active)
+                kvm_x86_ops->sync_pir_to_irr(vcpu);
+
+        return kvm_apic_get_state(vcpu, s);
+}
+int kvm_apic_get_state(struct kvm_vcpu *vcpu, struct kvm_lapic_state *s)
+{
+        memcpy(s->regs, vcpu->arch.apic->regs, sizeof(*s));
+        return kvm_apic_state_fixup(vcpu, s, false);
+}
+```
+可以看到，这里会把virtual-APIC page的内容，copy到s中，传递给用户态。
+
+## rvi
+实际上rvi不需要同步，我们来看下intel 这边virtual interrupt delivery 的流程
+```
+Vector := RVI;
+VISR[Vector] := 1;
+SVI := Vector;
+VPPR := Vector & F0H;
+VIRR[Vector] := 0;
+IF any bits set in VIRR
+    THEN RVI := highest index of bit set in VIRR
+    ELSE RVI := 0;
+FI;
+cease recognition of any pending virtual interrupt;
+IF transactional execution is in effect
+    THEN abort transactional execution and transition to a non-transactional execution;
+FI;
+IF logical processor is in enclave mode
+    THEN cause an Asynchronous Enclave Exit (AEX) (see Chapter 37, “Enclave Exiting Events”)
+FI;
+IF CR4.UINTR = 1 AND IA32_EFER.LMA = 1 AND Vector = UINV
+    THEN virtualize user-interrupt notification identification and processing (see Section 30.2.3)
+    ELSE deliver interrupt with Vector through IDT;
+FI;
+```
+
+可以看到, 该 rvi 的vector delivery的时候，才去更新 VIRR的值。虽然在该流程
+中会获取VIRR中 highest bit index, 但是并没有clear。所以VIRR中始终保存这，当前
+vcpu 所有的pending interrupt vector.
+
+## pid->pir
+pid(post interrupt descriptor)中也保存着一些pending irq, 在上面提到的函数
+kvm_vcpu_ioctl_get_lapic()中kvm_x86_ops->sync_pir_to_irr回调中会sync pir 
+到 irr，这里不再展开。
+
+经过调试，发现x86的迁移流程为:
+```
+热迁移CPU:
+1. pause_all_vcpus
+2. vm_state_notify
+3. bdrv_drain_all
+4. 通知VCPU线程同步CPU状态，包括VAPIC(cpu_synchronize_all_states)
+5. vcpu执行ioctl系统调用同步CPU状态(do_kvm_cpu_synchronize_state)
+```

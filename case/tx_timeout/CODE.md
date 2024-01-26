@@ -11,4 +11,3 @@
 * ARQ head pointer (firmware updates)
 * ARQ tail ointer  (Driver updates)
 
-

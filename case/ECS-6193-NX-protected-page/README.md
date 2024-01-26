@@ -741,3 +741,56 @@ crash> search -p ffff90f04fba0280
 
 crash> ???????
 ```
+
+# 该page order
+```
+crash> kmem fffffa5a7f55c400
+CACHE             OBJSIZE  ALLOCATED     TOTAL  SLABS  SSIZE  NAME
+ffff90be87c06600     4096      16385     19968   2496    32k  kmalloc-4k
+  SLAB              MEMORY            NODE  TOTAL  ALLOCATED  FREE
+  fffffa5a7f55c400  ffff90dd55710000     0      8          8     0
+  FREE / [ALLOCATED]
+  [ffff90dd55710000]
+  [ffff90dd55711000]
+  [ffff90dd55712000]
+  [ffff90dd55713000]
+  [ffff90dd55714000]
+  [ffff90dd55715000]
+  [ffff90dd55716000]
+  [ffff90dd55717000]
+
+      PAGE         PHYSICAL      MAPPING       INDEX CNT FLAGS
+fffffa5a7f55c400 1fd5710000 ffff90be87c06600        0  1 17ffffc0008100 slab,head
+```
+
+page order 为 3, 是 `slub_min_order`的值
+```
+crash> p slub_max_order
+slub_max_order = $3 = 3
+```
+
+## 分析`ffff90dd55712000` 页面
+该页面也出现了类似的内存
+```
+crash> rd ffff90dd55712000 10
+ffff90dd55712000:  ffff90dd55712000 0000000000000000   . qU............
+ffff90dd55712010:  ffff90eec022b880 ffff90eec022b8aa   ..".......".....
+ffff90dd55712020:  ffffffffb355a380 ffff90eec022b800   ..U.......".....
+ffff90dd55712030:  0000000000000000 ffff90ea87ff55d0   .........U......
+ffff90dd55712040:  ffff90eec022ba80 ffff90eec022baaa   ..".......".....
+```
+
+```
+crash> search -p ffff90dd55712000
+1e3eadf000: ffff90dd55712000        //ffff90dbbeadf000  kmalloc-4k, 是 mem_cgroup  
+1e4fc6eeb8: ffff90dd55712000        //ffff90dbcfc6ee58 kernfs_node_cache, 是 "sysstat-collect.service", 这个name 和上面的一样??  
+1fd5712000: ffff90dd55712000        //就是ffff90dd55712000
+376127d1c0: ffff90dd55712000        //radix_tree_node
+```
+
+search 首地址
+```
+crash> search ffff90dd55710000
+ffff90dc82073b68: ffff90dd55710000
+
+```

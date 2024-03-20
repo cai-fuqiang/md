@@ -185,7 +185,7 @@ crash> x/44xg0xffff2043fb4e5a20
 0xffff2043fb4e5b70:     0x000000003fffffff      0x0000000000000000
 ```
 
-# 调整后
+# 调整后 -- 03-14 21:00 左右调试
 ```
 crash> p shrinker_nr_max
 shrinker_nr_max = $1 = 703
@@ -241,4 +241,101 @@ crash> x/10xg 0xffff002302f7b820
 0xffff002302f7b840:     0x0000000000000000      0x0000000000000000
 0xffff002302f7b850:     0x0000000000000000      0x0000000000000000
 0xffff002302f7b860:     0x0000000000000000      0x0000000000000000
+```
+
+# 03-15 10:00 左右调试
+```
+crash> p shrinker_nr_max
+shrinker_nr_max = $2 = 730
+crash> p 730/64
+$3 = 11
+
+crash> x/4xg 0xffff0040f8d41018
+0xffff0040f8d41018:     0xffff0021e514a400      0xffff0040ef0e4800
+0xffff0040f8d41028:     0xffff202055c11800      0xffff20401fa3ec00
+```
+
+* 0xffff0021e514a400
+```
+crash> struct mem_cgroup_per_node.shrinker_info 0xffff0021e514a400
+  shrinker_info = 0xffff002302f7a000
+crash> struct shrinker_info 0xffff002302f7a000
+struct shrinker_info {
+  rcu = {
+    next = 0x0,
+    func = 0x0
+  },
+  nr_deferred = 0xffff002302f7a020,
+  map = 0xffff002302f7b820
+}
+crash> x/11xg 0xffff002302f7b820
+0xffff002302f7b820:     0x0000000000000000      0x0000000000000000
+0xffff002302f7b830:     0x0000000000000000      0x0000000000000000
+0xffff002302f7b840:     0x0000000000000000      0x0000000000000000
+0xffff002302f7b850:     0x0000000000000000      0x0000000000000000
+0xffff002302f7b860:     0x0000000000000000      0x0000000000000000
+0xffff002302f7b870:     0x0000000000000000
+```
+* 0xffff0040ef0e4800
+```
+crash> struct mem_cgroup_per_node.shrinker_info 0xffff0040ef0e4800
+  shrinker_info = 0xffff004123624000
+crash> struct shrinker_info 0xffff004123624000
+struct shrinker_info {
+  rcu = {
+    next = 0x0,
+    func = 0x0
+  },
+  nr_deferred = 0xffff004123624020,
+  map = 0xffff004123625820
+}
+crash> x/11xg 0xffff004123625820
+0xffff004123625820:     0x0000000000000000      0x0000000000000000
+0xffff004123625830:     0x0000000000000000      0x0000000000000000
+0xffff004123625840:     0x0000000000000000      0x0000000000000000
+0xffff004123625850:     0x0000000000000000      0x0000000000000000
+0xffff004123625860:     0x0000000000000000      0x0000000000000000
+0xffff004123625870:     0x0000000000000000
+```
+* 0xffff202055c11800
+```
+crash> struct mem_cgroup_per_node.shrinker_info 0xffff202055c11800
+  shrinker_info = 0xffff20212e5ea000
+crash> struct shrinker_info  0xffff20212e5ea000
+struct shrinker_info {
+  rcu = {
+    next = 0x0,
+    func = 0x0
+  },
+  nr_deferred = 0xffff20212e5ea020,
+  map = 0xffff20212e5eb820
+}
+crash> x/11xg 0xffff20212e5eb820
+0xffff20212e5eb820:     0x0000000000000000      0x0000000000000000
+0xffff20212e5eb830:     0x0000000000000000      0x0000000000000000
+0xffff20212e5eb840:     0x0000000000000000      0x0000000000000000
+0xffff20212e5eb850:     0x0000000000000000      0x0000000000000000
+0xffff20212e5eb860:     0x0000000000000000      0x0000000000000000
+0xffff20212e5eb870:     0x0000000000000000
+```
+* 0xffff20401fa3ec00
+```
+crash> struct mem_cgroup_per_node.shrinker_info 0xffff20401fa3ec00
+  shrinker_info = 0xffff20404a54c000
+crash> struct shrinker_info 0xffff20404a54c000
+struct shrinker_info {
+  rcu = {
+    next = 0xd84944e439e7773d,
+    func = 0x5a91fc9972ddddea
+  },
+  nr_deferred = 0xffff20404a54c020,
+  map = 0xffff20404a54d820
+}
+crash> x/11xg 0xffff20404a54d820
+0xffff20404a54d820:     0x0000000000000000      0x0000000000000000
+0xffff20404a54d830:     0x0000000000000000      0x0000000000000000
+0xffff20404a54d840:     0x0000000000000000      0x0000000000000000
+0xffff20404a54d850:     0x0000000000000000      0x0000000000000000
+0xffff20404a54d860:     0x0000000000000000      0x0000000000000000
+0xffff20404a54d870:     0x0000000000000000
 ```

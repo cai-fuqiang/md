@@ -57,10 +57,10 @@ $19 = 0x0
 可以看到最后一个加入的 object 是数组下标为3.也就是上次alloc一共分配了4个object,
 其链表为:
 ```
---dataQueue--3---2---1---0---+
-^                            |
-|                            |
-+--------------------------<-+
+-->-dataQueue--3---2---1---0->-+
+^                              |
+|                              |
++---------------------------<--+
 ```
 但是现在访问3发现 `entry = {0, 0}`
 ```
@@ -81,3 +81,55 @@ $19 = 0x0
 0x434178 <data_bak_st+196696>:  0x6665646362616a69          0x646362616a696867
 ```
 发现正好能对上, 所以基本可以确认是访问了stall tlb.
+
+复现代码流程应该是这样(假设所有进程都分别在一个单独cpu上运行)
+```
+producer            consumer1             consumer2
+alloc some obj
+                    free obj...
+(vcpu sched out)    pv_flush_tlb
+                    
+                    trigger CVE
+(vcpu sched in
+  but NOT exec tlb 
+  flush)
+
+alloc page
+use stall tlb 
+  access page,
+  after memcpy,
+  real page is
+  {0x0,0x0,0x0...}
+                                         loop list 
+                                          list_entry[3] = {0,0}
+```
+
+> NOTE
+> 
+> 目前猜测 alloc page 并不会进行tlb flush, 因为手册中有大致描述, NOT present的
+> page table entry 不会产生相应的TLB, 所以没有必要去flush (还需要看代码确认下)
+
+# 查看 page fault 代码进一步确认
+```cpp
+static vm_fault_t do_anonymous_page(struct vm_fault *vmf)
+{
+        ...
+setpte:
+        set_pte_at(vma->vm_mm, vmf->address, vmf->pte, entry);
+
+        /* No need to invalidate - it was non-present before */
+        update_mmu_cache(vma, vmf->address, vmf->pte);
+        ...
+}
+/*
+ * The x86 doesn't have any external MMU info: the kernel page
+ * tables contain all the necessary information.
+ */
+static inline void update_mmu_cache(struct vm_area_struct *vma,
+                unsigned long addr, pte_t *ptep)
+{
+}
+```
+
+可以看到`do_anonymous_page()`中也明确说明了, 该page之前是 non-present
+的, 所以没有必要去 invalidata.

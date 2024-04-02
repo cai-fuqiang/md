@@ -46,13 +46,13 @@ void *producer(void *arg) {
 	{
 		tmpbuff[i] = 'a' + i%10;
 	} 
-	for (int i = 0; i < 20; i++) {
-		struct test *data = (struct test *)malloc(sizeof(struct test) + sizeof(char) * (PKGSIZE + 1) );
-		memcpy(data->data, tmpbuff, PKGSIZE);
-		pthread_mutex_lock(&mtx);
-		list_add(&data->node, &dataQueue);
-		pthread_mutex_unlock(&mtx);
-	}
+	//for (int i = 0; i < 20; i++) {
+	//	struct test *data = (struct test *)malloc(sizeof(struct test) + sizeof(char) * (PKGSIZE + 1) );
+	//	memcpy(data->data, tmpbuff, PKGSIZE);
+	//	pthread_mutex_lock(&mtx);
+	//	list_add(&data->node, &dataQueue);
+	//	pthread_mutex_unlock(&mtx);
+	//}
 
 	while (true) {
 		pthread_mutex_lock(&mtx);

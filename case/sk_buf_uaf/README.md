@@ -278,7 +278,7 @@ function is sock_rfree
 # search -p ffff21008f5a0000
 ```
 ********************************************************************************
-********************************************************************************
+**************************CPU 14 中断栈 OVS 转发 感觉没啥用 ********************
 ********************************************************************************
 
 crash> search -p ffff21008f5a0000
@@ -296,12 +296,6 @@ crash> search -p ffff21008f5a0000
 100003fec40: ffff21008f5a0000                    ffff80001358ec40: ffff21008f5a0000
                                                  ffff80001388ff20: ffff21008f5a0000
 
-
-
-
-
-
-
 crash> kmem 100003feb90
    VMAP_AREA         VM_STRUCT                 ADDRESS RANGE                SIZE
 ffff00ff800cae40  ffff00ff80261400  ffff800013580000 - ffff8000135a0000   131072
@@ -312,10 +306,10 @@ ffffffe03fc00fc0 100003f0000                0        0  1 fffff8000000000
 从这个大小看, 像一个堆栈
 
 ********************************************************************************
-********************************************************************************
+*******************************CPU 38 中断栈************************************
 ********************************************************************************
 
-1000057ff20: ffff21008f5a0000
+1000057ff20: ffff21008f5a0000 ---- ffff80001388ff20
 crash> kmem 1000057ff20
    VMAP_AREA         VM_STRUCT                 ADDRESS RANGE                SIZE
 ffff00ff800c3180  ffff00ff80263900  ffff800013880000 - ffff8000138a0000   131072
@@ -414,23 +408,36 @@ ffff400003c94100  ffff400017ed1100  ffff80003a160000 - ffff80003a180000   131072
 0xffff80001358e990:     0xffff21008f5a0000      0x000190021fd548b3
 0xffff80001358e9a0:     0xffff00ff9ed23cac      0xffff600005188000
 0xffff80001358e9b0:     0xffff80000658e9f0      0x6bc181616e34f700
+
+
+
+
 0xffff80001358e9c0:     0xffff80001358ea20      0xffff800010930e38<dequeue_skb+120>
 0xffff80001358e9d0:     0xffff00ff9ed23c00      0xffff00ff9ed23c80
 0xffff80001358e9e0:     0xffff80001358eac4      0xffff00ff9ed23ce8
 0xffff80001358e9f0:     0xffff60000f751880      0xffff60000f751880
 0xffff80001358ea00:     0xffff00ff9ed23ce8      0x0000000000000000
 0xffff80001358ea10:     0xffff00ff9ed23cac      0x0000000000000007
+
+[dequeue_skb]: 96
+
 0xffff80001358ea20:     0xffff80001358ea80      0xffff800010931cf8<__qdisc_run+160>
 0xffff80001358ea30:     0xffff00ff9ed23c00      0x0000000000000040
 0xffff80001358ea40:     0x00000000000001c0      0xffff00ff9ed23cac
 0xffff80001358ea50:     0xffff800011b78788      0xffff60000f751880
 0xffff80001358ea60:     0x0000000000000000      0x0000000000000000
 0xffff80001358ea70:     0xffff80001358ead0      0xffff8000108ca5ac<
+
+[__qdisc_run]: 80
+
 0xffff80001358ea80:     0xffff80001358ead0      0xffff8000108ca5c0<__dev_queue_xmit+720>
 0xffff80001358ea90:     0xffff21008f5a0000      0xffff00ff9ed23c00
 0xffff80001358eaa0:     0x0000000000000000      0xffff600005188000
 0xffff80001358eab0:     0xffff80001358ead0      0xffff8000108caa50
 0xffff80001358eac0:     0xffff21008f5a0000      0x6bc181616e34f700
+
+[__dev_queue_xmit]: 144
+
 0xffff80001358ead0:     0xffff80001358eb60      0xffff8000108cadec<dev_queue_xmit+36>
 0xffff80001358eae0:     0xffff21008f5a0000      0xffff7000091ea280
 0xffff80001358eaf0:     0x0000000000000001      0x00000000000005dc
@@ -440,19 +447,34 @@ ffff400003c94100  ffff400017ed1100  ffff80003a160000 - ffff80003a180000   131072
 0xffff80001358eb30:     0xffff7000162e0e00      0x00000000003e3c80
 0xffff80001358eb40:     0x0000000000000000      0xffff80000a55396c
 0xffff80001358eb50:     0x0000000000000002      0x6bc181616e34f700
+
+[dev_queue_xmit]: 32
+x19 为sk_buff
+
 0xffff80001358eb60:     0xffff80001358eb80      0xffff80000a555674<ovs_vport_send+164>
-0xffff80001358eb70:     0xffff21008f5a0000      0xffff80000a542348
-0xffff80001358eb80:     0xffff80001358ebb0      0xffff80000a5407f4<do_output+100>
-0xffff80001358eb90:     0xffff21008f5a0000      0xffff7000091ea280
+0xffff80001358eb70:     0xffff21008f5a0000[x19] 0xffff80000a542348
+
+[ovs_vport_send] : 48 
+  x19 为 sk_buff
+
+0xffff80001358eb80:     0xffff80001358ebb0      0xffff80000a5407f4<do_output+100> [x0->x19]:sk_buff
+0xffff80001358eb90:     0xffff21008f5a0000[x19] 0xffff7000091ea280
 0xffff80001358eba0:     0xffff30000dba6b80      0xffff8be00402d6d8
-0xffff80001358ebb0:     0xffff80001358ebf0      0xffff80000a542348<do_execute_actions+3144>
+
+[do_output]: 64
+0xffff80001358ebb0:     0xffff80001358ebf0      0xffff80000a542348<do_execute_actions+3144> -- [x0->x20] [x1->x19]:sk_buff
 0xffff80001358ebc0:     0xffff8be00402d6d8      0xffff80000a5601d0
 0xffff80001358ebd0:     0xffff800011b78788      0xffff30000dba6b80
 0xffff80001358ebe0:     0x0000000000000008      0xffff8be00402d6d8
+
+[do_execute_actions] : 432
+
+[x23] 为sk_buff
+
 0xffff80001358ebf0:     0xffff80001358eda0      0xffff80000a542658<ovs_execute_actions+112>
 0xffff80001358ec00:     0xffff80001178fb90      0x0000000000000002
 0xffff80001358ec10:     0xffff30000dba6b80      0xffff10001acb3c00
-0xffff80001358ec20:     0xffff21008f5a0000      0xffff8be00402d6d8
+0xffff80001358ec20:     0xffff21008f5a0000[x23] 0xffff8be00402d6d8
 0xffff80001358ec30:     0xffff700003f31b80      0x0000000000000002
 0xffff80001358ec40:     0xffff21008f5a0000      0x0000000000000008
 0xffff80001358ec50:     0xffff21008f5a9b00      0xffff10001acb3c1c
@@ -471,16 +493,19 @@ ffff400003c94100  ffff400017ed1100  ffff80003a160000 - ffff80003a180000   131072
 0xffff80001358ed20:     0xffff80001358ed60      0xffff80000a5540fc
 0xffff80001358ed30:     0x000000001f454fb7      0xffff8be00402dd78
 0xffff80001358ed40:     0xffff80001358ed50      0xffff80001034aa04
-0xffff80001358ed50:     0xffff80001358eda0      0xffff80000a54ad10
+0xffff80001358ed50:     0xffff80001358eda0      0xffff80000a54ad10<!!!!ovs_flow_stats_update+328> --> <kmem_cache_alloc_node> [x1->x23]
 0xffff80001358ed60:     0xffff0100e273aaa0      0x0000000000000046
 0xffff80001358ed70:     0xffff80001358edc0      0xffff80000b6da574
 0xffff80001358ed80:     0xffff00ff9e437000      0x00000000000000c0
 0xffff80001358ed90:     0x00000000000002e0      0x0000000000000080
-0xffff80001358eda0:     0x0000000000000058      0xffff80000a549834
+
+[ovs_execute_actions]: 80
+0xffff80001358eda0:     0x0000000000000058      0xffff80000a549834<ovs_dp_process_packet+156> --> <ovs_execute_actions>
 0xffff80001358edb0:     0xffff80001358ee00      0x6bc181616e34f700
 0xffff80001358edc0:     0xffff80001358ee00      0xffff80000b6da740
 0xffff80001358edd0:     0xffff80001358ef18      0xffff70001420d000
 0xffff80001358ede0:     0x0000000000000010      0x000000000000000b
+
 0xffff80001358edf0:     0xffff00ff80051c00      0xffff00ff8146af46
 0xffff80001358ee00:     0xffff80001358ee20      0xffff80000b6da968
 0xffff80001358ee10:     0xffff70001420d000      0xffff80001358ef18

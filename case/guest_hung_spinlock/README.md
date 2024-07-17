@@ -285,3 +285,63 @@ crash> dis queue_work_on
 0xffffffff9e10caf5 <queue_work_on+37>:  jmp    0xffffffff9e10cae3 <queue_work_on+19>
 ```
 
+```
+drm_fb_helper_damage
+
+
+crash> p system_wq
+system_wq = $2 = (struct workqueue_struct *) 0xff356b108004d200
+crash> p system_wq.cpu_pwqs
+$3 = (struct pool_workqueue *) 0x2e700
+crash> p __per_cpu_offset[5]
+$4 = 18389722436461658112
+crash> p/x __per_cpu_offset[5]
+$5 = 0xff356b1f7f540000
+crash> p/x 0xff356b1f7f540000+0x2e700
+$6 = 0xff356b1f7f56e700
+
+
+crash> worker_pool.idle_list 0xff356b1f7f568300 -o
+struct worker_pool {
+  [ff356b1f7f568338] struct list_head idle_list;
+}
+
+ff356b180bd56600
+struct worker {
+  {
+    entry = {
+      next = 0xff356b1238d70300,
+      prev = 0xff356b1f7f568338
+    },
+    hentry = {
+      next = 0xff356b1238d70300,
+      pprev = 0xff356b1f7f568338
+    }
+  },
+  current_work = 0x0,
+  current_func = 0x0,
+  current_pwq = 0x0,
+  current_color = 2147483647,
+  scheduled = {
+    next = 0xff356b180bd56630,
+    prev = 0xff356b180bd56630
+  },
+  task = 0xff356b18839f8000,
+  pool = 0xff356b1f7f568300,
+  node = {
+    next = 0xff356b1238d70350,
+    prev = 0xff356b1f7f5685c0
+  },
+  last_active = 5194481096,
+  flags = 12,
+  id = 1,
+  sleeping = 0,
+  desc = "xfs-conv/vdc\000t_destroy\000",
+  rescue_wq = 0x0,
+  last_func = 0xffffffffc048e4e0 <xfs_end_io>
+}
+
+
+
+
+```

@@ -460,6 +460,181 @@ crash> struct sk_buff ffff3000651a2e00 |grep -E 'tail|head|data|truesize'
 headroom = 0x50
 cqe_bcnt = 40
 
+# chksum
+```
+[40886.775572] skb linear:   00000000: 45 00 02 ba a3 2c 40 00 40 06 74 63 0a 98 05 bf
+[40886.783853] skb linear:   00000010: 0a 98 05 c0 1a 9c 94 54 38 d3 10 d8 18 ca 3a 29
+[40886.792107] skb linear:   00000020: 80 18 01 5c 47 19 00 00
+
+
+crash> x/40xb 0xffff3000177b7850
+0xffff3000177b7850:     0x45    0x00    0x02    0xba    0x9e    0x47    0x40    0x00
+0xffff3000177b7858:     0x40    0x06    0xf4    0xa0    0x34    0xa8    0x1e    0x02
+0xffff3000177b7860:     0x34    0xa8    0x1e    0x04    0x1a    0x92    0x9e    0xe4
+0xffff3000177b7868:     0x00    0x5e    0x05    0x58    0x41    0xb4    0xec    0xfd
+0xffff3000177b7870:     0x80    0x18    0x01    0x5c    0x5e    0x99    0x00    0x00
+crash> tcphdr -o 0xffff3000177b7864
+struct tcphdr {
+  [ffff3000177b7864] __be16 source;
+  [ffff3000177b7866] __be16 dest;
+  [ffff3000177b7868] __be32 seq;
+  [ffff3000177b786c] __be32 ack_seq;
+  [ffff3000177b7870] __u16 res1 : 4;
+  [ffff3000177b7870] __u16 doff : 4;
+  [ffff3000177b7871] __u16 fin : 1;
+  [ffff3000177b7871] __u16 syn : 1;
+  [ffff3000177b7871] __u16 rst : 1;
+  [ffff3000177b7871] __u16 psh : 1;
+  [ffff3000177b7871] __u16 ack : 1;
+  [ffff3000177b7871] __u16 urg : 1;
+  [ffff3000177b7871] __u16 ece : 1;
+  [ffff3000177b7871] __u16 cwr : 1;
+  [ffff3000177b7872] __be16 window;
+  [ffff3000177b7874] __sum16 check;
+  [ffff3000177b7876] __be16 urg_ptr;
+
+crash> tcphdr 0xffff3000177b7864
+struct tcphdr {
+  source = 37402,
+  dest = 58526,
+  seq = 1476746752,
+  ack_seq = 4260148289,
+  res1 = 0,
+  doff = 8,
+  fin = 0,
+  syn = 0,
+  rst = 0,
+  psh = 1,
+  ack = 1,
+  urg = 0,
+  ece = 0,
+  cwr = 0,
+  window = 23553,
+  check = 39262,
+  urg_ptr = 0
+}
+```
+
+## dmesg
+```
+[168403.862085] br-storagepub: hw csum failure
+[168403.868069] skb len=40 headroom=80 headlen=40 tailroom=712
+                mac=(66,14) net=(80,20) trans=100
+                shinfo(txflags=0 nr_frags=0 gso(size=0 type=0 segs=0))
+                csum(0x73d6a68 ip_summed=2 complete_sw=0 valid=0 level=0)
+                hash(0x46d8223c sw=0 l4=1) proto=0x0800 pkttype=0 iif=21
+[168403.906316] dev name=br-storagepub feat=0x0x002000064fdd58e9
+[168403.913887] skb linear:   00000000: 45 00 02 ba 9e 47 40 00 40 06 f4 a0 34 a8 1e 02
+[168403.923706] skb linear:   00000010: 34 a8 1e 04 1a 92 9e e4 00 5e 05 58 41 b4 ec fd
+[168403.933296] skb linear:   00000020: 80 18 01 5c 5e 99 00 00
+[168403.940778] CPU: 61 PID: 16605 Comm: kubelet Kdump: loaded Tainted: G           OE  X --------- -  - 4.18.0-372.19.1.es8_10.aarch64 #1
+[168403.956688] Hardware name: KaiTian KaiTian KR722f G2   /TAIFENG , BIOS KL4.2A.KR722f_G2.R.027.240430 04/30/2024 16:26:26
+[168403.969630] Call trace:
+[168403.974120]  dump_backtrace+0x0/0x158
+[168403.979835]  show_stack+0x24/0x30
+[168403.985175]  dump_stack+0x5c/0x74
+[168403.990503]  netdev_rx_csum_fault.part.30+0x50/0x5c
+[168403.997393]  netdev_rx_csum_fault+0x30/0x40
+[168404.003568]  __skb_checksum_complete+0xd4/0xd8
+[168404.010000]  nf_ip_checksum+0x84/0x148
+[168404.015722]  nf_checksum+0x84/0xa0
+[168404.021082]  nf_conntrack_tcp_packet+0x328/0xba8 [nf_conntrack]
+[168404.029012]  nf_conntrack_in+0x544/0x6f8 [nf_conntrack]
+[168404.036166]  ipv4_conntrack_in+0x28/0x38 [nf_conntrack]
+[168404.043263]  nf_hook_slow+0x4c/0xe8
+[168404.048548]  ip_rcv+0x338/0x3c0
+[168404.053420]  __netif_receive_skb_core+0x3a4/0xb88
+[168404.059870]  __netif_receive_skb+0x28/0x78
+[168404.065696]  process_backlog+0xa8/0x1a0
+[168404.071276]  __napi_poll+0x44/0x1b8
+[168404.076498]  net_rx_action+0x2b4/0x330
+[168404.081975]  __do_softirq+0x118/0x320
+[168404.087521]  irq_exit_rcu+0x10c/0x120
+[168404.092907]  irq_exit+0x14/0x20
+[168404.097756]  __handle_domain_irq+0x70/0xc0
+[168404.103572]  gic_handle_irq+0xd4/0x178
+[168404.109023]  el0_irq_naked+0x50/0x58
+```
+
+```cpp
+__sum16 __skb_checksum_complete(struct sk_buff *skb)
+{
+        __wsum csum;
+        __sum16 sum;
+
+        csum = skb_checksum(skb, 0, skb->len, 0);
+
+        /* skb->csum holds pseudo checksum */
+        sum = csum_fold(csum_add(skb->csum, csum));
+        if (likely(!sum)) {
+                if (unlikely(skb->ip_summed == CHECKSUM_COMPLETE) &&
+                    !skb->csum_complete_sw)
+                        netdev_rx_csum_fault(skb->dev, skb);        //---> here
+        }
+
+        if (!skb_shared(skb)) {
+                /* Save full packet checksum */
+                skb->csum = csum;
+                skb->ip_summed = CHECKSUM_COMPLETE;
+                skb->csum_complete_sw = 1;
+                skb->csum_valid = !sum;
+        }
+
+        return sum;
+}
+```
+# ipchecksum
+```
+[124129.288404] br-storagepub: hw csum failure
+[124129.294238] skb len=52 headroom=80 headlen=52 tailroom=60
+                mac=(66,14) net=(80,20) trans=100
+                shinfo(txflags=0 nr_frags=0 gso(size=0 type=0 segs=0))
+                csum(0x63d7668 ip_summed=2 complete_sw=0 valid=0 level=0)
+                hash(0xc76a4177 sw=0 l4=1) proto=0x0800 pkttype=0 iif=21
+[124129.331487] dev name=br-storagepub feat=0x0x002000064fdd58e9
+[124129.338846] skb linear:   00000000: 45 00 00 34 5a d0 40 00 40 06 3a 9e 34 a8 1e 02
+[124129.348238] skb linear:   00000010: 34 a8 1e 04 c3 02 1a aa a5 05 8c 7a 84 d5 5b 8b
+[124129.357623] skb linear:   00000020: 80 10 01 5a 9a f8 00 00 01 01 08 0a 38 eb 55 f0
+[124129.367008] skb linear:   00000030: cc 1c ea 8e
+
+45 00 00 34 [len = 52]
+5a d0 40 00 
+40 06[TCP] 3a 9e 
+34 a8 1e 02 [Src addr]
+34 a8 1e 04 [Dst addr]
+
+c3 02 1a aa a5 05 
+8c 7a 84 d5 5b 8b
+80 10 01 5a 9a f8 
+00 00 01 01 08 0a 
+38 eb 55 f0 cc 1c 
+ea 8e
+
+
+
+crash> struct skb_shared_info ffff3000177b7e40
+struct skb_shared_info {
+  frags = {{
+      page = {
+        p = 0xffffffebffe5dec0
+      },
+      page_offset = 32900,
+      size = 646
+    }, {
+crash> kmem 0xffff3000177b7800
+      PAGE         PHYSICAL      MAPPING       INDEX CNT FLAGS
+ffffffebffe5dec0 3000977b0000                0        0  3 6fffff8000000000
+crash> ptov 3000977b0000
+VIRTUAL           PHYSICAL
+ffff3000177b0000  3000977b0000
+crash> eval ffff3000177b0000+32900
+hexadecimal: ffff3000177b8084    //head 0xffff3000177b7800  data 0xffff3000177b7850  tcp_data : ffff3000177b7884
+
+
+
+```
+
+
 # 参考链接
 
 [sk_buff](http://vger.kernel.org/~davem/skb_data.html)

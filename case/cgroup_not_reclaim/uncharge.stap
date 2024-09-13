@@ -1,0 +1,55 @@
+#!/usr/bin/env stap
+
+global total_rss=0
+
+probe kernel.statement("accumulate_memcg_tree@mm/memcontrol.c") {
+	total_rss = 0;
+	if (kernel_string($memcg->css->cgroup->kn->name) == "user.slice")
+		printf("user.slice cgroup tree:\n");
+}
+
+%{
+#include <linux/cpumask.h>
+#include <linux/memcontrol.h>
+}%
+
+
+function acc_per_cpu_stat:long(long:mi, int:idx) %{
+	int cpu;
+
+	struct mem_cgroup *memcg = (struct mem_cgroup *)STAP_ARG_mi;
+	struct mem_cgroup_stat_cpu *stat_cpu;
+	int idx = STAP_ARG_idx;
+	long x = 0;
+
+	for_each_online_cpu(cpu)
+	{
+		stat_cpu = per_cpu_ptr(memcg->stat_cpu, cpu);
+		x += stat_cpu->count[idx];
+	}
+	STAP_RETVALUE = x + memcg->stat[idx]->counter;
+}%
+
+
+probe kernel.statement("accumulate_memcg_tree@mm/memcontrol.c) {
+	if (kernel_string($memcg->css->cgroup->kn->name) == "") {
+		rss = acc_per_cpu_stat($memcg, 30);
+		printf("$memcg->name: %s, stat[rss]: %ld\n", kernel_string($mi->css->cgroup->kn->name), rss);
+	}
+}
+
+
+# kernel.statement("accumulate_memcg_tree@mm/memcontrol.c:3004") $memcg:struct mem_cgroup* $acc:struct accumulated_stats* $mi:struct mem_cgroup*
+probe kernel.statement("accumulate_memcg_tree@mm/memcontrol.c:3004") {
+	if (kernel_string($memcg->css->cgroup->kn->name) == "user.slice") {
+		total_rss += (($mi->stat[30]->counter)*65536);
+		printf("$memcg->name: %s, stat[rss]: %ld\n", kernel_string($mi->css->cgroup->kn->name), $mi->stat[30]->counter*65536);
+	}
+}
+
+#kernel.statement("accumulate_memcg_tree@mm/memcontrol.c:3016") $memcg:struct mem_cgroup* $acc:struct accumulated_stats* $mi:struct mem_cgroup*
+probe kernel.statement("accumulate_memcg_tree@mm/memcontrol.c:3016") {
+	if (kernel_string($memcg->css->cgroup->kn->name) == "user.slice") {
+		printf("user.slice total_rss: %ld\n", total_rss);
+	}
+}

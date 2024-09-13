@@ -1,0 +1,101 @@
+#!/usr/bin/env stap
+
+global total_rss=0
+global total_rss_real=0
+
+probe kernel.statement("accumulate_memcg_tree@mm/memcontrol.c") {
+        if (kernel_string($memcg->css->cgroup->kn->name) == "user.slice") {
+        	total_rss = 0;
+		total_rss_real=0
+                printf("user.slice cgroup tree:\n");
+	}
+}
+
+%{
+#include <linux/cpumask.h>
+#include <linux/memcontrol.h>
+%}
+
+
+function acc_per_cpu_stat:long(mi:long, idx:long) %{
+        int cpu;
+
+        struct mem_cgroup *memcg = (struct mem_cgroup *)STAP_ARG_mi;
+        struct mem_cgroup_stat_cpu *stat_cpu;
+        int idx = STAP_ARG_idx;
+        long x = 0;
+
+        for_each_online_cpu(cpu)
+        {
+                stat_cpu = per_cpu_ptr(memcg->stat_cpu, cpu);
+                x += stat_cpu->count[idx];
+		//STAP_PRINTF(stat_cpu[%d] = %ld\n", cpu, stat_cpu->count[idx]);
+        }
+        STAP_RETVALUE = x + memcg->stat[idx].counter;
+%}
+
+
+#probe kernel.statement("accumulate_memcg_tree") {
+#        if (kernel_string($memcg->css->cgroup->kn->name) == "") {
+#                rss = acc_per_cpu_stat($memcg, 30);
+#                printf("$memcg->name: %s, real_stat[rss]: %ld\n", kernel_string($memcg->css->cgroup->kn->name), rss * 65536);
+#                printf("$memcg->name: %s,      stat[rss]: %ld\n", kernel_string($memcg->css->cgroup->kn->name), $memcg->stat[30]->counter*65536);
+#        }
+#}
+
+
+# kernel.statement("accumulate_memcg_tree@mm/memcontrol.c:3004") $memcg:struct mem_cgroup* $acc:struct accumulated_stats* $mi:struct mem_cgroup*
+
+probe kernel.statement("accumulate_memcg_tree@mm/memcontrol.c:3004") {
+        if (kernel_string($memcg->css->cgroup->kn->name) == "user.slice") {
+                rss = (($mi->stat[30]->counter)*65536);
+		rss_real = acc_per_cpu_stat($mi, 30) * 65536;
+
+                total_rss += rss;
+		total_rss_real += rss_real;
+                printf("$memcg->name: %s, real_stat[rss]: %ld\n", kernel_string($mi->css->cgroup->kn->name), rss_real);
+                printf("$memcg->name: %s,      stat[rss]: %ld\n", kernel_string($mi->css->cgroup->kn->name), rss);
+        }
+}
+
+#kernel.statement("accumulate_memcg_tree@mm/memcontrol.c:3016") $memcg:struct mem_cgroup* $acc:struct accumulated_stats* $mi:struct mem_cgroup*
+probe kernel.statement("accumulate_memcg_tree@mm/memcontrol.c:3016") {
+        if (kernel_string($memcg->css->cgroup->kn->name) == "user.slice") {
+                printf("user.slice      total_rss: %ld\n", total_rss);
+                printf("user.slice real_total_rss: %ld\n", total_rss_real);
+        }
+}
+%{
+#include <linux/kallsyms.h>
+typedef void (*drain_all_stock_func_type)(struct mem_cgroup *memcg);
+%}
+global drain_all_stock_str = "drain_all_stock";
+
+function exec_drain_all_stock:long(func_addr:long, memcg:long)
+%{
+	drain_all_stock_func_type func;
+	struct mem_cgroup *memcg = (struct mem_cgroup *)STAP_ARG_memcg;
+
+	func = (drain_all_stock_func_type) STAP_ARG_func_addr;
+	func(memcg);
+
+	STAP_RETVALUE=STAP_ARG_func_addr;
+
+%}
+
+function find_drain_all_stock_symbol:long() %{
+	STAP_RETVALUE=kallsyms_lookup_name("drain_all_stock");
+%}
+
+probe kernel.statement("accumulate_memcg_tree@mm/memcontrol.c:3016")
+{
+        if (kernel_string($memcg->css->cgroup->kn->name) == "user.slice") {
+		#target_cpu = cpu();
+		symbol_addr=find_drain_all_stock_symbol();
+		if (symname(symbol_addr) == drain_all_stock_str) {
+			printf("find syms(%s) (%lx) cpu(%d)\n", symname(symbol_addr), symbol_addr, cpu());
+			printf("exec it !!\n");
+			exec_drain_all_stock(symbol_addr, $memcg);
+		}
+	}
+}

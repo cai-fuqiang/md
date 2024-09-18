@@ -141,7 +141,7 @@ struct iphdr {
   ihl = 5 '\005',   --> 规定了额外的长度, 5表示 5个4byte 5 << 2 = 20
   version = 4 '\004',
   tos = 0 '\000',
-  tot_len = 47618,
+  tot_len = 47618,  --> 698
   id = 18334,
   frag_off = 64,
   ttl = 64 '@',
@@ -629,9 +629,36 @@ VIRTUAL           PHYSICAL
 ffff3000177b0000  3000977b0000
 crash> eval ffff3000177b0000+32900
 hexadecimal: ffff3000177b8084    //head 0xffff3000177b7800  data 0xffff3000177b7850  tcp_data : ffff3000177b7884
+```
+# state
+```
+0xffff80000a7641a4 <nf_conntrack_in+1324>:      mov     x4, x20 [state]
+0xffff80000a7641a8 <nf_conntrack_in+1328>:      mov     w3, w26
+0xffff80000a7641ac <nf_conntrack_in+1332>:      mov     w2, w22 [dataoff]
+0xffff80000a7641b0 <nf_conntrack_in+1336>:      mov     x1, x27 [skb]
+0xffff80000a7641b4 <nf_conntrack_in+1340>:      mov     x0, x19
+0xffff80000a7641b8 <nf_conntrack_in+1344>:      bl      0xffff80000a76b7f0 <nf_conntrack_tcp_packet>
 
+0xffff80000a76b7f0 <nf_conntrack_tcp_packet>:   stp     x29, x30, [sp,#-176]!
+0xffff80000a76b7f4 <nf_conntrack_tcp_packet+4>: mov     x29, sp
+0xffff80000a76b7f8 <nf_conntrack_tcp_packet+8>: stp     x19, x20, [sp,#16]
+0xffff80000a76b7fc <nf_conntrack_tcp_packet+12>:        stp     x21, x22, [sp,#32]
+0xffff80000a76b800 <nf_conntrack_tcp_packet+16>:        stp     x23, x24, [sp,#48]
+0xffff80000a76b804 <nf_conntrack_tcp_packet+20>:        stp     x25, x26, [sp,#64]
+0xffff80000a76b808 <nf_conntrack_tcp_packet+24>:        stp     x27, x28, [sp,#80]
 
-
+ #8 [ffff800013b6fa80] nf_conntrack_tcp_packet at ffff80000a76b9ac [nf_conntrack]
+    ffff800013b6fa80: ffff800013b6fb30 ffff80000a7641bc
+    ffff800013b6fa90: ffff30005c0d6400 ffff800013b6fc78[x20] --> state
+    ffff800013b6faa0: 0000000000000000 0000000000000014[x22] --> dataoff  20
+    ffff800013b6fab0: ffff80000a7930f8 ffff800011b78788
+    ffff800013b6fac0: ffff80000a782e48 0000000000000002
+    ffff800013b6fad0: ffff3000651a2e00[x27] --> skb 00000000c2303ae1
+    ffff800013b6fae0: ffff80000a782e48 0000000000000000
+    ffff800013b6faf0: ffff800000000000 0000000000000000
+    ffff800013b6fb00: 00000000041ea834 0000000000000000
+    ffff800013b6fb10: 031ea8340002e40c 0000000000000000
+    ffff800013b6fb20: 0106ce8500000000 9fe757b2a7ebda00
 ```
 
 

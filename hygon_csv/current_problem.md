@@ -10,13 +10,14 @@
    -object sev-guest,id=sev0,policy=0x5,cbitpos=47,reduced-phys-bits=5
                                     ^^^
    ```
-   虚拟机中并不打印CSV3
+   测试虚拟机内存加密，虚拟机寄存器加密，均没有问题.
 
+   但是虚拟机dmesg 中并不打印CSV3
    ```
    [    0.426140]  HYGON CSV
    [    0.426141]  HYGON CSV2
-
    ```
+
    使用<sup>1</sup>
    ```
    -object sev-guest,id=sev0,policy=0x45,cbitpos=47,reduced-phys-bits=5

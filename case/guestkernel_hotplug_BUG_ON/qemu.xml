@@ -1,0 +1,1516 @@
+<domain type='kvm' xmlns:qemu='http://libvirt.org/schemas/domain/qemu/1.0'>
+  <name>wang_disk_attach</name>
+  <uuid>93e875fc-0a0a-493e-9e29-50082fd919d4</uuid>
+  <metadata>
+    <jvirt xmlns="www.jcloud.com/xmlns/jvirt/1.0">
+      <name>ins-rand-actions-605-001</name>
+      <id>wang_disk_attach</id>
+      <az>az2</az>
+      <ag_id/>
+      <image>img-hcbaugvwmb</image>
+      <user>38a954152bd34839a100f1e0d56e9438</user>
+      <pin>jke_admin_test</pin>
+      <os_type>linux</os_type>
+      <cpu_mode/>
+      <source_type>normal</source_type>
+      <arch>x86_64</arch>
+      <cpus>32</cpus>
+      <memory>16777216</memory>
+      <hw_qga>false</hw_qga>
+      <hw_jga>true</hw_jga>
+    </jvirt>
+  </metadata>
+  <memory unit='KiB'>16777216</memory>
+  <currentMemory unit='KiB'>16777216</currentMemory>
+  <memoryBacking>
+    <hugepages>
+      <page size='2048' unit='KiB'/>
+    </hugepages>
+  </memoryBacking>
+  <vcpu placement='static' cpuset='0-31'>32</vcpu>
+  <iothreads>150</iothreads>
+  <iothreadids>
+    <iothread id='1'/>
+    <iothread id='2'/>
+    <iothread id='3'/>
+    <iothread id='4'/>
+    <iothread id='5'/>
+    <iothread id='6'/>
+    <iothread id='8'/>
+    <iothread id='9'/>
+    <iothread id='10'/>
+    <iothread id='11'/>
+    <iothread id='12'/>
+    <iothread id='13'/>
+    <iothread id='14'/>
+    <iothread id='15'/>
+    <iothread id='16'/>
+    <iothread id='17'/>
+    <iothread id='18'/>
+    <iothread id='19'/>
+    <iothread id='20'/>
+    <iothread id='21'/>
+    <iothread id='22'/>
+    <iothread id='23'/>
+    <iothread id='24'/>
+    <iothread id='25'/>
+    <iothread id='26'/>
+    <iothread id='27'/>
+    <iothread id='28'/>
+    <iothread id='29'/>
+    <iothread id='30'/>
+    <iothread id='31'/>
+    <iothread id='32'/>
+    <iothread id='33'/>
+    <iothread id='34'/>
+    <iothread id='35'/>
+    <iothread id='36'/>
+    <iothread id='37'/>
+    <iothread id='38'/>
+    <iothread id='39'/>
+    <iothread id='40'/>
+    <iothread id='41'/>
+    <iothread id='42'/>
+    <iothread id='43'/>
+    <iothread id='44'/>
+    <iothread id='45'/>
+    <iothread id='46'/>
+    <iothread id='47'/>
+    <iothread id='48'/>
+    <iothread id='49'/>
+    <iothread id='50'/>
+    <iothread id='51'/>
+    <iothread id='52'/>
+    <iothread id='53'/>
+    <iothread id='54'/>
+    <iothread id='55'/>
+    <iothread id='56'/>
+    <iothread id='57'/>
+    <iothread id='58'/>
+    <iothread id='59'/>
+    <iothread id='60'/>
+    <iothread id='61'/>
+    <iothread id='62'/>
+    <iothread id='63'/>
+    <iothread id='64'/>
+    <iothread id='65'/>
+    <iothread id='66'/>
+    <iothread id='67'/>
+    <iothread id='68'/>
+    <iothread id='69'/>
+    <iothread id='70'/>
+    <iothread id='71'/>
+    <iothread id='72'/>
+    <iothread id='73'/>
+    <iothread id='74'/>
+    <iothread id='75'/>
+    <iothread id='76'/>
+    <iothread id='77'/>
+    <iothread id='78'/>
+    <iothread id='79'/>
+    <iothread id='80'/>
+    <iothread id='81'/>
+    <iothread id='82'/>
+    <iothread id='83'/>
+    <iothread id='84'/>
+    <iothread id='85'/>
+    <iothread id='86'/>
+    <iothread id='87'/>
+    <iothread id='88'/>
+    <iothread id='89'/>
+    <iothread id='90'/>
+    <iothread id='91'/>
+    <iothread id='92'/>
+    <iothread id='93'/>
+    <iothread id='94'/>
+    <iothread id='95'/>
+    <iothread id='96'/>
+    <iothread id='97'/>
+    <iothread id='98'/>
+    <iothread id='99'/>
+    <iothread id='100'/>
+    <iothread id='101'/>
+    <iothread id='102'/>
+    <iothread id='103'/>
+    <iothread id='104'/>
+    <iothread id='105'/>
+    <iothread id='106'/>
+    <iothread id='107'/>
+    <iothread id='108'/>
+    <iothread id='109'/>
+    <iothread id='110'/>
+    <iothread id='111'/>
+    <iothread id='112'/>
+    <iothread id='113'/>
+    <iothread id='114'/>
+    <iothread id='115'/>
+    <iothread id='116'/>
+    <iothread id='117'/>
+    <iothread id='118'/>
+    <iothread id='119'/>
+    <iothread id='120'/>
+    <iothread id='121'/>
+    <iothread id='122'/>
+    <iothread id='123'/>
+    <iothread id='124'/>
+    <iothread id='125'/>
+    <iothread id='126'/>
+    <iothread id='127'/>
+    <iothread id='128'/>
+    <iothread id='129'/>
+    <iothread id='130'/>
+    <iothread id='131'/>
+    <iothread id='132'/>
+    <iothread id='133'/>
+    <iothread id='134'/>
+    <iothread id='135'/>
+    <iothread id='136'/>
+    <iothread id='137'/>
+    <iothread id='138'/>
+    <iothread id='139'/>
+    <iothread id='140'/>
+    <iothread id='141'/>
+    <iothread id='142'/>
+    <iothread id='143'/>
+    <iothread id='144'/>
+    <iothread id='145'/>
+    <iothread id='146'/>
+    <iothread id='147'/>
+    <iothread id='148'/>
+    <iothread id='149'/>
+    <iothread id='150'/>
+  </iothreadids>
+  <resource>
+    <partition>/machine</partition>
+  </resource>
+  <sysinfo type='smbios'>
+    <system>
+      <entry name='manufacturer'>JD</entry>
+      <entry name='product'>JCloud Iaas Jvirt</entry>
+      <entry name='version'>1.0</entry>
+      <entry name='serial'>96bd15ec-0212-11ee-9489-e8611f46fda4</entry>
+      <entry name='uuid'>93e875fc-0a0a-493e-9e29-50082fd919d4</entry>
+      <entry name='family'>Virtual Machine</entry>
+    </system>
+  </sysinfo>
+  <iothreads>1</iothreads>
+  <os>
+    <type arch='x86_64' machine='pc-i440fx-6.2'>hvm</type>
+    <loader readonly='yes' type='pflash'>/usr/share/edk2/ovmf/OVMF_CODE.fd</loader>
+    <nvram template='/usr/share/edk2/ovmf/OVMF_VARS.fd'>/var/lib/libvirt/qemu/nvram/wang_disk_attach_VARS.fd</nvram>
+    <smbios mode='sysinfo'/>
+  </os>
+  <features>
+    <acpi/>
+    <apic/>
+  </features>
+  <cpu mode='host-passthrough' check='none' migratable='on'>
+    <topology sockets='1' dies='1' cores='32' threads='1'/>
+    <numa>
+      <cell id='0' cpus='0-31' memory='16777216' unit='KiB' memAccess='shared'/>
+    </numa>
+  </cpu>
+  <clock offset='utc'>
+    <timer name='pit' tickpolicy='delay'/>
+    <timer name='rtc' tickpolicy='catchup'/>
+    <timer name='hpet' present='no'/>
+  </clock>
+  <on_poweroff>destroy</on_poweroff>
+  <on_reboot>restart</on_reboot>
+  <on_crash>destroy</on_crash>
+  <devices>
+          <!--
+          <emulator>/export/wfq/qemu-6.2.0.116/build/qemu-system-x86_64</emulator>
+          <emulator>/usr/local/bin/qemu-system-x86_64</emulator>
+          -->
+          <emulator>/export/wfq/qemu-wang-upstream-new/build/qemu-system-x86_64</emulator>
+    <disk type='file' device='disk'>
+      <driver name='qemu' type='qcow2' cache='none' io='threads' iothread='1'/>
+      <source file='/rocky-9.qcow2'/>
+      <target dev='vda' bus='virtio'/>
+            <!--<address type='pci' domain='0x0000' bus='0x00' slot='0x9' function='0x0'/>-->
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x01' function='0x4'/>
+    </disk>
+    <controller type='pci' index='1' model='pci-bridge'>
+      <model name='pci-bridge'/>
+      <target chassisNr='1'/>
+      <alias name='pci.1'/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x1f' function='0x0'/>
+    </controller>
+    <controller type='pci' index='2' model='pci-bridge'>
+      <model name='pci-bridge'/>
+      <target chassisNr='2'/>
+      <alias name='pci.2'/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x1e' function='0x0'/>
+    </controller>
+    <controller type='pci' index='3' model='pci-bridge'>
+      <model name='pci-bridge'/>
+      <target chassisNr='3'/>
+      <alias name='pci.3'/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x1d' function='0x0'/>
+    </controller>
+    <controller type='pci' index='4' model='pci-bridge'>
+      <model name='pci-bridge'/>
+      <target chassisNr='4'/>
+      <alias name='pci.4'/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x1c' function='0x0'/>
+    </controller>
+    <controller type='pci' index='5' model='pci-bridge'>
+      <model name='pci-bridge'/>
+      <target chassisNr='5'/>
+      <alias name='pci.5'/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x1b' function='0x0'/>
+    </controller>
+    <controller type='pci' index='6' model='pci-bridge'>
+      <model name='pci-bridge'/>
+      <target chassisNr='6'/>
+      <alias name='pci.6'/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x1a' function='0x0'/>
+    </controller>
+    <controller type='pci' index='7' model='pci-bridge'>
+      <model name='pci-bridge'/>
+      <target chassisNr='7'/>
+      <alias name='pci.7'/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x19' function='0x0'/>
+    </controller>
+    <controller type='pci' index='8' model='pci-bridge'>
+      <model name='pci-bridge'/>
+      <target chassisNr='8'/>
+      <alias name='pci.8'/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x18' function='0x0'/>
+    </controller>
+    <controller type='usb' index='0' model='piix3-uhci'>
+      <alias name='usb'/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x01' function='0x2'/>
+    </controller>
+    <controller type='pci' index='0' model='pci-root'>
+      <alias name='pci.0'/>
+    </controller>
+    <input type='tablet' bus='usb'>
+      <alias name='input0'/>
+      <address type='usb' bus='0' port='1'/>
+    </input>
+    <input type='mouse' bus='ps2'>
+      <alias name='input1'/>
+    </input>
+    <input type='keyboard' bus='ps2'>
+      <alias name='input2'/>
+    </input>
+    <audio id='1' type='none'/>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:1a:74:24'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-lmyfw7rm15'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net0'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x03' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:0d:74:4d'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-r1tmo42be5'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net1'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x04' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:65:87:07'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-paoj0l4d6z'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net2'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x05' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:c0:3a:5c'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-lazjmakvtj'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net3'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x06' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:1d:3a:51'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-owcri5ggp4'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net4'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x07' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:eb:4e:98'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-zhubw6ak4u'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net5'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x08' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:fc:a3:a3'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-ecx5xgedf7'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net6'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x09' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:d7:67:71'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-9qa0uq0aao'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net7'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x0a' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:74:7f:64'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-tuiskhdw5n'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net8'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x0b' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:bc:ab:fe'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-hriqr3t00l'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net9'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x0c' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:0b:32:dd'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-xrzi6smoer'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net10'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x0d' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:cf:d2:af'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-oqzkz0zcyw'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net11'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x0e' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:39:c6:3f'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-0d4vwe0gdp'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net12'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x0f' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:48:27:21'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-1kjvvk65n8'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net13'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x10' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:cc:34:10'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-gxemc48wst'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net14'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x11' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:46:4c:0c'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-kj4jxf7aos'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net15'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x12' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:70:55:df'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-q9wufgb2da'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net16'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x13' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:be:e9:3c'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-zjhitnwyi7'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net17'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x14' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:b7:81:0a'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-0u51ag8bmv'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net18'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x15' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:f0:96:08'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-elc1vy4xmz'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net19'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x16' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:de:d2:bb'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-3d3nreyt53'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net20'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x17' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:ce:01:bc'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-97289zn02p'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net21'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x01' slot='0x01' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:1c:3d:72'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-v5w7gdkws0'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net22'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x01' slot='0x02' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:fb:c2:4d'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-n9cy7plzab'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net23'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x01' slot='0x03' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:37:05:31'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-7w046ifpfd'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net24'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x01' slot='0x04' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:46:68:de'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-8hk1a3j09d'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net25'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x01' slot='0x05' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:41:4b:f6'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-aonzeyn0s4'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net26'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x01' slot='0x06' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:56:48:dd'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-0rt0vxgtsx'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net27'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x01' slot='0x07' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:da:93:af'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-s4nu8bbv06'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net28'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x01' slot='0x08' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:d6:f6:fb'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-def6tetib0'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net29'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x01' slot='0x09' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:60:d0:72'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-iqfstlbu6n'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net30'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x01' slot='0x0a' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:98:1d:09'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-3zf9kwf35p'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net31'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x01' slot='0x0b' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:62:58:8b'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-08flgt2w9d'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net32'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x01' slot='0x0c' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:14:72:c7'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-wa8gx7smpo'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net33'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x01' slot='0x0d' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:94:e2:5b'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-touuhsqnnr'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net34'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x01' slot='0x0e' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:21:db:be'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-4b0lhs2coy'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net35'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x01' slot='0x0f' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:bd:82:1c'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-d45tz8s7os'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net36'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x01' slot='0x10' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:c0:9f:c0'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-t210pil20w'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net37'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x01' slot='0x11' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:e1:d3:04'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-6tr2ytl0xq'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net38'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x01' slot='0x12' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:7a:69:ef'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-15vxx8o5sh'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net39'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x01' slot='0x13' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:99:b2:58'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-h300oyonmf'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net40'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x01' slot='0x14' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:62:a8:f5'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-grhwymem3o'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net41'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x01' slot='0x15' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:3c:9f:79'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-3er28ypqou'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net42'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x01' slot='0x16' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:3c:ae:e6'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-15p6t2z0ek'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net43'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x01' slot='0x17' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:ef:c1:09'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-2cabiucxqk'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net44'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x01' slot='0x18' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:24:79:d9'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-rum3xa7yzg'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net45'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x01' slot='0x19' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:cf:23:94'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-tqywgo1o9v'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net46'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x01' slot='0x1a' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:61:d4:33'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-h0g5q4iec2'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net47'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x01' slot='0x1b' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:7d:cb:02'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-fhmhrqfabb'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net48'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x01' slot='0x1c' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:ee:03:bc'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-6cd9q7g84o'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net49'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x01' slot='0x1d' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:e4:35:7f'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-0dvaxh5jq7'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net50'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x01' slot='0x1e' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:3e:9b:5b'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-gn30nc3zkb'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net51'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x01' slot='0x1f' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:42:60:f5'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-4hoocrd2r4'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net52'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x02' slot='0x01' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:5c:e7:9b'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-itpgyf6y9b'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net53'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x02' slot='0x02' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:28:5d:62'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-lx212r6ksi'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net54'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x02' slot='0x03' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:12:6f:46'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-2337v3mdun'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net55'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x02' slot='0x04' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:0d:59:08'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-he0lv94ogn'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net56'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x02' slot='0x05' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:a9:b3:bf'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-ohb0penbx4'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net57'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x02' slot='0x06' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:87:1f:91'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-h6jtpc0ese'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net58'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x02' slot='0x07' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:44:80:c9'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-7bytqp8xcj'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net59'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x02' slot='0x08' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:23:47:f5'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-sbe314ic1i'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net60'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x02' slot='0x09' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:73:4a:c9'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-hy734o3zno'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net61'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x02' slot='0x0a' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:63:f5:56'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-wro3cg4xtc'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net62'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x02' slot='0x0b' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:4b:83:df'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-re9bvdvh3t'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net63'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x02' slot='0x0c' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:43:26:4e'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-35mjwvst2d'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net64'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x02' slot='0x0d' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:48:6c:fe'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-78urwgrrhl'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net65'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x02' slot='0x0e' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:e5:61:30'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-g22ydyix0j'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net66'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x02' slot='0x0f' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:14:31:f4'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-4yk5jsd286'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net67'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x02' slot='0x10' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:5a:c3:e4'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-6f0mu1k84j'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net68'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x02' slot='0x11' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:f6:29:e0'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-f2k10tc7ua'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net69'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x02' slot='0x12' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:88:dc:c6'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-tn5oc4gsch'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net70'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x02' slot='0x13' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:35:52:d6'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-vfbcg3vntq'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net71'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x02' slot='0x14' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:c4:12:e0'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-cqcb3e2xz1'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net72'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x02' slot='0x15' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:40:23:ad'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-90aza4ud1o'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net73'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x02' slot='0x16' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:37:5e:9e'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-w3h5xbe15x'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net74'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x02' slot='0x17' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:43:5c:1b'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-mf65hxiw9j'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net75'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x02' slot='0x18' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:91:64:4e'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-19vgcq4r2r'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net76'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x02' slot='0x19' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:fd:14:e1'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-z0kswjz2ba'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net77'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x02' slot='0x1a' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:51:fa:be'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-hgd3zif7zo'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net78'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x02' slot='0x1b' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:32:0c:0f'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-fzjno00s3e'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net79'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x02' slot='0x1c' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:89:b4:43'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-0s5rte7jvy'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net80'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x02' slot='0x1d' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:cf:e8:8d'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-dmru2r2x0u'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net81'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x02' slot='0x1e' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:61:33:03'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-vrn2ymkyj9'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net82'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x02' slot='0x1f' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:c9:d8:80'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-tliyg3xgkl'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net83'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x03' slot='0x01' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:f7:61:65'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-3dzsqnwu7w'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net84'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x03' slot='0x02' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:53:57:75'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-qef1g1ixoq'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net85'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x03' slot='0x03' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:fc:8e:ce'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-7txtx7w834'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net86'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x03' slot='0x04' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:23:f3:6f'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-m8t5astcky'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net87'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x03' slot='0x05' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:6d:d4:6c'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-9zik8hs44p'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net88'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x03' slot='0x06' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:c1:db:84'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-ovdfzl7rsn'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net89'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x03' slot='0x07' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:af:03:09'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-23oxs4z09h'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net90'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x03' slot='0x08' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:da:b1:48'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-h3advpw8np'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net91'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x03' slot='0x09' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:1d:13:78'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-x1tpmd0r2h'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net92'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x03' slot='0x0a' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:10:b0:e9'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-mi2o2xrslb'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net93'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x03' slot='0x0b' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:3a:ef:3f'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-bzcrwnadgd'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net94'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x03' slot='0x0c' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:f6:e3:18'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-nishcaeedt'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net95'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x03' slot='0x0d' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:54:ce:17'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-e08cc9drkz'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net96'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x03' slot='0x0e' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:19:f2:e6'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-18739hq586'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net97'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x03' slot='0x0f' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:c8:ae:2e'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-enpe4e7qbu'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net98'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x03' slot='0x10' function='0x0'/>
+    </interface>
+    <interface type='vhostuser'>
+      <mac address='fa:16:3e:a6:12:25'/>
+      <source type='unix' path='/usr/local/var/run/openvswitch/vhost-user1' mode='client'/>
+      <target dev='port-zxwffgzjki'/>
+      <model type='virtio'/>
+      <driver queues='4' rx_queue_size='1024' tx_queue_size='1024'>
+        <host mrg_rxbuf='on'/>
+      </driver>
+      <alias name='net99'/>
+      <rom file=''/>
+      <address type='pci' domain='0x0000' bus='0x03' slot='0x11' function='0x0'/>
+    </interface>
+  </devices>
+  <seclabel type='dynamic' model='dac' relabel='yes'>
+    <label>+0:+0</label>
+    <imagelabel>+0:+0</imagelabel>
+  </seclabel>
+  <qemu:commandline>
+          <!--
+    <qemu:arg value='-netdev'/>
+                  <qemu:arg value='user,id=internet,hostfwd=tcp::55556-:22'/>
+                  -->
+    <qemu:arg value='-S'/>
+    <qemu:arg value='-nographic'/>
+    <qemu:arg value='-serial'/>
+    <qemu:arg value='telnet:localhost:66667,server,nowait'/>
+  </qemu:commandline>
+</domain>
+

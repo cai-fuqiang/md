@@ -207,7 +207,11 @@ virsh capabilities |virsh cpu-baseline /dev/stdin
 > 测试结果在:
 >
 > [链接](./guest_host_passthough_docap)
+
+## 结论
+目前来看，使用`combind virsh domcapabilities and virsh cpu-baseline` 比较靠谱
 ## 参考链接
 
 1. [REDHAT 2024 How to use virsh cpu-compare and cpu-baseline to determine the cpu compatibility ?](https://access.redhat.com/solutions/2891431)
 2. [Guest CPU model configuration in libvirt with QEMU/KVM](https://www.berrange.com/posts/2010/02/15/guest-cpu-model-configuration-in-libvirt-with-qemukvm/)
+3. [virsh capabilities vs. domcapabilities](https://lists.libvirt.org/archives/list/devel@lists.libvirt.org/thread/TMK6POAK7267SU6F3J2FK6ZOBDLJWF3Q/)

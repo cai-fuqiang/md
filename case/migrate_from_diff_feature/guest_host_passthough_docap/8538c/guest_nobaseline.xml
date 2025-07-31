@@ -1,0 +1,54 @@
+<cpu>
+      <arch>x86_64</arch>
+      <model>Icelake-Server-v2</model>
+      <vendor>Intel</vendor>
+      <microcode version="553648480"/>
+      <signature family="6" model="207" stepping="2"/>
+      <topology sockets="1" dies="1" clusters="1" cores="32" threads="1"/>
+      <maxphysaddr mode="emulate" bits="52"/>
+      <feature name="dtes64"/>
+      <feature name="vmx"/>
+      <feature name="pdcm"/>
+      <feature name="osxsave"/>
+      <feature name="hypervisor"/>
+      <feature name="ds"/>
+      <feature name="ss"/>
+      <feature name="ht"/>
+      <feature name="tsc_adjust"/>
+      <feature name="avx512ifma"/>
+      <feature name="sha-ni"/>
+      <feature name="ospke"/>
+      <feature name="waitpkg"/>
+      <feature name="rdpid"/>
+      <feature name="bus-lock-detect"/>
+      <feature name="cldemote"/>
+      <feature name="movdiri"/>
+      <feature name="movdir64b"/>
+      <feature name="fsrm"/>
+      <feature name="md-clear"/>
+      <feature name="serialize"/>
+      <feature name="tsx-ldtrk"/>
+      <feature name="amx-bf16"/>
+      <feature name="avx512-fp16"/>
+      <feature name="amx-tile"/>
+      <feature name="amx-int8"/>
+      <feature name="stibp"/>
+      <feature name="arch-capabilities"/>
+      <feature name="avx-vnni"/>
+      <feature name="avx512-bf16"/>
+      <feature name="xsaves"/>
+      <feature name="xfd"/>
+      <feature name="ibpb"/>
+      <feature name="ibrs"/>
+      <feature name="amd-stibp"/>
+      <feature name="amd-ssbd"/>
+      <feature name="rdctl-no"/>
+      <feature name="ibrs-all"/>
+      <feature name="skip-l1dfl-vmentry"/>
+      <feature name="mds-no"/>
+      <feature name="pschange-mc-no"/>
+      <feature name="tsx-ctrl"/>
+      <pages unit="KiB" size="4"/>
+      <pages unit="KiB" size="2048"/>
+      <pages unit="KiB" size="1048576"/>
+    </cpu>

@@ -134,7 +134,7 @@ __init int intel_pmu_init(void)
 ```
 可以发现并没有`ds` features
 
-但是`virsh domcapabilities` 并能很好的和`virsh cpu-baseline`结合使用(格式不认)
+但是`virsh domcapabilities` 并不能很好的和`virsh cpu-baseline`结合使用(格式不认)
 需要修改下.
 ```
 virsh domcapabilities |xmllint --xpath '//domainCapabilities/cpu/mode[@name="host-model"]' - \
@@ -146,7 +146,7 @@ sed 's/ fallback="forbid"//'
 
 得出的子集如下:
 
-![cpubaseline](./docap_cpu_baseline/cpu-baseline.xml)
+[cpubaseline](./docap_cpu_baseline/cpu-baseline.xml)
 
 将其copy到node1,node2两个节点的 qemu xml中。启动虚拟机，并执行cpuid 做对比, 结果
 如下:
@@ -210,6 +210,7 @@ virsh capabilities |virsh cpu-baseline /dev/stdin
 
 ## 结论
 目前来看，使用`combind virsh domcapabilities and virsh cpu-baseline` 比较靠谱
+
 ## 参考链接
 
 1. [REDHAT 2024 How to use virsh cpu-compare and cpu-baseline to determine the cpu compatibility ?](https://access.redhat.com/solutions/2891431)

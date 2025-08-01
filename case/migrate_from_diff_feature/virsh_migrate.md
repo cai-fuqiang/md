@@ -165,11 +165,8 @@ sed 's/ fallback="forbid"//'
 #define CPUID_VMWARE_FEATURES_LEAF           0x40000010
 ```
 这是一个vmware 半虚拟化features，按照道理不应该在 kvm guest中报告。
-**个人认为是kvm BUG**. 不过这里我们先不关注， 认为两侧features相同
-
-> !!!!!!!!!!!!!
-> !!!遗留问题!!
-> !!!!!!!!!!!!!
+关于这个问题，我们放在另外一篇文章中介绍([文章链接](). 这里我们认为
+两者features相同。暂不关注.
 
 ## cpu model HOST guest virsh capabilities and cpu-baseline
 我们创建一个`host-passthrough`的虚拟机, 然后在虚拟机中安装libvirt，

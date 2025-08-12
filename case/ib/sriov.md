@@ -72,6 +72,34 @@ root@ib02:~# cat /sys/class/infiniband/mlx5_0/device/mlx5_num_vfs
 
 可以看到8个VF
 
+ibstat:
+```
+CA 'mlx5_10'
+        CA type: MT4124
+--
+CA 'mlx5_3'
+        CA type: MT4124
+--
+CA 'mlx5_4'
+        CA type: MT4124
+--
+CA 'mlx5_5'
+        CA type: MT4124
+--
+CA 'mlx5_6'
+        CA type: MT4124
+--
+CA 'mlx5_7'
+        CA type: MT4124
+--
+CA 'mlx5_8'
+        CA type: MT4124
+--
+CA 'mlx5_9'
+        CA type: MT4124
+```
+VF 0 对应 `mlx5_3`
+
 ## 解绑VF 并VFIO透传启动虚拟机
 1. 解绑设备
 ```
@@ -95,6 +123,31 @@ root@ib02:/sys/bus/pci/drivers/vfio-pci# lspci -vvv -s 18:00.1 |grep Kernel
 ```
 
 可以发现已经绑定vfio
+
+4. host 执行ibstat
+```
+root@ib02:~/wangfuqiang49# ibstat |grep -B 1 MT4124
+CA 'mlx5_10'
+        CA type: MT4124
+--
+CA 'mlx5_4'
+        CA type: MT4124
+--
+CA 'mlx5_5'
+        CA type: MT4124
+--
+CA 'mlx5_6'
+        CA type: MT4124
+--
+CA 'mlx5_7'
+        CA type: MT4124
+--
+CA 'mlx5_8'
+        CA type: MT4124
+--
+CA 'mlx5_9'
+        CA type: MT4124
+```
 
 ## 启动虚拟机
 使用下面qemu参数:
@@ -154,6 +207,8 @@ ip a找不到ib卡:
        valid_lft forever preferred_lft forever
 ```
 ib 卡并没有正确被初始化
+
+
 ## 安装最新官方doca驱动
 ```sh
 rpm -ivh doca-host-3.0.0-058000_25.04_rhel94.x86_64.rpm
@@ -205,6 +260,77 @@ CA 'mlx5_0'
                 Port GUID: 0x5c25730300843406
                 Link layer: InfiniBand
 ```
+
+## 修改nodeid, portid
+`/sys/class/infiniband/mlx5_0/device/sriov/`路径下，有各个VF的配置文件:
+```
+root@ib02:/sys/kernel# tree /sys/class/infiniband/mlx5_0/device/sriov/
+/sys/class/infiniband/mlx5_0/device/sriov/
+├── 0
+│   ├── node
+│   ├── policy
+│   └── port
+├── 1
+│   ├── node
+│   ├── policy
+│   └── port
+├── 2
+│   ├── node
+│   ├── policy
+│   └── port
+├── 3
+│   ├── node
+│   ├── policy
+│   └── port
+├── 4
+│   ├── node
+│   ├── policy
+│   └── port
+├── 5
+│   ├── node
+│   ├── policy
+│   └── port
+├── 6
+│   ├── node
+│   ├── policy
+│   └── port
+└── 7
+    ├── node
+    ├── policy
+    └── port
+```
+修改VF0
+```
+cd /sys/class/infiniband/mlx5_0/device/sriov/0
+root@ib02:/sys/class/infiniband/mlx5_0/device/sriov/0# echo 00:11:22:33:44:55:02:01 > node
+root@ib02:/sys/class/infiniband/mlx5_0/device/sriov/0# echo 00:00:00:00:00:00:00:44 > port
+root@ib02:/sys/class/infiniband/mlx5_0/device/sriov/0# cat node
+00:11:22:33:44:55:02:01
+root@ib02:/sys/class/infiniband/mlx5_0/device/sriov/0# cat port
+00:00:00:00:00:00:00:44
+```
+启动虚拟机查看nodeid, portid
+```
+[root@localhost ~]# ibstat
+CA 'mlx5_0'
+        CA type: MT4124
+        Number of ports: 1
+        Firmware version: 20.40.1000
+        Hardware version: 0
+        Node GUID: 0x0011223344550201
+        System image GUID: 0x5c25730300843406
+        Port 1:
+                State: Down
+                Physical state: LinkUp
+                Rate: 200
+                Base lid: 65535
+                LMC: 0
+                SM lid: 10
+                Capability mask: 0xa651ec48
+                Port GUID: 0x0000000000000044
+                Link layer: InfiniBand
+```
+
 ## 参考链接
 1. [NVIDIA MLNX_OFED Documentation Rev 5.8-1.1.2.1 LTS --  Single Root IO Virtualization (SR-IOV)](https://docs.nvidia.com/networking/display/mlnxofedv581121lts/single+root+io+virtualization+(sr-iov))
-
+2. [Savir RDMA 主页](https://www.zhihu.com/people/saviour-li)

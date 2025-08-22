@@ -219,55 +219,599 @@ blk_mq_init_queue
   8 block/blk-mq.c|1858 col 8| kfree(hctx->fq);
 ```
 
-## 猜测
-现在有两种猜测:
-1. cbd 模块可能会修改 hctx->fq
-2. 内存踩踏(比较意外的是，hctx中的其他成员看起来都正常)
+## hctx中还有其他的成员不一致
 
-## search 该内存
 ```
-crash> search 0xffff87c5eafa5600
-ffff88051fb73808: ffff87c5eafa5600
-ffff88051fb73850: ffff87c5eafa5600
-ffff88051fb73968: ffff87c5eafa5600
-ffff88051fb739b0: ffff87c5eafa5600
-ffff88051fb73bb0: ffff87c5eafa5600
-ffff88051fb73bf8: ffff87c5eafa5600
-ffff8806121842a0: ffff87c5eafa5600
-```
-前面的都是堆栈，只有最后一个是`slab`
-
-## 附录
-查看`set->ops->init_request`
-```
-crash> struct request_queue.tag_set ffff88359b2eac10
-  tag_set = 0xffffc90050001108
-crash> struct blk_mq_tag_set.ops 0xffffc90050001108
-  ops = 0xffffffffc0a21060
-crash> struct blk_mq_ops 0xffffffffc0a21060
-struct blk_mq_ops {
-  queue_rq = 0xffffffffc0a1cc00,
-  map_queue = 0xffffffff8130ab30 <blk_mq_map_queue>,
-  {
-    timeout = 0x0,
-    __UNIQUE_ID_rh_kabi_hide39 = {
-      timeout = 0x0
+crash> struct blk_mq_hw_ctx.fq,nr_ctx,ctxs,kobj 0xffff880612184000
+  fq = 0xffff87c5eafa5600
+  nr_ctx = 80
+  ctxs = 0xffff882f806ea000
+  kobj = {
+    name = 0xffff8803cf7dd8c8 "h\330}\317\003\210\377\377\070\322}\317\003\210\377\377`\332}\317\003\210\377\377\310\332}\317\003\210\377\377\310\335}\317\003\210\377\377\300\325}\317\003\210\377\377h\326}\317\003\210\377\377(\322}\317\003\210\377\377\070\323}\317\003\210\377\377",
+    entry = {
+      next = 0xffff8806121841c0,
+      prev = 0xffff8806121841c0
     },
-    {<No data fields>}
-  },
-  complete = 0x0,
-  init_request = 0xffffffffc0a19060,
-  exit_request = 0x0,
-  reinit_request = 0x0,
-  map_queues = 0x0,
-  init_hctx = 0xffffffffc0a19010,
-  exit_hctx = 0x0
+    parent = 0x0,
+    kset = 0x0,
+    ktype = 0xffffffff81ac0aa0 <blk_mq_hw_ktype>,
+    sd = 0x0,
+    kref = {
+      refcount = {
+        counter = 0
+      }
+    },
+    state_initialized = 1,
+    state_in_sysfs = 0,
+    state_add_uevent_sent = 0,
+    state_remove_uevent_sent = 0,
+    uevent_suppress = 0
+  }
+```
+其中`kobj.name`是一个kmalloc-8的free object
+```
+crash> kmem 0xffff8803cf7dd8c8
+CACHE            NAME                 OBJSIZE  ALLOCATED     TOTAL  SLABS  SSIZE
+ffff88017fc07e00 kmalloc-8                  8      53826    195072    381     4k
+  SLAB              MEMORY            NODE  TOTAL  ALLOCATED  FREE
+  ffffea000f3df740  ffff8803cf7dd000     0    512         15   497
+  FREE / [ALLOCATED]
+   ffff8803cf7dd8c8  (cpu 32 cache)
+```
+是cpu 32 的cache.
+
+而`ctxs`是一个 `kmalloc-4096`的alloc object.
+
+```
+crash> kmem -S 0xffff882f806ea000
+CACHE            NAME                 OBJSIZE  ALLOCATED     TOTAL  SLABS  SSIZE
+ffff88017fc07300 kmalloc-4096            4096       1777      2856    357    32k
+  SLAB              MEMORY            NODE  TOTAL  ALLOCATED  FREE
+  ffffea00be01ba00  ffff882f806e8000     0      8          6     2
+  FREE / [ALLOCATED]
+  [ffff882f806e8000]
+   ffff882f806e9000
+  [ffff882f806ea000]
+  ^^^^^^^^^^^^^^^^^^
+   ffff882f806eb000
+  [ffff882f806ec000]
+  [ffff882f806ed000]
+  [ffff882f806ee000]
+  [ffff882f806ef000]
+```
+
+## 猜测
+目前怀疑是`hctx  0xffff880612184000` 是`use-after-free`, 搜索该地址
+```
+ffff88002f836490: ffff880612184000
+ffff88002f8364d0: ffff880612184000
+ffff88002f8364f0: ffff880612184000
+ffff88002f836530: ffff880612184000
+...
+
+ffff8801000040b0: ffff880612184000
+ffff8801000040d0: ffff880612184000
+ffff880100004170: ffff880612184000
+ffff880100004190: ffff880612184000
+```
+发现有大量的输出
+
+随便看一个地址, `ffff88002f836490`:
+```
+crash> kmem ffff88002f836490
+CACHE            NAME                 OBJSIZE  ALLOCATED     TOTAL  SLABS  SSIZE
+ffff88017fc07c00 kmalloc-32                32   20798809  23485184  183478     4k
+  SLAB              MEMORY            NODE  TOTAL  ALLOCATED  FREE
+  ffffea0000be0d80  ffff88002f836000     0    128        127     1
+  FREE / [ALLOCATED]
+  [ffff88002f836480]
+
+      PAGE         PHYSICAL      MAPPING       INDEX CNT FLAGS
+ffffea0000be0d80   2f836000                0 ffff88002f836fa0  1 1fffff00000080 slab
+```
+是一个正在申请的`kmalloc-32`
+
+查看该地址:
+```
+ffff88002f836480:  ffff8803c9ea6a20 ffffffff810409f0    j..............
+ffff88002f836490:  ffff880612184000 0000000000000000   .@..............
+                   ^^^^^^^^^^^^^^^^
+ffff88002f8364a0:  ffff880379a0c3e0 ffffffff810409f0   ...y............
+ffff88002f8364b0:  ffff885f3da32c00 0000000000000000   .,.=_...........
+ffff88002f8364c0:  ffff8803c9ea6e20 ffffffff810409f0    n..............
+ffff88002f8364d0:  ffff880612184000 0000000000000000   .@..............
+ffff88002f8364e0:  ffff88002f836700 ffffffff810409f0   .g./............
+ffff88002f8364f0:  ffff880612184000 0000000000000000   .@..............
+                   ^^^^^^^^^^^^^^^^
+ffff88002f836500:  ffff8835a8716160 ffffffff810409f0   `aq.5...........
+ffff88002f836510:  ffff885f3da32c00 0000000000000000   .,.=_...........
+```
+
+发现几乎都是申请的同一种结构, 里面有个符号:`ffffffff810409f0`, 查看该符号，发现
+是`move_myself`
+
+```
+crash> dis ffffffff810409f0 |head -1
+0xffffffff810409f0 <move_myself>:       nopl   0x0(%rax,%rax,1) [FTRACE NOP]
+```
+而该函数会在`__rdtgroup_move_task`中创建 callbak, 然后执行`task_work_add()`.
+```cpp
+static int __rdtgroup_move_task(struct task_struct *tsk,
+                struct rdtgroup *rdtgrp)
+{
+    struct task_move_callback *callback;
+    int ret;
+
+    callback = kzalloc(sizeof(*callback), GFP_KERNEL);
+    if (!callback)
+        return -ENOMEM;
+    callback->work.func = move_myself;
+    callback->rdtgrp = rdtgrp;
+
+    /*
+     * Take a refcount, so rdtgrp cannot be freed before the
+     * callback has been invoked.
+     */
+    atomic_inc(&rdtgrp->waitcount);
+    ret = task_work_add(tsk, &callback->work, true);
+```
+而`task_move_callback`大小为24
+```
+crash> p sizeof(struct task_move_callback)
+$2 = 24
+```
+使用的正好是`kmalloc-32`
+
+rdtgrp的大小是`728`
+```
+crash> p sizeof(struct rdtgroup)
+$3 = 728
+```
+**_和`blk_mq_hw_ctx`使用的是相同的slab!! (kmalloc-1024)_**
+
+而该callbak则会在`task_work_run()`中调用:
+```
+do_exit
+|-> exit_task_work
+    |-> task_work_run()
+
+do_notify_resume
+|-> if thread_info_flags & _TIF_SIGPENDING
+    |-> do_signal
+        |-> get_signal
+            |-> get_signal_to_deliver
+                |-> if unlikely(current->task_works)
+                    \-> task_work_run()
+|-> if thread_info_flags & _TIF_NOTIFY_RESUME
+    |-> tracehook_notify_resume
+        |-> if unlikely(current->task_works)
+            \-> task_work_run()
+```
+简单看下该函数:
+```cpp
+void task_work_run(void)
+{
+    struct task_struct *task = current;
+    struct callback_head *work, *head, *next;
+
+    for (;;) {
+        /*
+         * work->func() can do task_work_add(), do not set
+         * work_exited unless the list is empty.
+         */
+        //==(1)==
+        do {
+            work = ACCESS_ONCE(task->task_works);
+            head = !work && (task->flags & PF_EXITING) ?
+                &work_exited : NULL;
+        } while (cmpxchg(&task->task_works, work, head) != work);
+
+        //==(2)==
+        if (!work)
+            break;
+        /*
+         * Synchronize with task_work_cancel(). It can't remove
+         * the first entry == work, cmpxchg(task_works) should
+         * fail, but it can play with *work and other entries.
+         */
+        raw_spin_unlock_wait(&task->pi_lock);
+        smp_mb();
+
+        /* Reverse the list to run the works in fifo order */
+        //==(3)==
+        head = NULL;
+        do {
+            next = work->next;
+            work->next = head;
+            head = work;
+            work = next;
+        } while (work);
+
+        //==(4)==
+        work = head;
+        do {
+            next = work->next;
+            work->func(work);
+            work = next;
+            cond_resched();
+        } while (work);
+    }
 }
 ```
-dis init_request
+1. 如果进程退出，`task->task_works` 置换为`&work_exited`, 否则置换为NULL
+   置换之后，处理原来`task->task_works`指向的链表
+2. 表示没有任务
+3. 将链表方向置反，作为一个fifo的队列.(`task_work_add()`时，是往head加的, 这样做
+   的好处是, add的时候，效率高)
+4. 处理每一个work
+
+> NOTE !!
+>
+> 这里将链表中的work的func()调用完，`task_work_run()`的任务就完成了，而work的释放
+> 需要在func()中做.
+
+我们再来看下: `move_myself` 函数:
+```cpp
+static void move_myself(struct callback_head *head)
+{
+    struct task_move_callback *callback;
+    struct rdtgroup *rdtgrp;
+
+    callback = container_of(head, struct task_move_callback, work);
+    rdtgrp = callback->rdtgrp;
+
+    /*
+     * If resource group was deleted before this task work callback
+     * was invoked, then assign the task to root group and free the
+     * resource group.
+     */
+    if (atomic_dec_and_test(&rdtgrp->waitcount) &&
+        (rdtgrp->flags & RDT_DELETED)) {
+        current->closid = 0;
+        kfree(rdtgrp);
+    }
+
+    preempt_disable();
+    /* update PQR_ASSOC MSR to make resource group go into effect */
+    intel_rdt_sched_in();
+    preempt_enable();
+
+    kfree(callback);
+}
 ```
-crash> dis 0xffffffffc0a19060
-0xffffffffc0a19060 <cbd_init_request>:  nopl   0x0(%rax,%rax,1) [FTRACE NOP]
-0xffffffffc0a19065 <cbd_init_request+5>:        testb  $0x4,0x8074(%rip)        # 0xffffffffc0a210e0
+`callback`在这个流程中肯定会free, 但是`rdtgrp` 会先查看`rdtgrp->waitcount`的值,
+如果`>=2`, 则不会释放
+
+
+## 还原task_work_list
+我们通过search的方式, 尝试还原下`task_work_list`, 看下其是否还在被占用:
+
+从`ffff88002f836480`开始search
+```
+ffff88058074fe60: ffff88002f836480  -- [kmalloc-32] (allocated)
+ffff883503677780: ffff88058074fe60  -- [kmalloc-32] (allocated)
+ffff88058074f420: ffff883503677780
+ffff880619325be0: ffff88058074f420
+ffff880619325ce0: ffff880619325be0
+ffff8835a4b59220: ffff880619325ce0
+ffff8805b42b9380: ffff8835a4b59220
+ffff8835a4b59540: ffff8805b42b9380
+ffff8805bba50ca0: ffff8835a4b59540
+ffff8805d3a8e3e0: ffff8805bba50ca0
+ffff8804dce89f20: ffff8805d3a8e3e0
+ffff8805edb49780: ffff8804dce89f20
+ffff880607faab60: ffff8805edb49780
+ffff8805e7e457c0: ffff880607faab60
+ffff882f7d92fea0: ffff8805e7e457c0
+ffff8835b52e5680: ffff882f7d92fea0
+ffff8805a0bd2800: ffff8835b52e5680
+...
+
+太麻烦了, 没找完
 ```
 
+这种相当于反向查找链表，太费劲了. 我们执行下面命令查找每个task的`task_works`结构:
+```
+crash> foreach task -R task_works > task_works.txt
+```
+执行下面命令查找`task_works != 0` 的task
+
+```
+[root@A02-R19-I8-70-11BHTP2 ~]# grep -B 1 -E 'task_works = 0x[1-9a-fA-F][0-9a-fA-F]*' task_works.txt
+PID: 1220   TASK: ffff880617aebf40  CPU: 0   COMMAND: "irq/393-mei_me"
+  task_works = 0xffff880604ea3e80,
+--
+PID: 50127  TASK: ffff8806063a0000  CPU: 52  COMMAND: "qemu-kvm"
+  task_works = 0xffff8804daf56220,
+--
+PID: 50233  TASK: ffff8803c4bf0fd0  CPU: 0   COMMAND: "CPU 0/KVM"
+  task_works = 0xffff8804daf56440,
+--
+PID: 50236  TASK: ffff8835193cdee0  CPU: 16  COMMAND: "CPU 1/KVM"
+  task_works = 0xffff8804daf56620,
+--
+PID: 50238  TASK: ffff8835193c8000  CPU: 28  COMMAND: "CPU 2/KVM"
+  task_works = 0xffff8804daf56880,
+--
+PID: 50239  TASK: ffff8835193cbf40  CPU: 18  COMMAND: "CPU 3/KVM"
+  task_works = 0xffff8804daf562a0,
+--
+PID: 50241  TASK: ffff8806158a2f70  CPU: 2   COMMAND: "CPU 4/KVM"
+  task_works = 0xffff8805d87d8a20,
+--
+PID: 50245  TASK: ffff8806158a0fd0  CPU: 4   COMMAND: "CPU 5/KVM"
+  task_works = 0xffff8805d87d8120,
+--
+PID: 50246  TASK: ffff8806158a4f10  CPU: 12  COMMAND: "CPU 6/KVM"
+  task_works = 0xffff8805d87d8ca0,
+--
+PID: 50247  TASK: ffff8806158a0000  CPU: 24  COMMAND: "CPU 7/KVM"
+  task_works = 0xffff8805d87d8b00,
+--
+PID: 50418  TASK: ffff880617fa3f40  CPU: 60  COMMAND: "vnc_worker"
+  task_works = 0xffff8805d87d88a0,
+--
+PID: 127600  TASK: ffff8805d777bf40  CPU: 12  COMMAND: "qemu-kvm"
+  task_works = 0xffff8805c1ffe860,
+--
+PID: 127716  TASK: ffff883553641fa0  CPU: 50  COMMAND: "CPU 1/KVM"
+  task_works = 0xffff8805c1ffe4e0,
+--
+PID: 127717  TASK: ffff880538f6dee0  CPU: 74  COMMAND: "CPU 2/KVM"
+  task_works = 0xffff8805c1ffe260,
+--
+PID: 127718  TASK: ffff8805e22c0000  CPU: 16  COMMAND: "CPU 3/KVM"
+  task_works = 0xffff8805c1ffedc0,
+--
+PID: 127719  TASK: ffff8805e22c2f70  CPU: 22  COMMAND: "CPU 4/KVM"
+  task_works = 0xffff8805c1ffe0c0,
+--
+PID: 127721  TASK: ffff8805e22c6eb0  CPU: 38  COMMAND: "CPU 5/KVM"
+  task_works = 0xffff88022daee940,
+--
+PID: 127725  TASK: ffff8805e22c5ee0  CPU: 34  COMMAND: "CPU 6/KVM"
+  task_works = 0xffff88022daeee80,
+--
+PID: 127726  TASK: ffff88060ed30fd0  CPU: 36  COMMAND: "CPU 7/KVM"
+  task_works = 0xffff8804b395b3a0,
+--
+PID: 128064  TASK: ffff8804c631dee0  CPU: 58  COMMAND: "vnc_worker"
+  task_works = 0xffff8804b395b0e0,
+--
+PID: 133005  TASK: ffff88358abacf10  CPU: 17  COMMAND: "qemu-kvm"
+  task_works = 0xffff8803ad318c20,
+--
+PID: 133135  TASK: ffff882f807eeeb0  CPU: 77  COMMAND: "CPU 1/KVM"
+  task_works = 0xffff88021eecc2e0,
+--
+PID: 133138  TASK: ffff880230b4eeb0  CPU: 13  COMMAND: "CPU 2/KVM"
+  task_works = 0xffff88021eeccbc0,
+--
+PID: 133139  TASK: ffff880230b4dee0  CPU: 5   COMMAND: "CPU 3/KVM"
+  task_works = 0xffff8803cf23a640,
+--
+PID: 133140  TASK: ffff880230b4cf10  CPU: 35  COMMAND: "CPU 4/KVM"
+  task_works = 0xffff8803cf23aec0,
+--
+PID: 133143  TASK: ffff880230b4bf40  CPU: 3   COMMAND: "CPU 5/KVM"
+  task_works = 0xffff8803cfbebf60,
+--
+PID: 133146  TASK: ffff880230b4af70  CPU: 3   COMMAND: "CPU 6/KVM"
+  task_works = 0xffff8803cfbebe00,
+--
+PID: 133147  TASK: ffff880230b48fd0  CPU: 1   COMMAND: "CPU 7/KVM"
+  task_works = 0xffff8803cfbeb360,
+--
+PID: 133281  TASK: ffff880230b48000  CPU: 51  COMMAND: "vnc_worker"
+  task_works = 0xffff8803cfbebca0,
+```
+我们执行下面命令:
+```
+## 0xffff8804daf56220 为
+## PID: 50127  TASK: ffff8806063a0000  CPU: 52  COMMAND: "qemu-kvm"
+crash> list task_move_callback.work 0xffff8804daf56220 -s task_move_callback > tmp1.txt
+```
+将会得到一个非常非常非常长的链表, 链表靠后的位置, 有大量的`rdgrp = 0xffff880612184000`
+成员:
+```
+## 文件开头
+ffff8804daf56220
+struct task_move_callback {
+  work = {
+    next = 0xffff8803d26ba0c0,
+    func = 0xffffffff810409f0 <move_myself>
+  },
+  rdtgrp = 0xffff88356b615800
+}
+ffff8803d26ba0c0
+struct task_move_callback {
+  work = {
+    next = 0xffff88060a32b020,
+    func = 0xffffffff810409f0 <move_myself>
+  },
+  rdtgrp = 0xffff88356b615800
+}
+
+...
+
+## 文件末尾
+struct task_move_callback {
+  work = {
+    next = 0xffff88036a619d20,
+    func = 0xffffffff810409f0 <move_myself>
+  },
+  rdtgrp = 0xffff880612184000
+}
+ffff88036a619d20
+struct task_move_callback {
+  work = {
+    next = 0xffff8805d32d0f60,
+    func = 0xffffffff810409f0 <move_myself>
+  },
+  rdtgrp = 0xffff880612184000
+}
+ffff8805d32d0f60
+```
+
+目前来看, 有大量的`callback`未被释放.
+
+> NOTE
+>
+> **该链表没打完，文件大小就已经5.x M, slab object 65000+, 说明有大量的slab
+> object残留**
+
+这里肯定是有use-after-free的情况!
+
+但是，是blk-mq use-after-free, 还是rdtgroup use-after-free呢?
+
+从`blk-mq`的代码来看，其资源申请释放流程非常简单！没有use-after-free的代码逻辑存
+在。那么可能就是rdtgroup use-after-free了。
+
+在分析use-after-free之前，我们分析下，为什么会残留大量的`task_remove_callback`
+
+## 为什么不会被释放呢
+
+根据上面的代码可知, 只有`move_myself()`调用才会释放该object, 调用有两条路径:
+* 进程退出(不满足)
+* 接收信号(qemu 在正常运行的情况下，几乎不接收信号)
+* 重新调度(这个有可能，可能qemu进程在长时间休眠)
+
+而下面的路径会一直导致, runtask 增加:
+```
+write resctrl filesystem FILE : tasks
+|-> rdtgroup_tasks_write
+    |-> __rdtgroup_move_task
+        |-> task_work_add()
+```
+只要调用该流程就会导致 `task_move_callback`增加一个.
+
+mail list中[\[bug report\] resctrl high memory comsumption](https://lore.kernel.org/lkml/CALvZod7E9zzHwenzf7objzGKsdBmVwTgEJ0nPgs0LUFU3SN5Pw@mail.gmail.com/)
+
+已经报告了该bug
+
+并在
+```
+commit ae28d1aae48a1258bd09a6f707ebb4231d79a761
+Author: Fenghua Yu <fenghua.yu@intel.com>
+Date:   Thu Dec 17 14:31:18 2020 -0800
+
+    x86/resctrl: Use an IPI instead of task_work_add() to update PQR_ASSOC MSR
+```
+下面代码中进行修复.
+
+> 需要询问其他同事，是否会频繁的write tasks文件
+
+
+## 为什么会use-after-free
+
+这个不好说，查找 kernel patch, 发现
+```
+commit b8511ccc75c033f6d54188ea4df7bf1e85778740
+Author: Xiaochen Shen <xiaochen.shen@intel.com>
+Date:   Thu Jan 9 00:28:03 2020 +0800
+
+    x86/resctrl: Fix use-after-free when deleting resource groups
+```
+
+可能会造成`use-after-free`:
+
+其中提到两个场景, 我们只看一个:
+```
+    Scenario 2:
+    -----------
+    In Thread 1, rdtgroup_tasks_write() adds a task_work callback
+    move_myself(). If move_myself() is scheduled to execute after Thread 2
+    rdtgroup_rmdir() is finished, referring to earlier rdtgrp memory
+    (rdtgrp->waitcount) which was already freed in Thread 2 results in
+    use-after-free issue.
+
+    Thread 1 (rdtgroup_tasks_write)        Thread 2 (rdtgroup_rmdir)
+    -------------------------------        -------------------------
+    rdtgroup_kn_lock_live
+      atomic_inc(&rdtgrp->waitcount)
+      mutex_lock
+    rdtgroup_move_task
+      __rdtgroup_move_task
+        /*
+         * Take an extra refcount, so rdtgrp cannot be freed
+         * before the call back move_myself has been invoked
+         */
+        atomic_inc(&rdtgrp->waitcount)
+        /* Callback move_myself will be scheduled for later */
+        task_work_add(move_myself)
+    rdtgroup_kn_unlock
+      mutex_unlock
+      atomic_dec_and_test(&rdtgrp->waitcount)
+      && (flags & RDT_DELETED)
+                                           rdtgroup_kn_lock_live
+                                             atomic_inc(&rdtgrp->waitcount)
+                                             mutex_lock
+                                           rdtgroup_rmdir_ctrl
+                                             free_all_child_rdtgrp
+                                               /*
+                                                * sentry is freed without
+                                                * checking refcount
+                                                */
+                                               kfree(sentry)*[3]
+                                             rdtgroup_ctrl_remove
+                                               rdtgrp->flags = RDT_DELETED
+                                           rdtgroup_kn_unlock
+                                             mutex_unlock
+                                             atomic_dec_and_test(
+                                                         &rdtgrp->waitcount)
+                                             && (flags & RDT_DELETED)
+                                               kfree(rdtgrp)
+    /*
+     * Callback is scheduled to execute
+     * after rdt_kill_sb is finished
+     */
+    move_myself
+      /*
+       * Use-after-free: refer to earlier rdtgrp
+       * memory which was freed in [3].
+       */
+      atomic_dec_and_test(&rdtgrp->waitcount)
+      && (flags & RDT_DELETED)
+        kfree(rdtgrp)
+```
+触发的顺序是:
+```
+1. thread1 执行 rdtgroup_tasks_write, 初始化`task_move_callback->rdtgroup`,
+   并向该task的task_works添加`task_move_callback`数据结构，
+2. `rdtgroup_rmdir` 释放 rdtgrp
+3. 调用上面的callback，则会造成use-after-free，会modify rdtgrp->waitcount
+```
+
+而这个过程造成的后果是, `rdtgrp->waitcount` 可能会被修改。我们对比下数据结构的
+相关成员偏移:
+```
+crash> struct rdtgroup.waitcount -o
+struct rdtgroup {
+  [676] atomic_t waitcount;
+}
+crash> struct blk_mq_hw_ctx.fq -o
+struct blk_mq_hw_ctx {
+  [672] struct blk_flush_queue *fq;
+}
+```
+<font color=red size=5><strong>
+可以发现, 两个成员在偏移处会重合!!!
+
+从上面调试可知，`task_works`链表会串联很多callback work，所以这里可能会触发很多
+次！从而导致将地址写成一个非法地址！
+
+</strong>
+</font>
+
+但是`x86/resctrl: Use an IPI instead of task_work_add() to update PQR_ASSOC MSR`
+已经删除了原有的逻辑，合入该patch可以解决这两个问题！
+
+## 结论
+
+目前来看，是由rdtgroup 模块use-after-free导致。并且该模块会申请造成大量不必要的`kmalloc-32` 
+slab, 通过`x86/resctrl: Use an IPI instead of task_work_add() to update PQR_ASSOC MSR` patch
+可以解决该问题.
+
+## 相关patch链接
+1. [x86/resctrl: Fix use-after-free when deleting resource groupst](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=b8511ccc75c033f6d54188ea4df7bf1e85778740)
+2. [x86/resctrl: Use an IPI instead of task_work_add() to update PQR_ASSOC MSR](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=ae28d1aae48a1258bd09a6f707ebb4231d79a761)

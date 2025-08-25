@@ -806,6 +806,105 @@ struct blk_mq_hw_ctx {
 但是`x86/resctrl: Use an IPI instead of task_work_add() to update PQR_ASSOC MSR`
 已经删除了原有的逻辑，合入该patch可以解决这两个问题！
 
+
+## 查看qemu 上次运行时间
+查看有问题的task`0xffff8804daf56220`:
+```
+crash> task_struct.se ffff8806063a0000
+  se = {
+    load = {
+      weight = 1024,
+      inv_weight = 4194304
+    },
+    run_node = {
+      __rb_parent_color = 1,
+      rb_right = 0x0,
+      rb_left = 0x0
+    },
+    group_node = {
+      next = 0xffff8806063a0090,
+      prev = 0xffff8806063a0090
+    },
+    on_rq = 0,
+    exec_start = 636632819573610,
+    sum_exec_runtime = 8114142,
+    vruntime = 1300667212,
+    prev_sum_exec_runtime = 8109566,
+    nr_migrations = 1,
+    parent = 0xffff8805b42ea3c0,
+    cfs_rq = 0xffff8805cea65000,
+    my_q = 0x0,
+    avg = {
+      runnable_avg_sum = 2445,
+      runnable_avg_period = 46345,
+      last_runnable_update = 636632819573610,
+      decay_count = 607140370,
+      load_avg_contrib = 53
+    },
+    {
+      statistics = 0xffff8806063a0ed8,
+      __UNIQUE_ID_rh_kabi_hide16 = {
+        rh_reserved1 = 18446612158188490456
+      },
+      {<No data fields>}
+    },
+    rh_reserved2 = 0,
+    rh_reserved3 = 0,
+    rh_reserved4 = 0
+  }
+crash> runq -t -c 6
+ CPU 6: 21567758243841466
+        21567758225355224  PID: 84119  TASK: ffff8804f836eeb0  COMMAND: "cbs-agent"
+```
+
+对比`cpu6 runq -t`和qemu kvm `task_struct.se.exec_start`, 可以发现，`qemu-kvm`进
+程已经很长时间没有运行了.
+```
+crash> p ((21567758243841466-636632819573610)/1000000000/60/60/24)
+$23 = 242
+```
+大约242天，如果10s一次增加`kmalloc-32` object
+大约增加
+
+```
+crash> p ((21567758243841466-636632819573610)/1000000000/10)
+$2 = 2093112
+
+crash> p ((21567758243841466-636632819573610)/1000000000/10*32/1024/1024)
+$24 = 63
+```
+`2093112`object, 大约增加63MB.
+
+查看其task链表成员个数:
+```
+crash> task_struct.task_works ffff8806063a0000
+  task_works = 0xffff8804daf56220
+crash> list 0xffff8804daf56220 |wc -l
+2089194
+```
+其数量级上没有差异(和猜测上少了4000+次，可能是monitor触发频次，没有按照严格的10s
+一次)
+
+另外cpu 13 上存在另外一个 qemu-kvm 的线程`CPU 2/KVM`
+```
+CPU 13: 21567758245281245
+        21567758242684349  PID: 133138  TASK: ffff880230b4eeb0  COMMAND: "CPU 2/KVM"
+```
+该task的`task_works`也存在600+ 链表成员:
+```
+crash> task_struct.task_works ffff880230b4eeb0
+  task_works = 0xffff88021eeccbc0
+crash> list 0xffff88021eeccbc0 |wc -l
+628
+```
+
+这个是为什么呢?
+
+个人猜测, `qemu-kvm`的vcpu thread, 不像其他的用户态进程，其可能会在system space
+以及`VMX-non root operation`下运行很长时间，而不退回到用户态, 这样就导致
+`do_notify_resume`一直得不到执行.
+
+
 ## 结论
 
 目前来看，是由rdtgroup 模块use-after-free导致。并且该模块会申请造成大量不必要的`kmalloc-32` 

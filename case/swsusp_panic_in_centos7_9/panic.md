@@ -639,3 +639,149 @@ e820
 [    0.000000] reserve setup_data: [mem 0x00000000ffc00000-0x00000000ffffffff] reserved
 [    0.000000] reserve setup_data: [mem 0x0000000100000000-0x000000013fffffff] usable
 ```
+
+查看`nosave_regions`
+```
+crash> p &nosave_regions
+$54 = (struct list_head *) 0xffffffff8be5da50
+crash> list nosave_region.list -H 0xffffffff8be5da50 -s nosave_region.start_pfn,end_pfn -x
+ffff92647ff3c000
+  start_pfn = 0xa0
+  end_pfn = 0x100
+ffff92647ff3a340
+  start_pfn = 0x800
+  end_pfn = 0x808
+ffff92647ff3a300
+  start_pfn = 0x80b
+  end_pfn = 0x80c
+ffff92647ff3a2c0
+  start_pfn = 0x810
+  end_pfn = 0x900
+ffff92647ff3a280
+  start_pfn = 0xbd85d
+  end_pfn = 0xbd85e
+ffff92647ff3a240
+  start_pfn = 0xbd866
+  end_pfn = 0xbd867
+ffff92647ff3a200
+  start_pfn = 0xbe142
+  end_pfn = 0xbe143
+ffff92647ff3a1c0
+  start_pfn = 0xbe1e8
+  end_pfn = 0xbe1e9
+ffff92647ff3a180
+  start_pfn = 0xbe675
+  end_pfn = 0xbe6be
+ffff92647ff3a140
+  start_pfn = 0xbeb8a
+  end_pfn = 0xbebcb
+ffff92647ff3a100
+  start_pfn = 0xbf0ed
+  end_pfn = 0xbf3ff
+ffff92647ff3a0c0
+  start_pfn = 0xbfafc
+  end_pfn = 0x100000
+```
+可以发现，问题的地址在`nosaveable page` 里面
+
+查看快照之前的启动:
+```
+20250902-instance kernel: BIOS-e820: [mem 0x0000000000000000-0x000000000009ffff] usable
+Sep 17 16:16:05 20250902-instance kernel: BIOS-e820: [mem 0x0000000000100000-0x00000000007fffff] usable
+Sep 17 16:16:05 20250902-instance kernel: BIOS-e820: [mem 0x0000000000800000-0x0000000000807fff] ACPI NVS
+Sep 17 16:16:05 20250902-instance kernel: BIOS-e820: [mem 0x0000000000808000-0x000000000080afff] usable
+Sep 17 16:16:05 20250902-instance kernel: BIOS-e820: [mem 0x000000000080b000-0x000000000080bfff] ACPI NVS
+Sep 17 16:16:05 20250902-instance kernel: BIOS-e820: [mem 0x000000000080c000-0x000000000080ffff] usable
+Sep 17 16:16:05 20250902-instance kernel: BIOS-e820: [mem 0x0000000000810000-0x00000000008fffff] ACPI NVS
+Sep 17 16:16:05 20250902-instance kernel: BIOS-e820: [mem 0x0000000000900000-0x00000000be128fff] usable
+Sep 17 16:16:05 20250902-instance kernel: BIOS-e820: [mem 0x00000000be129000-0x00000000be129fff] ACPI data
+Sep 17 16:16:05 20250902-instance kernel: BIOS-e820: [mem 0x00000000be12a000-0x00000000be1e7fff] usable
+Sep 17 16:16:05 20250902-instance kernel: BIOS-e820: [mem 0x00000000be1e8000-0x00000000be1e8fff] ACPI data
+Sep 17 16:16:05 20250902-instance kernel: BIOS-e820: [mem 0x00000000be1e9000-0x00000000be674fff] usable
+Sep 17 16:16:05 20250902-instance kernel: BIOS-e820: [mem 0x00000000be675000-0x00000000be6bdfff] reserved
+Sep 17 16:16:05 20250902-instance kernel: BIOS-e820: [mem 0x00000000be6be000-0x00000000beb89fff] usable
+Sep 17 16:16:05 20250902-instance kernel: BIOS-e820: [mem 0x00000000beb8a000-0x00000000bebcafff] reserved
+Sep 17 16:16:05 20250902-instance kernel: BIOS-e820: [mem 0x00000000bebcb000-0x00000000bf0ecfff] usable
+Sep 17 16:16:05 20250902-instance kernel: BIOS-e820: [mem 0x00000000bf0ed000-0x00000000bf36cfff] reserved
+Sep 17 16:16:05 20250902-instance kernel: BIOS-e820: [mem 0x00000000bf36d000-0x00000000bf37efff] ACPI data
+Sep 17 16:16:05 20250902-instance kernel: BIOS-e820: [mem 0x00000000bf37f000-0x00000000bf3fefff] ACPI NVS
+Sep 17 16:16:05 20250902-instance kernel: BIOS-e820: [mem 0x00000000bf3ff000-0x00000000bfafbfff] usable
+Sep 17 16:16:05 20250902-instance kernel: BIOS-e820: [mem 0x00000000bfafc000-0x00000000bfb7ffff] reserved
+Sep 17 16:16:05 20250902-instance kernel: BIOS-e820: [mem 0x00000000bfb80000-0x00000000bfffffff] ACPI NVS
+Sep 17 16:16:05 20250902-instance kernel: BIOS-e820: [mem 0x00000000feffc000-0x00000000feffffff] reserved
+Sep 17 16:16:05 20250902-instance kernel: BIOS-e820: [mem 0x00000000ffc00000-0x00000000ffffffff] reserved
+Sep 17 16:16:05 20250902-instance kernel: BIOS-e820: [mem 0x0000000100000000-0x000000013fffffff] usable
+```
+
+**可以发现整个的e820 变了, 出问题的地址段`0x00000000be142000-0x00000000be142fff` ,
+在上次启动中是`usable` page. 所以导致了这个问题**
+
+### 查看其他的bitmap
+#### be1e8000 ~
+```
+crash> p 0xbe1e8-0xb8001
+$24 = 25063
+crash> p 25063/8
+$25 = 3132
+crash> p 25063%8
+$26 = 7
+crash> p (char *)(0xffff92637d621000+3132)
+$27 = 0xffff92637d621c3c "\200"
+crash> x/1xb 0xffff92637d621c3c
+0xffff92637d621c3c:     0x80
+crash> eval 0x80
+     binary: 0000000000000000000000000000000000000000000000000000000010000000
+```
+#### bf36d000 ~ bf37efff ~ bf3fefff
+```
+crash> p 0xbf36d-0xb8001
+$28 = 29548
+crash> p 29548/8
+$29 = 3693
+crash> p 29548%8
+$30 = 4
+crash> p (char *)(0xffff92637d621000+3693)
+$31 = 0xffff92637d621e6d "\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377?"
+crash> p 0x3ff-0x36d
+$34 = 146
+crash> x/3xg 0xffff92637d621e6d
+0xffff92637d621e6d:     0xffffffffffffffff      0xffffffffffffffff
+0xffff92637d621e7d:     0x00000000003fffff
+```
+所有的`ACPI xxx`都被滞为1.
+
+## 查看一些reserved page
+### be675000 ~ be6bdfff
+```
+crash> p 0xbe675-0xb8001
+$40 = 26228
+crash> p 26228/8
+$41 = 3278
+crash> p 26228%8
+$42 = 4
+crash> p 0x6be-0x675
+$44 = 73
+crash> p (char *)(0xffff92637d621000+3278)
+$45 = 0xffff92637d621cce "\360\377\377\377\377\377\377\377\377\037"
+crash> x/2xg 0xffff92637d621cce
+0xffff92637d621cce:     0xfffffffffffffff0      0x0000000000001fff
+crash> p (1<<13)-1
+$50 = 8191
+crash> eval 8191
+hexadecimal: 1fff
+    decimal: 8191
+      octal: 17777
+     binary: 0000000000000000000000000000000000000000000000000001111111111111
+crash> x/20xg (0xffff92637d621cce-8*10)
+0xffff92637d621c7e:     0x0000000000000000      0x0000000000000000
+0xffff92637d621c8e:     0x0000000000000000      0x0000000000000000
+0xffff92637d621c9e:     0x0000000000000000      0x0000000000000000
+0xffff92637d621cae:     0x0000000000000000      0x0000000000000000
+0xffff92637d621cbe:     0x0000000000000000      0x0000000000000000
+0xffff92637d621cce:     0xfffffffffffffff0      0x0000000000001fff
+0xffff92637d621cde:     0x0000000000000000      0x0000000000000000
+0xffff92637d621cee:     0x0000000000000000      0x0000000000000000
+0xffff92637d621cfe:     0x0000000000000000      0x0000000000000000
+0xffff92637d621d0e:     0x0000000000000000      0x0000000000000000
+```
+可以发现，reserved 被精准定位了. 

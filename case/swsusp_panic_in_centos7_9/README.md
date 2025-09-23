@@ -716,6 +716,114 @@ Sep 17 16:16:05 20250902-instance kernel: BIOS-e820: [mem 0x0000000100000000-0x0
 **可以发现整个的e820 变了, 出问题的地址段`0x00000000be142000-0x00000000be142fff` ,
 在上次启动中是`usable` page. 所以导致了这个问题**
 
+## 必现方法
+目前在centos7 和 openeuler2403-sp1 可以通过下面方法必现:
+* 关机
+* 重启
+* 执行suspend
+* 开机
+
+打印出的e820的差异如下:
+```
+[root@20250923-wangfuqiang49-swsusp ~]# diff bios_e820.txt bios_reboot.txt
+8,12c8,12
+< [    0.000000] BIOS-e820: [mem 0x0000000000900000-0x00000000bdb01fff] usable
+< [    0.000000] BIOS-e820: [mem 0x00000000bdb02000-0x00000000bdb03fff] ACPI data
+< [    0.000000] BIOS-e820: [mem 0x00000000bdb04000-0x00000000be128fff] usable
+< [    0.000000] BIOS-e820: [mem 0x00000000be129000-0x00000000be129fff] ACPI data
+< [    0.000000] BIOS-e820: [mem 0x00000000be12a000-0x00000000be1e7fff] usable
+---
+> [    0.000000] BIOS-e820: [mem 0x0000000000900000-0x00000000bdb3cfff] usable
+> [    0.000000] BIOS-e820: [mem 0x00000000bdb3d000-0x00000000bdb3efff] ACPI data
+> [    0.000000] BIOS-e820: [mem 0x00000000bdb3f000-0x00000000be141fff] usable
+> [    0.000000] BIOS-e820: [mem 0x00000000be142000-0x00000000be142fff] ACPI data
+> [    0.000000] BIOS-e820: [mem 0x00000000be143000-0x00000000be1e7fff] usable
+```
+
+下面展示了openeuler 2403 sp1 的情况
+## 测试较新版本内核(openeuler)
+
+测试流程:
+1. 开机后，准备swsusp 相关配置项目
+   + 生成swapfile(fallcate分配)
+   + `filefrag -v`, 查看swapfile所在盘的offset
+   + 配置kernel cmdline 增加`resume=UUID=xxxxx resume_offset=xxxx`
+2. 关机
+3. 启动
+4. 启动后，记录`BIOS-e820`打印
+5. 执行`echo disk > /sys/power/state`, 执行 `hibernate` 操作
+6. 执行开机步骤
+
+没有panic，但会有如下打印:
+```
+[    2.525984] PM: hibernation: Marking nosave pages: [mem 0xbfafc000-0xffffffff]
+[    2.526622] PM: hibernation: Basic memory bitmaps created
+[    2.579642] PM: Using 1 thread(s) for decompression
+[    2.580274] PM: Loading and decompressing image data (129636 pages)...
+[    2.581048] Hibernate inconsistent memory map detected!
+[    2.581686] PM: hibernation: Image mismatch: architecture specific data
+[    2.582449] PM: hibernation: Read 518544 kbytes in 0.01 seconds (51854.40 MB/s)
+[    2.583597] PM: Error -1 resuming
+[    2.583603] PM: hibernation: Failed to load image, recovering.
+[    2.584372] PM: hibernation: Basic memory bitmaps freed
+[    2.584413] OOM killer enabled.
+[    2.584841] Restarting tasks ... done.
+[    2.601549] PM: hibernation: resume failed (-1)
+```
+比较重要的打印是:
+```
+Hibernate inconsistent memory map detected!
+```
+代码为:
+```cpp
+arch_hibernation_header_restore
+|-> if (rdr->e820_checksum != compute_e820_crc32(e820_table_firmware))
+    |-> pr_crit("Hibernate inconsistent memory map detected!\n")
+    |-> return -ENODEV
+```
+可以看到，在image header中，增加了e820_checksum, 记录 hibernate 之前的 e820的
+crc32, 并和本次e820_table 做对比，如果不一样，则报错。从而避免panic。
+
+但是无论如何，resume失败了！
+
+
+## 测试bios启动
+bios 启动报告的e820没有acpi相关内存:
+```
+[    0.000000] BIOS-e820: [mem 0x0000000000000000-0x000000000009fbff] usable
+[    0.000000] BIOS-e820: [mem 0x000000000009fc00-0x000000000009ffff] reserved
+[    0.000000] BIOS-e820: [mem 0x00000000000f0000-0x00000000000fffff] reserved
+[    0.000000] BIOS-e820: [mem 0x0000000000100000-0x00000000bffd9fff] usable
+[    0.000000] BIOS-e820: [mem 0x00000000bffda000-0x00000000bfffffff] reserved
+[    0.000000] BIOS-e820: [mem 0x00000000feffc000-0x00000000feffffff] reserved
+[    0.000000] BIOS-e820: [mem 0x00000000fffc0000-0x00000000ffffffff] reserved
+[    0.000000] BIOS-e820: [mem 0x0000000100000000-0x000000043fffffff] usable
+```
+nosaveable memory:
+```
+[    0.000000] PM: Registered nosave memory: [mem 0x0009f000-0x0009ffff]
+[    0.000000] PM: Registered nosave memory: [mem 0x000a0000-0x000effff]
+[    0.000000] PM: Registered nosave memory: [mem 0x000f0000-0x000fffff]
+[    0.000000] PM: Registered nosave memory: [mem 0xbffda000-0xbfffffff]
+[    0.000000] PM: Registered nosave memory: [mem 0xc0000000-0xfeffbfff]
+[    0.000000] PM: Registered nosave memory: [mem 0xfeffc000-0xfeffffff]
+[    0.000000] PM: Registered nosave memory: [mem 0xff000000-0xfffbffff]
+[    0.000000] PM: Registered nosave memory: [mem 0xfffc0000-0xffffffff]
+```
+
+重启之后，还是上面的值
+```
+[root@20250923-wangfuqiang49-bios-centos7 ~]# diff bios_reboot.txt bios_poweroff.txt
+[root@20250923-wangfuqiang49-bios-centos7 ~]#
+```
+测试bios 模式下，reboot 然后，hibernate 可以成功.
+
+## 结论
+
+该问题是由于guest执行reboot操作导致e820 table变了，通过限制镜像为bios 启动可以解
+决。
+
+## 其他操作
 ### 查看其他的bitmap
 #### be1e8000 ~
 ```
@@ -750,8 +858,8 @@ crash> x/3xg 0xffff92637d621e6d
 ```
 所有的`ACPI xxx`都被滞为1.
 
-## 查看一些reserved page
-### be675000 ~ be6bdfff
+### 查看一些reserved page
+#### be675000 ~ be6bdfff
 ```
 crash> p 0xbe675-0xb8001
 $40 = 26228

@@ -176,6 +176,64 @@ bridge 并未开启`ARI forward`
         "AriForward": "Disabled",
 ```
 
+## 带有`ARI forward` 环境举例
+```
+04:00.0 Infiniband controller: Mellanox Technologies MT28908 Family [ConnectX-6]
+04:00.1 Infiniband controller: Mellanox Technologies MT28908 Family [ConnectX-6 Virtual Function]
+04:00.2 Infiniband controller: Mellanox Technologies MT28908 Family [ConnectX-6 Virtual Function]
+04:00.3 Infiniband controller: Mellanox Technologies MT28908 Family [ConnectX-6 Virtual Function]
+04:00.4 Infiniband controller: Mellanox Technologies MT28908 Family [ConnectX-6 Virtual Function]
+04:00.5 Infiniband controller: Mellanox Technologies MT28908 Family [ConnectX-6 Virtual Function]
+04:00.6 Infiniband controller: Mellanox Technologies MT28908 Family [ConnectX-6 Virtual Function]
+04:00.7 Infiniband controller: Mellanox Technologies MT28908 Family [ConnectX-6 Virtual Function]
+04:01.0 Infiniband controller: Mellanox Technologies MT28908 Family [ConnectX-6 Virtual Function]
+04:01.1 Infiniband controller: Mellanox Technologies MT28908 Family [ConnectX-6 Virtual Function]
+04:01.2 Infiniband controller: Mellanox Technologies MT28908 Family [ConnectX-6 Virtual Function]
+04:01.3 Infiniband controller: Mellanox Technologies MT28908 Family [ConnectX-6 Virtual Function]
+04:01.4 Infiniband controller: Mellanox Technologies MT28908 Family [ConnectX-6 Virtual Function]
+04:01.5 Infiniband controller: Mellanox Technologies MT28908 Family [ConnectX-6 Virtual Function]
+04:01.6 Infiniband controller: Mellanox Technologies MT28908 Family [ConnectX-6 Virtual Function]
+04:01.7 Infiniband controller: Mellanox Technologies MT28908 Family [ConnectX-6 Virtual Function]
+84:00.0 Infiniband controller: Mellanox Technologies MT28908 Family [ConnectX-6]
+84:00.1 Infiniband controller: Mellanox Technologies MT28908 Family [ConnectX-6 Virtual Function]
+84:00.2 Infiniband controller: Mellanox Technologies MT28908 Family [ConnectX-6 Virtual Function]
+84:00.3 Infiniband controller: Mellanox Technologies MT28908 Family [ConnectX-6 Virtual Function]
+84:00.4 Infiniband controller: Mellanox Technologies MT28908 Family [ConnectX-6 Virtual Function]
+84:00.5 Infiniband controller: Mellanox Technologies MT28908 Family [ConnectX-6 Virtual Function]
+84:00.6 Infiniband controller: Mellanox Technologies MT28908 Family [ConnectX-6 Virtual Function]
+84:00.7 Infiniband controller: Mellanox Technologies MT28908 Family [ConnectX-6 Virtual Function]
+84:01.0 Infiniband controller: Mellanox Technologies MT28908 Family [ConnectX-6 Virtual Function]
+84:01.1 Infiniband controller: Mellanox Technologies MT28908 Family [ConnectX-6 Virtual Function]
+84:01.2 Infiniband controller: Mellanox Technologies MT28908 Family [ConnectX-6 Virtual Function]
+84:01.3 Infiniband controller: Mellanox Technologies MT28908 Family [ConnectX-6 Virtual Function]
+84:01.4 Infiniband controller: Mellanox Technologies MT28908 Family [ConnectX-6 Virtual Function]
+84:01.5 Infiniband controller: Mellanox Technologies MT28908 Family [ConnectX-6 Virtual Function]
+84:01.6 Infiniband controller: Mellanox Technologies MT28908 Family [ConnectX-6 Virtual Function]
+84:01.7 Infiniband controller: Mellanox Technologies MT28908 Family [ConnectX-6 Virtual Function]
+```
+可以看到，`04:00.0` 和 `84:00.0`两个ib卡，均已分出了超过8个VF
+
+查看这两个所在的tree
+```
+[root@6-25-33-131 11:36:02 ~]# lspci -t -s 04:00.0
+-[0000:00]---03.0-[04]----00.0
+[root@6-25-33-131 11:36:15 ~]# lspci -t -s 84:00.0
+-[0000:80]---02.0-[84]----00.0
+```
+查看这两个bridge是否有ari fwd feature enable
+```
+[root@6-25-33-131 11:36:56 ~]# lspci -vvv -s 00:03.0 |grep -i ari
+        BridgeCtl: Parity- SERR+ NoISA- VGA- VGA16+ MAbort- >Reset- FastB2B-
+                         FRS- LN System CLS Not Supported, TPHComp+ ExtTPHComp- ARIFwd+
+                DevCtl2: Completion Timeout: 50us to 50ms, TimeoutDis- LTR- 10BitTagReq- OBFF Disabled, ARIFwd+
+[root@6-25-33-131 11:36:59 ~]# lspci -vvv -s 80:02.0 |grep -i ari
+        BridgeCtl: Parity- SERR+ NoISA- VGA- VGA16+ MAbort- >Reset- FastB2B-
+                         FRS- LN System CLS Not Supported, TPHComp+ ExtTPHComp- ARIFwd+
+                DevCtl2: Completion Timeout: 50us to 50ms, TimeoutDis- LTR- 10BitTagReq- OBFF Disabled, ARIFwd+
+```
+
+可以看到都有.
+
 ## 参考链接
 1. [【PCIe】PCIe ARI介绍](https://zhuanlan.zhihu.com/p/690179350)
 2. [PCIe扫盲——TLP路由之ID Routing](https://blog.chinaaet.com/justlxy/p/5100053324)

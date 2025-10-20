@@ -66,15 +66,30 @@ So it seems like the hv period timer has been stopped.
 
 1. use following BPF scripts to track sw timer(hrtimer callback):
    ```
+   kprobe:advance_periodic_target_expiration
+   {
+       @all_count++;
+   }
+   
+   
    kprobe:apic_timer_fn
    {
-       @count++;
+       @sw_timer_count++;
+   }
+   
+   kprobe:kvm_lapic_expired_hv_timer
+   {
+       @hv_timer_count++;
    }
    
    interval:s:1
    {
-       printf("apic_timer_fn called %d times in the last second\n", @count);
-       @count = 0;
+       printf("all_count %d \t", @all_count);
+       printf("hv_timer  %d \t", @hv_timer_count);
+       printf("sw_timer  %d \n", @sw_timer_count);
+       @all_count = 0;
+       @sw_timer_count = 0;
+       @hv_timer_count = 0;
    }
    ```
    and start
@@ -86,17 +101,25 @@ So it seems like the hv period timer has been stopped.
    ```
 bpftrace scripts print:
 ```
-apic_timer_fn called 0 times in the last second
-apic_timer_fn called 0 times in the last second
-apic_timer_fn called 0 times in the last second
-
-//===(1)===
-apic_timer_fn called 50681 times in the last second
-apic_timer_fn called 4768 times in the last second
-apic_timer_fn called 4769 times in the last second
-apic_timer_fn called 4768 times in the last second
-apic_timer_fn called 4768 times in the last second
-apic_timer_fn called 4769 times in the last second
+all_count 4768  hv_timer  4768  sw_timer  0
+all_count 4768  hv_timer  4768  sw_timer  0
+//==suspend
+all_count 910   hv_timer  910   sw_timer  0
+all_count 0     hv_timer  0     sw_timer  0
+all_count 0     hv_timer  0     sw_timer  0
+all_count 0     hv_timer  0     sw_timer  0
+all_count 0     hv_timer  0     sw_timer  0
+all_count 0     hv_timer  0     sw_timer  0
+all_count 0     hv_timer  0     sw_timer  0
+all_count 0     hv_timer  0     sw_timer  0
+all_count 0     hv_timer  0     sw_timer  0
+all_count 0     hv_timer  0     sw_timer  0
+//==resume ==(1)==
+all_count 51543         hv_timer  1     sw_timer  51541
+all_count 4768  hv_timer  0     sw_timer  4768
+all_count 4768  hv_timer  0     sw_timer  4768
+all_count 4769  hv_timer  0     sw_timer  4769
+all_count 4768  hv_timer  0     sw_timer  4768
 ```
 
 At time point 1, the system processed the number of period timer expirations
@@ -136,7 +159,40 @@ crash> struct kvm_lapic.lapic_timer.target_expiration,lapic_timer.tscdeadline,la
 ```
 When the qemu task is stopped, the hv timer is also stopped at the same time.
 
+> NOTE
+>
+> use
+> ```
+> virsh suspend $vm_name && sleep 10 && virsh resume $vm_name
+> ```
+> can get same test results.
+
+## merge patch set
+
+When we merge patch [3], we can get the following test results.
+
+```
+all_count 4768  hv_timer  4768  sw_timer  0
+all_count 4248  hv_timer  4248  sw_timer  0
+all_count 0     hv_timer  0     sw_timer  0
+all_count 0     hv_timer  0     sw_timer  0
+all_count 0     hv_timer  0     sw_timer  0
+all_count 0     hv_timer  0     sw_timer  0
+all_count 0     hv_timer  0     sw_timer  0
+all_count 0     hv_timer  0     sw_timer  0
+all_count 0     hv_timer  0     sw_timer  0
+all_count 0     hv_timer  0     sw_timer  0
+all_count 0     hv_timer  0     sw_timer  0
+all_count 344   hv_timer  344   sw_timer  0
+all_count 4768  hv_timer  4768  sw_timer  0
+all_count 4768  hv_timer  4768  sw_timer  0
+```
+
+As can be seen, after sleep and wake-up, the accumulation of period timer
+callback processing did not occur.
+
 ## Reference Link
 
 1. [\[PATCH\] KVM: x86: fix hardlockup due to LAPIC hrtimer period drift](https://lore.kernel.org/kvm/YgahsSubOgFtyorl@fuller.cnet/)
 2. [kvm-unit-test keep period timers on](https://github.com/cai-fuqiang/kvm-unit-tests/tree/loop_period_timer)
+3. [Patch]()

@@ -123,13 +123,32 @@ service用来串联各个服务，最终使得整个的系统处于一个一致�
 
 将插入间隔由1s修改为0.1s, 也可以正常恢复。
 
-**另外，如果将sql writer 服务停止，也能正常恢复, 这样通过
-阿里云的示例不太确定VSS sql server writer是否在正常工作，
-需要和aliyun的实现对下**
+**另外，如果将sql writer 服务停止，也能正常恢复, 但是恢复后
+sqlserver并未回到保存快照时是的状态, 通过查询SqlServerLogger.txt
+日志文件, 似乎并未查找到相关的备份sqlserver rwriters的日志[]:**
 
-但是无论如何，文件系统一致性，VSS按照现在的测试是可以实现的。
+> 下面是如果使用了sqlserver writer，将会有如下打印，但是在本次测试
+> 中没有找到相关打印:
+> ```
+> [01/11/2021 02:33:33, TID 232c] Skip User Instances Enumeration
+> [01/11/2021 02:33:37, TID 232c] Entering SQL Writer OnPrepareBackup.
+> [01/11/2021 02:33:37, TID 232c] ****************************************************************
+> [01/11/2021 02:33:37, TID 232c] **  VSS SQL BACKUP BEGIN - ID: 232c
+> [01/11/2021 02:33:37, TID 232c] ****************************************************************
+> ```
 
-具体流程不再截图。
+我们来测试下更复杂的`diskshadow`命令
+
+## diskshadow
+
+<!--
+ ### 命令介绍
+ 
+ `diskshadow`命令比较复杂, 我们简单列举下常用的
+ * list shadow
+-->
+
+我们先用`diskshadow`命令，查看
 
 ## TODO
 
@@ -141,4 +160,4 @@ service用来串联各个服务，最终使得整个的系统处于一个一致�
 3. [vssadmin](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/vssadmin)
 4. [Diskshadow](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/diskshadow)
 5. [【必成功】最新版 SQL Server 下载安装详细教程](https://www.bilibili.com/video/BV1Si421U7PR/)
-
+6. [SQL Writer service](https://learn.microsoft.com/en-us/sql/database-engine/configure-windows/sql-writer-service?view=sql-server-ver17)

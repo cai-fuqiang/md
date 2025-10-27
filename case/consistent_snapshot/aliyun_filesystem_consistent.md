@@ -248,6 +248,8 @@ time="2025-10-27 13:47:33.070031507" level=info msg="Finish whole Processes of S
 
 ### 约束
 
+#### 不能将同一硬盘挂载到两个目录
+
 当我们将`/dev/nvme1n1p1`挂载到两个路径时，
 ```
 [root@iZ2zej48nvay43y5f66hlfZ /]# mount /dev/nvme1n1p1 /mnt2/
@@ -292,6 +294,35 @@ time="2025-10-27 14:09:44.426122386" level=error msg="All attached ESSD Disks we
 ```
 
 并未有什么有价值打印. 怀疑和多挂载点有关。但是日志没有做好。
+
+#### 当选择某几个硬盘做快照时，frozen所有硬盘
+
+创建一个实例，有三个盘，两个数据盘，一个系统盘.给两个数据盘创建快照:
+
+![aliyun_snapshot_two_data_disk](pic/aliyun_snapshot_two_data_disk.png)
+
+结果三个盘都frozen了:
+```
+[root@iZ2zeaod5gslt1xw4j7nfoZ 1.8]# cat log/app_snapshot_plugin.log.20251027.5 |grep -E 'freezing|Thaw'
+time="2025-10-27 15:32:30.514272608" level=info msg="2025-10-27 15:32:29 freezing: /"
+time="2025-10-27 15:32:30.514282724" level=info msg="2025-10-27 15:32:29 freezing: /mnt2"
+time="2025-10-27 15:32:30.514292697" level=info msg="2025-10-27 15:32:29 freezing: /mnt"
+time="2025-10-27 15:32:30.51432347" level=info msg="2025-10-27 15:32:30 ############ 5. Filesystem Thaw Received "
+time="2025-10-27 15:32:30.514333752" level=info msg="2025-10-27 15:32:30 Thawing: /mnt"
+time="2025-10-27 15:32:30.51434341" level=info msg="2025-10-27 15:32:30 Thawing: /mnt2"
+time="2025-10-27 15:32:30.514353054" level=info msg="2025-10-27 15:32:30 Thawing: /"
+time="2025-10-27 15:32:30.659631972" level=info msg="Prepare Freeze=16.606892ms, Thaw cost=977.311µs, Snapshot Creation=998.907861ms, Tag Resources=145.081685ms"
+```
+
+但是阿里这边能够找到，哪个盘没有标记制作快照:
+```
+[root@iZ2zeaod5gslt1xw4j7nfoZ 1.8]# cat log/app_snapshot_plugin.log.20251027.5  |grep Exclude
+time="2025-10-27 15:32:29.137528309" level=info msg="Runtime Args: [--RamRoleName=consistent-snapshot -EnableFsFreeze=true -TimeoutInSeconds=30 -PreScriptPath=/tmp/prescript.sh -PostScriptPath=/tmp/postscript.sh -ExcludeDiskId=d-2zeaod5gslt1xw4noek8 -Name=Created_At_202510271532]"
+time="2025-10-27 15:32:29.17208288" level=info msg="ExcludeDiskId: [d-2zeaod5gslt1xw4noek8]"
+time="2025-10-27 15:32:29.28167274" level=info msg="Excluded DiskId=d-2zeaod5gslt1xw4noek8, Device=/dev/xvda, Category=cloud_essd_entry"
+```
+
+但是在暂停的时候，却选择让所有盘暂停，不知道是不是BUG .
 
 ## TODO
 * 测试fsfroze 能否保证xfs事务完整

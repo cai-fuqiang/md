@@ -141,18 +141,91 @@ sqlserver并未回到保存快照时是的状态, 通过查询SqlServerLogger.tx
 
 ## diskshadow
 
-<!--
- ### 命令介绍
- 
- `diskshadow`命令比较复杂, 我们简单列举下常用的
- * list shadow
--->
+### 命令介绍
+`diskshadow`命令比较复杂, 我们简单列举下常用的
+* list
+  + list writers
+  + shadows
+  + providersg
+* add: 将卷加入到本次创建的备份集中
+* writer
+  + exclude: 表示在创建备份过程中，排除哪些writers
+* set context:
+  + persistent: 指在程序退出重置，或重新启动时，该卷影副本是持续的
+  + persistent nowriters: 在上面的基础上，排除所有writers 
+  + volatile: 指在退出或重置时，删除卷影副本
+  + volatile nowriters: 在上面基础上，排除所有writers
 
-我们先用`diskshadow`命令，查看
+* revert + shadow ID
+  + 恢复盘
 
-## TODO
+> NOTE
+>
+> 我们来看下用`vssadmin`创建的卷影副本是啥样的:
+>
+> ![vssadmin_create_vss](pic/vssadmin_create_vss.png)>
+>
+> 可以看到里面配置了nowriters!
 
-* 调研diskshadow
+
+### 简单测试
+
+1. 使用上面的sql 语句插入数据
+2. 使用下面脚本执行 create snapshot:
+
+   ```
+   set context persistent
+   set verbose on
+
+   begin backup
+   add volume E:
+   create
+   end backup
+   ```
+
+   执行
+   ```
+   diskshadow /s C:/diskshadow_create.txt
+   ```
+
+   输出如下:
+
+   ![diskshadow_create_log1](pic/diskshadow_create_log1.png)
+
+   sqlserver writer 日志如下，可以看到有VSS backup 相关字眼, 说明使用了writer
+
+   ![diskshadow_create_sqlserverwriter_log](pic/diskshadow_create_sqlserverwriter_log.png)
+
+3. 重启，重启后，通过`vssadmin list shadows` 可以看到我们刚刚保存的shadows. 
+4. 通过sql语句查询, 可以发现数据库中的条目时间比快照时间晚
+
+   ![vssadmin_list_shadows_create_by_diskshadow](pic/vssadmin_list_shadows_create_by_diskshadow.png)
+5. 执行 diskshadow脚本
+   ```
+   revert "{shadow_id}"
+   ```
+   恢复卷
+6. 此时如果查询表，发现跟步骤4 中的信息一样.
+7. 重启节点，再次查询:
+
+   ![diskshadow_after_revert_sql_select](pic/diskshadow_after_revert_sql_select.png)
+
+   发现可以和快照对上。
+
+## 结论
+1. 使用`diskshadow`命令可以设置启用writer或者关闭writer
+2. 无论什么方式，revert时，要在sqlserver关闭的情况下使用。在<sup>7</sup>中提到:
+   ```
+   ## Restore files
+
+   This is purely a requestor-specific action. It's the responsibility of the
+   requestor (backup application) to copy the needed database files (or copy
+   relevant ranges of data for differential restores) to the appropriate places.
+   The SQL writer isn't involved in this operation. 
+   ```
+
+   大概的意思是writer不管文件覆盖的操作
+
 
 ## 参考链接
 1. [aliyun 一致性快照组](https://help.aliyun.com/zh/ecs/user-guide/snapshot-consistency-group-overview/?spm=5176.21213303.J_ZGek9Blx07Hclc3Ddt9dg.1.35d02f3dzVnCWQ&scm=20140722.S_help@@%E6%96%87%E6%A1%A3@@2841384._.ID_help@@%E6%96%87%E6%A1%A3@@2841384-RL_%E4%B8%80%E8%87%B4%E6%80%A7%E5%BF%AB%E7%85%A7-LOC_2024SPAllResult-OR_ser-PAR1_2150427a17604116337564634ef571-V_4-PAR3_o-RE_new5-P0_0-P1_0)
@@ -161,3 +234,4 @@ sqlserver并未回到保存快照时是的状态, 通过查询SqlServerLogger.tx
 4. [Diskshadow](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/diskshadow)
 5. [【必成功】最新版 SQL Server 下载安装详细教程](https://www.bilibili.com/video/BV1Si421U7PR/)
 6. [SQL Writer service](https://learn.microsoft.com/en-us/sql/database-engine/configure-windows/sql-writer-service?view=sql-server-ver17)
+7. [SQL Server backup applications - Volume Shadow Copy Service (VSS) and SQL Writer](https://learn.microsoft.com/en-us/sql/relational-databases/backup-restore/sql-server-vss-writer-backup-guide?view=sql-server-ver17)

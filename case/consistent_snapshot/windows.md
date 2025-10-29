@@ -227,6 +227,97 @@ sqlserver并未回到保存快照时是的状态, 通过查询SqlServerLogger.tx
    大概的意思是writer不管文件覆盖的操作
 
 
+## aliyun windows应用一致性快照云助手日志
+```
+[level="info"][time="2025-10-28 13:49:31.8273564"][message="Version 1.0.0.8"]
+[level="info"][time="2025-10-28 13:49:31.8997783"][message="InstanceID= i-2zeia5m507dzz83pqtnf RegionID= cn-beijing ProductNetwork= vpc"]
+[level="info"][time="2025-10-28 13:49:31.9263982"][message="Windows Server MajorVersion=10, MinorVersion=0, ProductType=3"]
+[level="info"][time="2025-10-28 13:49:31.9278975"][message="Begin to Create Application Consistent Snapshots ..."]
+[level="info"][time="2025-10-28 13:49:32.0883888"][message="Network connection RequestId= 26323335-EC3E-51BF-B4C4-56625B18FAC2, timeCost=157.4143ms"]
+[level="info"][time="2025-10-28 13:49:32.0883888"][message="Attached DiskId=d-2zeia5m507dzz83qnxic, Device=/dev/xvdb, Category=cloud_essd"]
+[level="info"][time="2025-10-28 13:49:32.0883888"][message="Attached DiskId=d-2zeia5m507dzz83qnxib, Device=/dev/xvda, Category=cloud_essd_entry"]
+[level="info"][time="2025-10-28 13:49:32.9031705"][message="Required COM+ components are already installed"]
+[level="info"][time="2025-10-28 13:49:32.9031705"][message="Provider version is already latest"]
+[level="info"][time="2025-10-28 13:49:32.9031705"][message="Start to Initialize VSS Requestor ..."]
+[level="info"][time="2025-10-28 13:49:32.9031705"][message="Prepare to Create snapshot set"]
+[requestor="
+"]
+[level="info"][time="2025-10-28 13:50:12.153271"][message="Create Snapshot Set Successfully"]
+[level="info"][time="2025-10-28 13:50:12.6016985"][message="SnapshotGroup, requestId=1364F60F-570B-58D0-B927-81A8E0816BB8, GroupId=ssg-2ze6zbaoznbdychp6hp0, Cost:448.4275ms"]
+[level="info"][time="2025-10-28 13:50:12.685878"][message="Error:Unexpected length of the snapshot group%!(EXTRA int=10)"]
+[level="info"][time="2025-10-28 13:50:12.7605119"][message="Error:Unexpected length of the snapshot group%!(EXTRA int=10)"]
+[level="info"][time="2025-10-28 13:50:13.2660486"][message="Finished Quering SnapshotGroup Progress"]
+[level="info"][time="2025-10-28 13:50:13.2660486"][message="Finish SnapshotGroup=ssg-2ze6zbaoznbdychp6hp0 Creation, TotalCost=1.1127776s, QueryCost=664.3501ms"]
+[level="info"][time="2025-10-28 13:50:13.2660486"][message="Prepare to Thaw FileSystem or Applications"]
+[requestor="
+"]
+[level="info"][time="2025-10-28 13:50:15.72913"][message="Thaw Write Request Done"]
+[level="info"][time="2025-10-28 13:50:16.0239961"][message="Tag snapshots with AppConistent"]
+[level="info"][time="2025-10-28 13:50:16.0239961"][message="Take AppConsistent snapshots successfully"]
+[level="info"][time="2025-10-28 13:50:16.0239961"][message="Prepare Freeze=39.9125198s, Thaw cost=2.4630814s, Snapshot Creation=1.1127776s, Tag Resources=291.2256ms"]
+[level="info"][time="2025-10-28 13:50:16.0239961"][snapshotgroup="ssg-2ze6zbaoznbdychp6hp0"][message="Finish whole Processes of Snapshot successfully"]
+Add VolumePath=\\?\Volume{8a3242fd-0000-0000-0000-100000000000}\, VolumeName=
+Add VolumePath=\\?\Volume{dc67c9c7-aa99-443d-bcf8-fcad6aba8727}\, VolumeName=D:\
+Add VolumePath=\\?\Volume{8a3242fd-0000-0000-0000-500600000000}\, VolumeName=C:\
+All writers included
+Finish to GatherWriterMetadata successfully
+Initialize writer metadata ...
+Initialize writer metadata done, cost(28441.150)ms
+Discover directly excluded components ...
+Discover components that reside outside the shadow set ...
+Discover all excluded components ...
+Discover excluded writers ...
+- The writer 'Shadow Copy Optimization Writer' is now entirely excluded from the backup:
+  (it does not contain any components that can be potentially included in the backup)
+Discover explicitly included components ...
+Verifying explicitly specified writers/components ...
+Select explicitly included components ...
+ * Writer 'Task Scheduler Writer':
+   - Add component \TasksStore
+ * Writer 'VSS Metadata Store Writer':
+   - Add component \WriterMetadataStore
+ * Writer 'Performance Counters Writer':
+   - Add component \PerformanceCounters
+ * Writer 'System Writer':
+   - Add component \System Files
+   - Add component \Win32 Services Files
+ * Writer 'Registry Writer':
+   - Add component \Registry
+ * Writer 'ASR Writer':
+   - Add component \ASR\ASR
+   - Add component \Volumes\Volume{8a3242fd-0000-0000-0000-100000000000}
+   - Add component \Volumes\Volume{8a3242fd-0000-0000-0000-500600000000}
+   - Add component \Volumes\Volume{dc67c9c7-aa99-443d-bcf8-fcad6aba8727}
+   - Add component \Disks\harddisk0
+   - Add component \Disks\harddisk1
+   - Add component \BCD\BCD
+ * Writer 'WMI Writer':
+   - Add component \WMI
+ * Writer 'COM+ REGDB Writer':
+   - Add component \COM+ REGDB
+Creating shadow set {28b1f94c-5473-4143-9dc4-993442985efe} ...
+- Adding volume \\?\Volume{8a3242fd-0000-0000-0000-100000000000}\ [] to the shadow set...
+- Adding volume \\?\Volume{dc67c9c7-aa99-443d-bcf8-fcad6aba8727}\ [D:\] to the shadow set...
+- Adding volume \\?\Volume{8a3242fd-0000-0000-0000-500600000000}\ [C:\] to the shadow set...
+Preparing for backup ... 
+Finish to GatherWriterMetadata successfully
+Finish to GatherWriterStatus successfully
+Creating the shadow (DoSnapshotSet) ... 
+DoSnapshotSet succeeded
+Start to Commit SnapshotSet
+Start to Thraw SnapshotSet
+Finish to GatherWriterStatus successfully
+- Mark all writers as succesfully backed up... 
+Completing the backup (BackupComplete) ... 
+Finish to GatherWriterStatus successfully
+Quiescing Completed ... cost(1997.589)ms
+BackupComplete, cost(2022.834)ms
+```
+看起来像是ali在自己搞得(很像是通过vsadmin做的定制)。通过调用windows的接口。
+
+## vsadmin
+
+
 ## 参考链接
 1. [aliyun 一致性快照组](https://help.aliyun.com/zh/ecs/user-guide/snapshot-consistency-group-overview/?spm=5176.21213303.J_ZGek9Blx07Hclc3Ddt9dg.1.35d02f3dzVnCWQ&scm=20140722.S_help@@%E6%96%87%E6%A1%A3@@2841384._.ID_help@@%E6%96%87%E6%A1%A3@@2841384-RL_%E4%B8%80%E8%87%B4%E6%80%A7%E5%BF%AB%E7%85%A7-LOC_2024SPAllResult-OR_ser-PAR1_2150427a17604116337564634ef571-V_4-PAR3_o-RE_new5-P0_0-P1_0)
 2. [Volume Shadow Copy Service (VSS)](https://learn.microsoft.com/en-us/windows-server/storage/file-server/volume-shadow-copy-service)
@@ -235,3 +326,4 @@ sqlserver并未回到保存快照时是的状态, 通过查询SqlServerLogger.tx
 5. [【必成功】最新版 SQL Server 下载安装详细教程](https://www.bilibili.com/video/BV1Si421U7PR/)
 6. [SQL Writer service](https://learn.microsoft.com/en-us/sql/database-engine/configure-windows/sql-writer-service?view=sql-server-ver17)
 7. [SQL Server backup applications - Volume Shadow Copy Service (VSS) and SQL Writer](https://learn.microsoft.com/en-us/sql/relational-databases/backup-restore/sql-server-vss-writer-backup-guide?view=sql-server-ver17)
+8. [vsadmin](https://github.com/microsoft/Windows-classic-samples/tree/main/Samples/VShadowVolumeShadowCopy/cpp)

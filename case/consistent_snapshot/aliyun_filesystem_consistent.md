@@ -324,5 +324,80 @@ time="2025-10-27 15:32:29.28167274" level=info msg="Excluded DiskId=d-2zeaod5gsl
 
 但是在暂停的时候，却选择让所有盘暂停，不知道是不是BUG .
 
+## 测试超时
+编写kprobe程序制造延迟:
+```
+#include <linux/module.h>
+#include <linux/kernel.h>
+#include <linux/kprobes.h>
+#include <linux/delay.h>    // 用于msleep/udelay
+
+static struct kprobe kp;
+
+static int handler_pre(struct kprobe *p, struct pt_regs *regs)
+{
+    printk(KERN_INFO "freeze_super called! pid=%d, delaying 2s\n", current->pid);
+    msleep(20000); // 延迟20秒
+    return 0;
+}
+
+static int __init kprobe_init(void)
+{
+    kp.symbol_name = "freeze_super";
+    kp.pre_handler = handler_pre;
+
+    if (register_kprobe(&kp) < 0) {
+        printk(KERN_INFO "register_kprobe failed\n");
+        return -1;
+    }
+    printk(KERN_INFO "kprobe registered for freeze_super\n");
+    return 0;
+}
+
+static void __exit kprobe_exit(void)
+{
+    unregister_kprobe(&kp);
+    printk(KERN_INFO "kprobe unregistered\n");
+}
+
+module_init(kprobe_init)
+module_exit(kprobe_exit)
+MODULE_LICENSE("GPL");
+```
+在界面设置10s延迟:
+
+![aliyun_timeout_10](pic/aliyun_timeout_10.png)
+
+触发执行快照, 在操作日志中发现了timeout事件
+```
+[level="info"][time="2025-10-31 17:01:18.444005807"][message="Version 1.0.0.8"]
+[level="info"][time="2025-10-31 17:01:18.462900139"][message="InstanceID= i-2zec6tjwyxo894ijbqbz RegionID= cn-beijing ProductNetwork= vpc"]
+[level="error"][time="2025-10-31 17:01:18.478344729"][message="File /tmp/prescript.sh not found , error=stat /tmp/prescript.sh: no such file or directory"]
+[level="error"][time="2025-10-31 17:01:18.478361112"][message="File /tmp/postscript.sh not found , error=stat /tmp/postscript.sh: no such file or directory"]
+[level="error"][time="2025-10-31 17:01:18.478370009"][message="Pre/Post-Script have no Expected Permission"]
+[level="info"][time="2025-10-31 17:01:18.478379977"][message="Pre/Post-Script files were not found!"]
+[level="info"][time="2025-10-31 17:01:18.478434233"][message="Begin to Create Application Consistent Snapshots ..."]
+[level="info"][time="2025-10-31 17:01:18.596047673"][message="Network connection RequestId= F5892C1D-9F40-597F-B71F-D211F33241CD, timeCost=117.529694ms"]
+[level="info"][time="2025-10-31 17:01:18.596061242"][message="Attached DiskId=d-2zec6tjwyxo894iew1g3, Device=/dev/xvda, Category=cloud_essd"]
+[level="info"][time="2025-10-31 17:01:18.806493047"][message="Start to check Pre/Post-Script"]
+[level="error"][time="2025-10-31 17:01:18.806515172"][message="lstat /tmp/prescript.sh: no such file or directory"]
+[level="error"][time="2025-10-31 17:01:18.806528902"][message="No such Pre/Post-Script files or have no "execute" Permission"]
+[level="info"][time="2025-10-31 17:01:18.806543915"][message="Discovering Mounted Volumes ..."]
+[level="info"][time="2025-10-31 17:01:18.809154824"][message="MountPoint: /, FsType: ext4 Added"]
+[level="info"][time="2025-10-31 17:01:18.809222201"][message="###########1. Starting FsFreeze"]
+FsFreeze was interrupted by cancel or timeout context deadline exceeded
+[level="info"][time="2025-10-31 17:01:38.80925727"][message="###########4. Thawing FsFreeze"]
+```
+但是云助手一直卡住:
+
+![cloud_man_block](pic/cloud_man_block.png)
+
+另外也登录不上了。似乎是bug.
+
+**结论**
+
+aliyun 是在冻结文件系统之前就做了超时处理, 似乎是一个异步事件。 (阿里这边做的不
+是很准，例如我将延迟搞成了8s，设置超时5s还是会执行成功).
+
 ## TODO
 * 测试fsfroze 能否保证xfs事务完整

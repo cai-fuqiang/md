@@ -485,7 +485,8 @@ crash> struct nbd_config.socks,num_connections,live_connections,runtime_flags,de
 [1293418.959247] nbd: nbd4 already in use
 [1293440.582097] block nbd4: Possible stuck request 000000006372588b: control (read@843272192,4096B). Runtime 330 seconds
 ```
-和现场很像。
+和现场很像。并且如果此时执行`nbd-client -d /dev/nbd4`也不会将qemu进程状态置回并
+且不会取消对 `/dev/nbd4`占用
 
 ## 为什么会有这样的现象
 
@@ -519,7 +520,7 @@ static const struct block_device_operations nbd_fops =
 ```
 
 如果qemu一直D住，就不会执行到该release函数释放资源，所以再次attach时，nbd
-会报错被占用.
+会报错被占用. 
 ## 结论
 疑似nbd-server被清理导致.
 

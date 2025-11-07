@@ -323,44 +323,204 @@ ROOT: /    CWD: /
 
 **疑似file被占用???但又不是进程占用**
 
-<!--
-## WHO USE the sock
+## 自测
 
-我们来看下是谁尝试占用了这个sock， 查看环境发现有个KVM进程D住:
+搭建nbd环境
 ```
-[root@11-211-65-69 15:08:03 381114]# ps aux -T |grep KVM
-root      236131  236131  0.0  0.0  21832  1024 pts/8    S+   15:08   0:00 grep --color=auto KVM
-root      381114  381160  0.4  0.0      0     0 ?        Dl   10月29  48:47 [CPU 5/KVM]
-[root@11-211-65-69 15:08:06 381114]# ps aux -T |grep qemu |grep Z
-root      381114  381114  0.0  0.0      0     0 ?        Zl   10月29   7:24 [qemu-system-x86] <defunct>
+[root@A06-R08-I134-73-919XB72 openEuler-2403]# nbd-server 10809 $(pwd)/disk.img
+
+** (process:190053): WARNING **: 15:38:28.751: Specifying an export on the command line no longer uses the oldstyle protocol.
+[root@A06-R08-I134-73-919XB72 openEuler-2403]#
+[root@A06-R08-I134-73-919XB72 openEuler-2403]# nbd-client localhost 10809 /dev/nbd4
+Warning: the oldstyle protocol is no longer supported.
+This method now uses the newstyle protocol with a default export
+Negotiation: ** Message: 15:38:32.488: Spawned a child process
+..** Message: 15:38:32.489: virtstyle ipliteral
+** Message: 15:38:32.489: connect from 127.0.0.1, assigned file is /export/wfq/vm/openEuler-2403/disk.img
+** Message: 15:38:32.489: Can't open authorization file /usr/local/etc/nbd-server/allow (No such file or directory).
+** Message: 15:38:32.489: Size of exported file/device is 10737418240
+size = 10240MB
+** Message: 15:38:32.489: Starting to serve
+Connected /dev/nbd4
+```
+启动虚拟机使用`nbd4`:
+```
+-drive file=/dev/nbd4,if=virtio,format=raw,cache=none \
 ```
 
-卡在了aio:
+使用crash调试
 ```
-crash> bt 381160
-PID: 381160  TASK: ffff9cfae9824180  CPU: 15  COMMAND: "CPU 5/KVM"
- #0 [ffffb6c3a0a87b68] __schedule at ffffffffa126f786
- #1 [ffffb6c3a0a87bf8] schedule at ffffffffa126fba6
- #2 [ffffb6c3a0a87c10] schedule_timeout at ffffffffa1272d90
- #3 [ffffb6c3a0a87cb0] wait_for_common at ffffffffa127054f
- #4 [ffffb6c3a0a87d10] exit_aio at ffffffffa0bcba2d
- #5 [ffffb6c3a0a87d68] mmput at ffffffffa08df238
- #6 [ffffb6c3a0a87d80] exit_mm at ffffffffa08e7d93
- #7 [ffffb6c3a0a87dc0] do_exit at ffffffffa08e7ffc
- #8 [ffffb6c3a0a87df0] do_group_exit at ffffffffa08e8293
- #9 [ffffb6c3a0a87e18] get_signal at ffffffffa08f5e08
-#10 [ffffb6c3a0a87e68] arch_do_signal at ffffffffa0822c1a
-#11 [ffffb6c3a0a87ef0] exit_to_user_mode_loop at ffffffffa097b139
-#12 [ffffb6c3a0a87f10] exit_to_user_mode_prepare at ffffffffa097b1ef
-#13 [ffffb6c3a0a87f28] syscall_exit_to_user_mode at ffffffffa1266aa2
-#14 [ffffb6c3a0a87f38] do_syscall_64 at ffffffffa1262d1d
-#15 [ffffb6c3a0a87f50] entry_SYSCALL_64_after_hwframe at ffffffffa1400099
-    RIP: 00007f62d1be4bbb  RSP: 00007f62ca7fb4e8  RFLAGS: 00000246
-    RAX: fffffffffffffffc  RBX: 000000000000ae80  RCX: 00007f62d1be4bbb
-    RDX: 0000000000000000  RSI: 000000000000ae80  RDI: 000000000000002d
-    RBP: 000055b2593b2320   R8: 000055b2578d6738   R9: 00000000000000ff
-    R10: 0000000000000001  R11: 0000000000000246  R12: 0000000000000000
-    R13: 000055b257d555e0  R14: 00007f62d00a9001  R15: 0000000000000000
-    ORIG_RAX: 0000000000000010  CS: 0033  SS: 002b
+crash> dev -d |grep nbd4
+   43 ffff9e658bc74400   nbd4       ffff9e6591772250       0     0     0
+crash> struct gendisk.private_data ffff9e658bc74400
+  private_data = 0xffff9e658b10c600,
+crash> struct nbd_config.socks,num_connections,live_connections,runtime_flags,dead_conn_timeout 0xffff9e65a66cf000
+  socks = 0xffff9e65841af600,
+  num_connections = 1,
+  live_connections = {
+    counter = 1
+  },
+  runtime_flags = 184,
+  dead_conn_timeout = 0,
 ```
--->
+
+看下该socket被谁在使用:
+```
+crash> struct socket.file 0xffff9e7505768d00
+  file = 0xffff9e65873898c0,
+crash> foreach files |grep  ffff9e65873898d0
+crash>
+```
+可以发现也找不到。并没有人打开这个sock. 而nbd-client
+进程已经退出
+```
+crash> ps |grep nbd-client
+crash>
+```
+
+我们此时让`nbd-server` stop。并在guest中发起io
+```
+ 190112 root      20   0 6602360 850428  19000 S   0.0   0.6   0:01.21 CPU 6/KVM
+ 190113 root      20   0 6602360 850428  19000 S   0.0   0.6   0:00.83 CPU 7/KVM
+ 190128 root      20   0 6602360 850428  19000 S   0.0   0.6   0:00.00 kvm-nx-lpage-re
+ 190766 root      20   0 6602360 850428  19000 D   0.0   0.6   0:00.00 worker
+```
+可以发现worker D住了。
+如果我们此时`kill -9 + qemu pid`
+```
+root      190093  190093  0.0  0.0      0     0 pts/2    Zl+  15:41   0:00 [qemu-system-x86] <defunct>
+root      190093  190766  0.0  0.6 6602360 850428 pts/2  Dl+  15:54   0:00 /usr/bin/qemu-system-x86_64
+```
+
+此时qemu主进程变为僵尸进程，而D住的线程仍然保持D状态.
+```
+[<0>] submit_bio_wait+0x77/0xc0
+[<0>] __blkdev_direct_IO_simple+0x107/0x240
+[<0>] blkdev_write_iter+0x20e/0x330
+[<0>] do_iter_readv_writev+0x14a/0x240
+[<0>] vfs_writev+0x11c/0x2a0
+[<0>] do_pwritev+0x8a/0xd0
+[<0>] do_syscall_64+0x5d/0x250
+[<0>] entry_SYSCALL_64_after_hwframe+0x76/0x7e
+```
+
+我们看看下此时sock状态:
+```
+crash> struct nbd_config.socks,num_connections,live_connections,runtime_flags,dead_conn_timeout 0xffff9e65a66cf000
+  socks = 0xffff9e65841af600,
+  num_connections = 1,
+  live_connections = {
+    counter = 1
+  },
+  runtime_flags = 184,
+  dead_conn_timeout = 0,
+```
+发现并没有变化。
+
+如果我们执行 :
+```
+[root@A06-R08-I134-73-919XB72 rocky-9.0]# nbd-client -d /dev/nbd4
+```
+
+则qemu d状态就会消失。
+
+我们换另外一种方式测试:
+
+将nbd-server杀死:
+
+查看qemu状态:
+```
+ 191017 root      20   0 6500812   1.5g  19020 S   0.0   1.2   0:23.79 CPU 7/KVM
+ 191023 root      20   0 6500812   1.5g  19020 S   0.0   1.2   0:00.00 kvm-nx-lpage-re
+ 191155 root      20   0 6500812   1.5g  19020 D   0.0   1.2   0:00.67 worker
+```
+
+可以发现qemu D住, 虚拟机中有IO报错.
+```
+[  288.848329][    C0] I/O error, dev vda, sector 1025968 op 0x1:(WRITE) flags 0x104000 phys_seg 254 prio class 2
+[  288.850547][    C0] I/O error, dev vda, sector 1028000 op 0x1:(WRITE) flags 0x104000 phys_seg 254 prio class 2
+[  288.852449][    C0] I/O error, dev vda, sector 1030032 op 0x1:(WRITE) flags 0x104000 phys_seg 254 prio class 2
+[  288.854703][    C0] I/O error, dev vda, sector 1032064 op 0x1:(WRITE) flags 0x104000 phys_seg 254 prio class 2
+[  288.856621][    C0] I/O error, dev vda, sector 1034096 op 0x1:(WRITE) flags 0x104000 phys_seg 254 prio class 2
+```
+直接读取nbd设备
+```
+[root@A06-R08-I134-73-919XB72 rocky-9.0]# xxd -l 64 /dev/nbd4
+xxd: Input/output error
+
+[1293267.696676] Dev nbd4: unable to read RDB block 0
+[1293267.696969] I/O error, dev nbd4, sector 0 op 0x0:(READ) flags 0x0 phys_seg 1 prio class 2
+[1293267.697272] Buffer I/O error on dev nbd4, logical block 0, async page read
+[1293267.697565] I/O error, dev nbd4, sector 0 op 0x0:(READ) flags 0x0 phys_seg 1 prio class 2
+[1293267.697877] Buffer I/O error on dev nbd4, logical block 0, async page read
+[1293267.698178]  nbd4: unable to read partition table
+[1293267.699750] I/O error, dev nbd4, sector 0 op 0x0:(READ) flags 0x0 phys_seg 1 prio class 2
+[1293267.705056] Buffer I/O error on dev nbd4, logical block 0, async page read
+```
+dmesg中报错和之前的异常现场很像！
+
+我们将qemu杀死，和之前一样。
+```
+ 190999 root      20   0       0      0      0 Z   0.0   0.0   0:09.65 qemu-system-x86
+ 191155 root      20   0 6500812   1.5g  19020 D   0.0   1.2   0:00.67 worker
+```
+
+此时我们查看sock状态:
+```
+crash> struct nbd_config.socks,num_connections,live_connections,runtime_flags,dead_conn_timeout 0xffff9e65a66cf000
+  socks = 0xffff9e65841af600,
+  num_connections = 1,
+  live_connections = {
+    counter = 0
+  },
+  runtime_flags = 4,
+  dead_conn_timeout = 0,
+```
+
+可以发现和异常现场很像，就是`num_connections` 没有那么大
+
+如果我们此时在使用nbd-client attach则会有如下报错:
+```
+[1293418.959247] nbd: nbd4 already in use
+[1293440.582097] block nbd4: Possible stuck request 000000006372588b: control (read@843272192,4096B). Runtime 330 seconds
+```
+和现场很像。
+
+## 为什么会有这样的现象
+
+因为sock会在`nbd_release`时被清理:
+```cpp
+static void nbd_release(struct gendisk *disk)
+{
+        struct nbd_device *nbd = disk->private_data;
+
+        if (test_bit(NBD_RT_DISCONNECT_ON_CLOSE, &nbd->config->runtime_flags) &&
+                        disk_openers(disk) == 0)
+                //here
+                nbd_disconnect_and_put(nbd);
+
+        nbd_config_put(nbd);
+        nbd_put(nbd);
+}
+```
+
+而`nbd_release()`时该nbd块设备的`release`回调，其会在fput()流程中执行:
+```cpp
+static const struct block_device_operations nbd_fops =
+{
+        .owner =        THIS_MODULE,
+        .open =         nbd_open,
+        .release =      nbd_release,
+        .ioctl =        nbd_ioctl,
+        .compat_ioctl = nbd_ioctl,
+        .free_disk =    nbd_free_disk,
+};
+```
+
+如果qemu一直D住，就不会执行到该release函数释放资源，所以再次attach时，nbd
+会报错被占用.
+## 结论
+疑似nbd-server被清理导致.
+
+## 参考链接
+1. [The Network Block Device](https://www.linuxjournal.com/article/3778)

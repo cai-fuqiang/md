@@ -386,7 +386,8 @@ crash>
  190766 root      20   0 6602360 850428  19000 D   0.0   0.6   0:00.00 worker
 ```
 可以发现worker D住了。
-如果我们此时`kill -9 + qemu pid`
+
+因为当时现场qemu变为僵尸进程。所以我们此时`kill -9 + qemu pid`, 也让其变僵尸
 ```
 root      190093  190093  0.0  0.0      0     0 pts/2    Zl+  15:41   0:00 [qemu-system-x86] <defunct>
 root      190093  190766  0.0  0.6 6602360 850428 pts/2  Dl+  15:54   0:00 /usr/bin/qemu-system-x86_64

@@ -399,5 +399,130 @@ FsFreeze was interrupted by cancel or timeout context deadline exceeded
 aliyun 是在冻结文件系统之前就做了超时处理, 似乎是一个异步事件。 (阿里这边做的不
 是很准，例如我将延迟搞成了8s，设置超时5s还是会执行成功).
 
+## 控制面流程
+
+### who initiated this function
+阿里云这边控制面发起创建快照是由云助手命令发起整个云助手命令. 通过
+下面方式抓取。
+
+1. 由于打快照的动作比较快 **并且execsnoop抓不到云助手命令！这个比较奇怪** , 使用
+   上面的kprobe搞一些延迟
+2. 打快照通过下面的方式抓取进程cmdline
+
+   ```sh
+   [root@iZbp1592ehjxikrnuq6dpqZ kprobe]# ps -ef |grep fsfr
+   root      1834  1801  0 11:30 ?        00:00:00 /usr/local/share/aliyun-assist/plugin/app-snapshot-plugin/1.8/fsfreezer 30 /
+   root      1864  1358  0 11:30 pts/0    00:00:00 grep --color=auto fsfr
+   [root@iZbp1592ehjxikrnuq6dpqZ kprobe]# ps aux |grep 1801
+   root      1801  0.0  0.4 724136 17876 ?        Sl   11:30   0:00 /usr/local/share/aliyun-assist/plugin/app-snapshot-plugin/1.8/app-snapshot-plugin --RamRoleName=snap -EnableFsFreeze=true -TimeoutInSeconds=30 -PreScriptPath=/tmp/prescript.sh -PostScriptPath=/tmp/postscript.sh -Name=Created_At_202511101129
+   root      1887  0.0  0.0 112812   980 pts/0    S+   11:30   0:00 grep --color=auto 1801 
+   ```
+
+可以发现有两个命令:
+* app-snapshot-plugin
+* fsfreezer
+
+第一个命令为云助手执行的命令，在guest侧发起创建快照.
+
+第二个命令是冻结文件系统的命令，命令参数
+```
+[root@iZbp1592ehjxikrnuq6dpqZ kprobe]# /usr/local/share/aliyun-assist/plugin/app-snapshot-plugin/1.8/fsfreezer --help
+Version: 1.0.0.8
+Usage: Timeoutinseconds Mountpoint1 [Mountpoint2 ...]
+```
+
+> NOTE
+>
+> 直接在guest中执行该命令，也可以触发保存快照流程。
+
+### 这些命令在何时安装
+
+执行快照之前:
+```
+[root@iZbp1gqjwuuwwdi53tf6ipZ ~]# find / -name "app-snapshot-plugin"
+[root@iZbp1gqjwuuwwdi53tf6ipZ ~]# 
+```
+发起快照之后:
+```
+[root@iZbp1gqjwuuwwdi53tf6ipZ ~]# find / -name "app-snapshot-plugin"
+/usr/local/share/aliyun-assist/plugin/app-snapshot-plugin
+/usr/local/share/aliyun-assist/plugin/app-snapshot-plugin/1.8/app-snapshot-plugin
+```
+
+可以发现镜像里面没有，在云助手命令执行之后才安装。
+
+### 这两个命令如何交互
+
+`fsfreezer` 提供超时功能，如果`fsfreezer`未超时，`app-snapshot-plugin` 理应通知
+`fsfreezer` 解冻文件系统。他们两个如何交互呢?
+
+我们用strace追踪fsfreezer. 日志如下:
+```
+open("/", O_RDONLY|O_NONBLOCK)          = 3
+ioctl(3, FIFREEZE)
+kill(2654, SIGUSR1User defined signal 1
+
+## 等待30s
+2025-11-10 11:39:21 quiescing 1 second
+2025-11-10 11:39:22 quiescing 1 second
+2025-11-10 11:39:50 quiescing 1 second
+2025-11-10 11:39:50 Timedout to receive Thaw from parent process
+2025-11-10 11:39:50 Thawing: /
+ioctl(3, FITHAW)                        = 0
+...
+```
+
+可以发现，其会在冻结文件系统之后，发`SIGUSR1`信号给其父进程，然后
+循环等待, 直到超时, 恢复文件系统。
+
+
+我们再来看下未超时的流程, 我们直接使用`killsnoop`工具抓取:
+```
+
+[root@iZbp1592ehjxikrnuq6dpqZ tools]# ps -ef |grep fsfre
+root      2934  2893  0 13:10 pts/1    00:00:00 /usr/local/share/aliyun-assist/plugin/app-snapshot-plugin/1.8/fsfreezer 30 /
+root      2967  1296  0 13:10 pts/0    00:00:00 grep --color=auto fsfre
+[root@iZbp1592ehjxikrnuq6dpqZ tools]# strace -fp 2934
+strace: Process 2934 attached
+stat("/etc/localtime", {st_mode=S_IFREG|0644, st_size=556, ...}) = 0
+getppid()                               = 2893
+kill(2893, SIGUSR1)                     = 0
+rt_sigprocmask(SIG_BLOCK, [CHLD], [], 8) = 0
+rt_sigaction(SIGCHLD, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+nanosleep({tv_sec=1, tv_nsec=0}, {tv_sec=0, tv_nsec=891700083}) = ? ERESTART_RESTARTBLOCK (Interrupted by signal)
+--- SIGUSR1 {si_signo=SIGUSR1, si_code=SI_USER, si_pid=2893, si_uid=0} ---
+rt_sigreturn({mask=[]})                 = -1 EINTR (Interrupted system call)
+stat("/etc/localtime", {st_mode=S_IFREG|0644, st_size=556, ...}) = 0
+stat("/etc/localtime", {st_mode=S_IFREG|0644, st_size=556, ...}) = 0
+stat("/etc/localtime", {st_mode=S_IFREG|0644, st_size=556, ...}) = 0
+ioctl(3, FITHAW)                        = 0
+close(3)                                = 0
+write(1, "2025-11-10 13:10:44 ############"..., 291) = 291
+exit_group(0)                           = ?
+```
+
+可以看到fsfreezer 在给`app-snapshot-plugin`发送给父进程`SIGUSR1`信号后，其最终等
+到父进程`SIGUSR1`信号，等待到信号后，其就解冻文件系统。所以整个的流程为:
+```
+fsfreezer                        app-snapshot-plugin
+====================================================
+                                 发起快照前，等待文件系统冻结
+冻结文件系统，冻结
+  成功后，像父进程
+  app-snapshot-plugin发送
+  SIGUSR1 信号
+
+睡眠，等待SIGUSR1信号
+                                 收到SIGUSR1信号，执行应用一致性冻结脚本
+
+                                 调用控制面保存快照接口
+
+                                 执行结束，发送SIGUSR1信号给子进程
+
+等待到SIGUSR1信号, 确认没有
+超时，结束进程
+                                 获取fsfreezer 命令返回值, 判断是否正常返回
+```
 ## TODO
 * 测试fsfroze 能否保证xfs事务完整

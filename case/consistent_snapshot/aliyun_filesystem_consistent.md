@@ -524,5 +524,55 @@ fsfreezer                        app-snapshot-plugin
 超时，结束进程
                                  获取fsfreezer 命令返回值, 判断是否正常返回
 ```
+
+### 错误处理 (E.g. 超时)
+
+编写如下程序, 替换aliyun `fsfreezer`:
+```cpp
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <signal.h>
+#include <sys/wait.h>
+
+int main() {
+    pid_t ppid = getppid(); // 获取父进程PID
+    printf("当前进程的父进程ID: %d\n", ppid);
+
+    if (kill(ppid, SIGUSR1) == 0) {
+        printf("成功发送SIGUSR1信号给父进程。\n");
+    } else {
+        perror("发送信号失败");
+    }
+
+    sleep(1);
+
+    return 1;
+}
+```
+该程序在给父进程发送信号后，睡眠1s，然后错误退出:
+
+执行aliyun一致性快照创建命令, 该命令会错误返回:
+```
+time="2025-11-10 17:35:33.00644326" level=info msg="2025-11-10 17:35:32.771500825 Quering SnapshotGroup Progress[0], RequestId=FF2DADC4-B374-5AC7-BD73-0C4BB3D3C2E1, GroupId=ssg-bp107th1tbymxcaa7moe, Cost=202.980012ms, TotalCost=288.2669ms"
+time="2025-11-10 17:35:33.006449088" level=info msg="2025-11-10 17:35:33.00617243 Quering SnapshotGroup Progress[1], RequestId=53040750-2E9D-5D2E-947F-7C4245C8BE6E, GroupId=ssg-bp107th1tbymxcaa7moe, Cost=184.601143ms, TotalCost=522.946563ms"
+time="2025-11-10 17:35:33.006454625" level=info msg="2025-11-10 17:35:33.006174515 Finished Quering SnapshotGroup Progress"
+time="2025-11-10 17:35:33.006459417" level=info msg="2025-11-10 17:35:33.006186761 Finish SnapshotGroup=ssg-bp107th1tbymxcaa7moe Creation, TotalCost=733.119448ms, QueryCost=522.965331ms"
+time="2025-11-10 17:35:33.006464903" level=info msg="==========End===========" Type=CreateSnapshot
+time="2025-11-10 17:35:33.006475867" level=error msg="Taking snapshots has failed with error"
+time="2025-11-10 17:35:33.006485271" level=info msg="Prescript cost=, Postscript cost="
+time="2025-11-10 17:35:33.006494712" level=info msg="Prepare Freeze=3.596071ms, Thaw cost=229.821µs, Snapshot Creation=733.124762ms, Tag Resources="
+time="2025-11-10 17:35:33.006505863" level=error msg="Failed to Take application consistent Snapshots
+```
+
+![aliyun_yun_zhushou_cmd_failed](pic/aliyun_yun_zhushou_cmd_failed.png)
+
+错误返回后，在界面可以查找到快照，并且是非一致性快照(没有一致性tag)
+
+![non-consistent-snapshot-tag](pic/non-consistent-snapshot-tag.png)
+
+如果正确返回，则:
+
+![aliyun-consistent-snapshot](pic/aliyun-consistent-snapshot.png)
 ## TODO
 * 测试fsfroze 能否保证xfs事务完整

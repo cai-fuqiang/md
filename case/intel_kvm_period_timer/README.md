@@ -60,7 +60,8 @@ crash> struct kvm_lapic ff440d5956f99200
     ...
 ```
 
-So it seems like the hv period timer has been stopped.
+At a certain point in the past, hv period timer was stalled for an extended
+period of time.
 
 ## steps to reproduce
 

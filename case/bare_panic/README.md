@@ -277,6 +277,8 @@ cgroup 看起来已经被释放了
   ```sh
   free_sched_group
   => free_fair_sched_group()
+     ##  这个比较关键，下面会讲到
+     => destroy_cfs_bandwidth(tg_cfs_bandwidth(tg));
      => for_each_possible_cpu(i) {
         => if (tg->cfs_rq)
            => kfree(tg->cfs_rq[i]);
@@ -357,7 +359,9 @@ crash> struct task_struct.sched_task_group ffff8802b13f1fa0
 
 我们在具体分析下代码
 
-## 代码进一步分析(主要分析list_del流程)
+## 代码进一步分析
+
+### leaf_cfs_rq_list del
 
 在下面函数中，摘除`cfs_rq->leaf_cfs_rq_list`
 ```cpp
@@ -371,14 +375,18 @@ static inline void list_del_leaf_cfs_rq(struct cfs_rq *cfs_rq)
 ```
 该函数会有两个调用流程:
 
+
 * offline css
   ```sh
-  sched_offline_group
-  => unregister_fair_sched_group
-     => list_del_leaf_cfs_rq  
+  cgroup_rmdir
+  => cgroup_destroy_locked
+     => ss->css_offline()
+        => cpu_cgroup_css_offline
+            => sched_offline_group
+                => unregister_fair_sched_group
+                   => list_del_leaf_cfs_rq  
   ```
-
-  这个不太可能
+  由于css已经被release 感觉像是这个流程
 * 负载均衡
   ```sh
   rebalance_domains
@@ -388,9 +396,205 @@ static inline void list_del_leaf_cfs_rq(struct cfs_rq *cfs_rq)
         => update_cfs_rq_blocked_load(cfs_rq, 1);
         if se:
            => update_entity_load_avg(se, 1)
+           ## 这块表明se已经没有负载，并且cfs_rq中没有正在运行的任务，就没有
+           ## 必要参与负载均衡?
            if !se->avg.runnable_avg_sum && !cfs_rq->nr_running
               => list_del_leaf_cfs_rq(cfs_rq);
         else:
            => struct rq *rq = rq_of(cfs_rq);Z
            => update_rq_runnable_avg(rq, rq->nr_running);
   ```
+  该流程不太像
+
+### leaf_cfs_rq_list add
+
+```sh
+list_add_leaf_cfs_rq
+=> if !cfs_rq->on_list
+   ## 如果有parent，并且parent 在rq上
+   => if (cfs_rq->tg->parent &&
+        cfs_rq->tg->parent->cfs_rq[cpu_of(rq_of(cfs_rq))]->on_list) {
+           ## 加到头
+           list_add_rcu(&cfs_rq->leaf_cfs_rq_list,
+              &rq_of(cfs_rq)->leaf_cfs_rq_list);
+        } else {
+           ## 加到尾
+           list_add_tail_rcu(&cfs_rq->leaf_cfs_rq_list,
+              &rq_of(cfs_rq)->leaf_cfs_rq_list);
+        }
+=> cfs_rq->on_list = 1;
+=> update_cfs_rq_blocked_load(cfs_rq, 0);
+```
+
+而调用栈:
+```sh
+enqueue_entity
+=> account_entity_enqueue(cfs_rq, se);
+   => cfs_rq->nr_running++;
+=> se->on_rq = 1;
+## 这里表示任务数量 由 0->1, 得重新考虑该cfs_rq对负载均衡的影响
+=> if (cfs_rq->nr_running == 1)
+   => list_add_leaf_cfs_rq(cfs_rq);
+```
+
+而`enqueue_entry`有两种调用场景:
+
+**唤醒**
+```
+ttwu_activate
+=> activate_task
+   => enqueue_task
+      => enqueue_task_fair
+          => enqueue_entity
+```
+这种场景一般是根据task触发，但是此时任务已经move走了。
+
+另一种场景`unthrottle`, 该场景是针对每个`cfs_rq`，该场景有可能。 
+```
+unthrottle_cfs_rq
+=> enqueue_entity
+```
+
+难道是`unthrottle_cfs_rq` 和 `css offline`的流程有race ?
+
+`use-after-free`这种问题比较难排查, 主要是造成`use-after-free`的现场已经丢失。我
+们来看下社区, 有无相关问题报告
+
+## upstream patch
+```
+commit b027789e5e50494c2325cc70c8642e7fd6059479
+Author: Mathias Krause <minipli@grsecurity.net>
+Date:   Wed Nov 3 20:06:13 2021 +0100
+
+    sched/fair: Prevent dead task groups from regaining cfs_rq's
+```
+
+大概就是`unthrottle`流程和`destroy cgroup`流程有冲突，之前提到过`destroy_cfs_bandwidth`
+流程比较靠后, 在`free_sched_cgroup` 中做的，那将其提到`css offline`流程中问题是
+不是就解决了？
+
+还真不是, 该patch报告了另一种场景，如下:
+```
+        CPU1:                                      CPU2:
+          :                                        timer IRQ:
+          :                                          do_sched_cfs_period_timer():
+          :                                            :
+          :                                            distribute_cfs_runtime():
+          :                                              rcu_read_lock();
+          :                                              :
+          :                                              unthrottle_cfs_rq():
+        sched_offline_group():                             :
+          :                                                walk_tg_tree_from(…,tg_unthrottle_up,…):
+          list_del_rcu(&tg->list);                           :
+     (1)  :                                                  list_for_each_entry_rcu(child, &parent->children, siblings)
+          :                                                    :
+     (2)  list_del_rcu(&tg->siblings);                         :
+          :                                                    tg_unthrottle_up():
+          unregister_fair_sched_group():                         struct cfs_rq *cfs_rq = tg->cfs_rq[cpu_of(rq)];
+            :                                                    :
+            list_del_leaf_cfs_rq(tg->cfs_rq[cpu]);               :
+            :                                                    :
+            :                                                    if (!cfs_rq_is_decayed(cfs_rq) || cfs_rq->nr_running)
+     (3)    :                                                        list_add_leaf_cfs_rq(cfs_rq);
+          :                                                      :
+          :                                                    :
+          :                                                  :
+          :                                                :
+          :                                              :
+     (4)  :                                              rcu_read_unlock();
+```
+大概是`offline`场景和`unthrottle`有冲突，在`CPU 0`解除`tg->list`之后，在解除`tg->cfs_rq[cpu]->leaf_cfs_rq_list`之前,
+在`CPU 2` 获取到`tg`, 并且执行`list_add_leaf_cfs_rq()`流程，将即将删除的`cfs_rq`链接到`rq->leaf_cfs_rq_list`
+
+在3.10内核中右侧有些许不同, 但最终也会走到类似的流程:
+```sh
+unthrottle_cfs_rq
+=> walk_tg_tree_from(cfs_rq->tg, tg_nop, tg_unthrottle_up, (void *)rq);
+   => tg_unthrottle_up
+      => cfs_rq->throttle_count--;
+      => cfs_rq->throttled_clock_task_time += rq_clock_task(rq) -
+             cfs_rq->throttled_clock_task;
+=> for_each_sched_entity(se)
+   => if (enqueue)
+      => enqueue_entity(cfs_rq, se, ENQUEUE_WAKEUP);
+         => list_add_leaf_cfs_rq(cfs_rq);
+```
+
+可以看到，即便是将`destroy_cfs_bandwidth`提前(里面会cancel hrtimer), 但是`offline`流程仍然会和
+`do_sched_cfs_period_timer`冲突, 所以最好还得让`list_add_leaf_cfs_rq`的流程放到下一个宽限期
+中执行。
+
+patch 改动后分析(我们以`4.18.0-372`内核为例), free 流程:
+```sh
+css_release
+=> INIT_RCU_WORK(&css->destroy_rwork, css_release_work_fn);
+=> queue_work(cgroup_destroy_wq, &css->destroy_work);
+
+css_release_work_fn
+=> ss->css_released()
+   => cpu_cgroup_css_released
+      => sched_release_group
+         ##  先摘除链表.
+         => list_del_rcu(&tg->list);
+         => list_del_rcu(&tg->siblings);
+=> INIT_RCU_WORK(&css->destroy_rwork, css_free_rwork_fn);
+## 在执行free
+=> queue_rcu_work(cgroup_destroy_wq, &css->destroy_rwork);
+
+css_free_rwork_fn
+=> ss->css_free(css);
+   => css_free_rwork_fn
+      => cpu_cgroup_css_free
+         ## 内核注释:
+         ## Relies on the RCU grace period between css_released() and this.
+         => sched_unregister_group
+            => unregister_fair_sched_group
+               => destroy_cfs_bandwidth
+               => for_each_possible_cpu
+                  ## 解除 cfq_rq->list_del_leaf_cfs_rq 链表
+                  => list_del_leaf_cfs_rq
+            ## 最后调用call_rcu释放(等下一个宽限期) 相关object
+            => call_rcu(&tg->rcu, sched_free_group_rcu);
+
+sched_free_group_rcu
+=> sched_free_group
+    => free_fair_sched_group
+        => for_each_possible_cpu
+           => kfree(tg->cfs_rq[i]);
+           => kfree(tg->se[i]);
+        => kfree(tg->cfs_rq);
+        => kfree(tg->se);
+    => kmem_cache_free(task_group_cache, tg);
+```
+
+可以看到是先摘除`tg->list, tg->siblings` cpu css层级链表，在解除`cfs_rq->
+list_del_leaf_cfs_rq`, **这里最关键的是**, `list_del_leaf_cfs_rq()`放到了free 的流程
+而不是offline，这里内核有行注释:
+```
+Relies on the RCU grace period between css_released() and this.
+```
+
+嗯？怎么保证的在下一个宽限期?
+
+原因在queue work时，调用的时queue_rcu_work
+```sh
+css_release_work_fn
+=> queue_rcu_work(cgroup_destroy_wq, &css->destroy_rwork);
+   => call_rcu(&rwork->rcu, rcu_work_rcufn);
+```
+
+另外，还将`sched_free_group_rcu`放到了rcu work中，相当于放到了下下个宽限期中执行。
+原因是，我们将`list_del_leaf_cfs_rq`延后了，放到了free的流程中。
+
+但是`print_cfs_stats`，回去读取这个链表:
+```
+print_cfs_stats
+=> for_each_leaf_cfs_rq_safe
+   => print_cfs_rq(m, cpu, cfs_rq);
+#define for_each_leaf_cfs_rq_safe(rq, cfs_rq, pos)         \
+    list_for_each_entry_safe(cfs_rq, pos, &rq->leaf_cfs_rq_list,   \
+                        leaf_cfs_rq_list)
+```
+
+所以，需要放到下一个宽限期中释放.
+

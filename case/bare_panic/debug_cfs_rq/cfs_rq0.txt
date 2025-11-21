@@ -1,0 +1,51 @@
+crash> cfs_rq ffff880070d43400
+struct cfs_rq {
+  load = {
+    weight = 0,
+    inv_weight = 0
+  },
+  nr_running = 0,
+  h_nr_running = 0,
+  exec_clock = 0,
+  min_vruntime = 2532113198758,
+  tasks_timeline = {
+    rb_node = 0x0
+  },
+  rb_leftmost = 0x0,
+  curr = 0x0,
+  next = 0x0,
+  last = 0x0,
+  skip = 0x0,
+  nr_spread_over = 0,
+  runnable_load_avg = 0,
+  blocked_load_avg = 0,
+  decay_counter = {
+    counter = 2493876907
+  },
+  removed_load = {
+    counter = 0
+  },
+  last_decay = 2493876906,
+  tg_runnable_contrib = 1,
+  tg_load_contrib = 0,
+  h_load = 3,
+  rq = 0xffff88047fd18a80,
+  on_list = 1,
+  leaf_cfs_rq_list = {
+    next = 0xffff880292b1cab0,
+    prev = 0xffff88047fd192e0
+  },
+  tg = 0xffff88046a9ce000,
+  runtime_enabled = 1,
+  runtime_expires = 2627118225131095,
+  runtime_remaining = 605170,
+  throttled_clock = 2627014187307942,
+  throttled_clock_task = 2627014187307942,
+  throttled_clock_task_time = 12099375330812,
+  throttled = 0,
+  throttle_count = 0,
+  throttled_list = {
+    next = 0xffff88046a9ce240,
+    prev = 0xdead000000000200
+  }
+}

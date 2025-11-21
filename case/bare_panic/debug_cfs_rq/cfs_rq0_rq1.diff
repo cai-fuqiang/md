@@ -1,0 +1,85 @@
+wangfuqiang49@ZBMac-DY9GX4RFNX ~/w/m/c/b/debug_cfs_rq (master)> diff -Naru cfs_rq0.txt cfs_rq1.txt
+--- cfs_rq0.txt 2025-11-21 15:51:23
++++ cfs_rq1.txt 2025-11-21 15:51:40
+@@ -1,51 +1,56 @@
+-crash> cfs_rq ffff880070d43400
++crash> list -o cfs_rq.leaf_cfs_rq_list -s cfs_rq. -H ffff88047fd192e0
++ffff880070d43400
++ffff880292b1ca00
++ffff88007679a800
++ffff88047fd18b00
++crash> cfs_rq ffff880292b1ca00
+ struct cfs_rq {
+   load = {
+-    weight = 0,
++    weight = 18446612143365287424,
+     inv_weight = 0
+   },
+-  nr_running = 0,
+-  h_nr_running = 0,
++  nr_running = 1,
++  h_nr_running = 1,
+   exec_clock = 0,
+-  min_vruntime = 2532113198758,
++  min_vruntime = 16063603144,
+   tasks_timeline = {
+-    rb_node = 0x0
++    rb_node = 0xffff880046c45f58
+   },
+-  rb_leftmost = 0x0,
++  rb_leftmost = 0xffff880046c45f58,
+   curr = 0x0,
+   next = 0x0,
+   last = 0x0,
+   skip = 0x0,
+   nr_spread_over = 0,
+-  runnable_load_avg = 0,
++  runnable_load_avg = 1023,
+   blocked_load_avg = 0,
+   decay_counter = {
+-    counter = 2493876907
++    counter = 2505410665
+   },
+   removed_load = {
+     counter = 0
+   },
+-  last_decay = 2493876906,
+-  tg_runnable_contrib = 1,
+-  tg_load_contrib = 0,
+-  h_load = 3,
++  last_decay = 2505410664,
++  tg_runnable_contrib = 1023,
++  tg_load_contrib = 1023,
++  h_load = 730,
+   rq = 0xffff88047fd18a80,
+   on_list = 1,
+   leaf_cfs_rq_list = {
+-    next = 0xffff880292b1cab0,
+-    prev = 0xffff88047fd192e0
++    next = 0xffff88007679a8b0,
++    prev = 0xffff880070d434b0
+   },
+-  tg = 0xffff88046a9ce000,
++  tg = 0xffff880070f4e400,
+   runtime_enabled = 1,
+-  runtime_expires = 2627118225131095,
+-  runtime_remaining = 605170,
+-  throttled_clock = 2627014187307942,
+-  throttled_clock_task = 2627014187307942,
+-  throttled_clock_task_time = 12099375330812,
+-  throttled = 0,
+-  throttle_count = 0,
++  runtime_expires = 2627114376533199,
++  runtime_remaining = -8364,
++  throttled_clock = 2627113493210106,
++  throttled_clock_task = 2627113493210106,
++  throttled_clock_task_time = 136703035441,
++  throttled = 1,
++  throttle_count = 1,
+   throttled_list = {
+-    next = 0xffff88046a9ce240,
+-    prev = 0xdead000000000200
++    next = 0xffff880070f4e640,
++    prev = 0xffff880070f4e640
+   }
+ }

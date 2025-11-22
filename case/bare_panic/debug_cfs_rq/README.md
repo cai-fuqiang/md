@@ -296,12 +296,14 @@ autogroup_task_group(struct task_struct *p, struct task_group *tg)
 ```sh
 crash> task_struct.signal ffff880046c45ee0
   signal = 0xffff880468135100
-  signal = 0xffff880468135100
 crash> struct signal_struct.autogroup 0xffff880468135100
   autogroup = 0xffff88045a6cb4c0
 crash> struct autogroup.tg 0xffff88045a6cb4c0
   tg = 0xffff880073157400
+crash> struct autogroup.id 0xffff88045a6cb4c0
+  id = 70
 ```
+
 可以发现这里面的tg的值和`cfs_rq->tg` 报告的不一样:
 
 > NOTE
@@ -309,3 +311,93 @@ crash> struct autogroup.tg 0xffff88045a6cb4c0
 > 当然也可能是`cfs_rq` 被释放后重新赋值，但是按照我们之前的分析，
 > 这种可能非常小，我们先按照 `cfs_rq` 被释放后，没有重新分配。
 > 那这样就说明，中间经历过`signal->autogroup_tg`的释放。
+
+接下来，我们简单走读`autogroup`代码:
+## autogroup
+
+### 生命周期
+
+#### create
+```sh
+settid
+## 获取当前进程group_leader
+=> group_leader = current->group_leader
+## 如果group_leader 已经是 session leader
+=> if group_leader->signal->leader
+   => goto out
+## 为当前group_leader创建autogroup
+=> sched_autogroup_create_attach(group_leader)
+   ## 创建新的autogroup
+   => struct autogroup *ag = autogroup_create();
+      => ag = kzalloc(sizeof(*ag), GFP_KERNEL)
+      ## 在根层级创建 新的 task_group
+      => sched_create_group(&root_task_group);
+      ## !!! 这个地方把引用计数设置为1
+      => kref_init(&ag->kref);
+      ## 分配id
+      => ag->id = atomic_inc_return(&autogroup_seq_nr);
+      ## 设置tg->autogroup
+      => tg->autogroup = ag;
+      ## oneline 该 task group
+      => sched_online_group(tg, &root_task_group);
+   ## 将group_leader 移动到该autogroup中
+   => autogroup_move_group(p, ag);
+   ## drop 掉最初始的计数
+   => autogroup_kref_put(ag);
+```
+
+## destroy
+当引用计数减少到0时，则触发`destroy`动作:
+```sh
+autogroup_kref_put
+=> kref_put(&ag->kref, autogroup_destroy);
+
+autogroup_destroy
+=> sched_offline_group(ag->tg);
+=> sched_destroy_group(ag->tg);
+```
+
+上面流程是创建autogroup流程，并且把该进程的group_leader 加入到该新创建的autogroup的
+task_group中。那么其子进程怎么搞呢?
+
+## 子进程处理
+```sh
+copy_process
+=> cgroup_fork(p)
+   => child->cgroups = current->cgroups;
+   => get_css_set(child->cgroups);
+=> sched_fork
+=> copy_signal
+   => sig = kmem_cache_zalloc(signal_cachep, GFP_KERNEL);
+   => tsk->signal = sig;
+   => sched_autogroup_fork
+      => sig->autogroup = autogroup_task_get(current)
+         ## 增加引用计数
+         => ag = autogroup_kref_get(p->signal->autogroup);
+```
+
+## 计数减少
+进程退出:
+```sh
+put_signal_struct
+=> atomic_dec_and_test(&sig->sigcnt)
+   => free_signal_struct(sig)
+      => sched_autogroup_exit
+         => autogroup_kref_put(sig->autogroup);
+```
+
+## 继续分析
+那现在的问题是, `task_struct->sched_task_group` 指向的tg, 和
+`task_struct->signal->autogroup->tg` 指向的不是同一个。
+
+看起来`sched_task_group` 指向了一个被释放的旧的`tg`
+
+## 其他
+
+### 上面提到的问题进程以及其父进程和兄弟进程
+```
+crash> ps |grep 49275
+  49275      1   4  ffff880046c43f40  IN   0.0  115252   1420  bash
+  49399  49275   4  ffff880046c45ee0  RU   0.0  115252    200  bash
+  49400  49275   0  ffff880074899fa0  IN   0.0  112660    968  grep
+```

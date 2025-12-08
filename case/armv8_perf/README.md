@@ -343,6 +343,8 @@ KVM: arm64: Upgrade PMU support to ARMv8.4
 
 ### 解决方法
 
+
+#### host kernel 修复
 需要在原有内核合入下面patch:
 ```
 c854188ea01062f5a5fd7f05658feb1863774eaa
@@ -350,6 +352,28 @@ KVM: arm64: limit PMU version to PMUv3 for ARMv8.1
 ```
 openeuler commit:
 * https://gitee.com/openeuler/kernel/commit/c854188ea
+
+#### host libvirt 禁用
+
+禁用方法, 在xml`domain.features`路径中，新增如下部分
+
+```diff
+  <features>
+    <acpi/>
++   <pmu state='off'/>
+    <gic version='3'/>
+  </features>
+```
+
+验证方法:
+
+使用修改后的xml启动虚拟机, qemu参数新增会新增 `pmu=off`
+
+```sh
+/usr/libexec/qemu-kvm \
+-cpu host,pmu=off
+          ^^^^^^^
+```
 
 <!--
 ## TODO

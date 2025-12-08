@@ -222,14 +222,14 @@ Date:   Mon Mar 2 18:17:51 2020 +0000
 大概的意思是, 目前KVM只支持到了 `ARMv8.1` 的 PMU feature, ARMv8.4 中新增的
 `PMMIR`寄存器以及 ARMv8.5 64 event counter 均不支持。(kvm还没有实现)
 
-所以这里将暴露给guest的`PMUVer`, `PerfMon` 均限制在 `< PMUv3(ARMv8.1)`.
+所以这里将暴露给guest的`PMUVer`, `PerfMon` 均限制在 `<= PMUv3(ARMv8.1)`.
 
 > NOTE
 >
-> 如果这字段值为 `0xF`, 毕晓世 PMU 是 `IMPLEMENTATION DEFINE`， 如果是这种情况，
+> 如果这字段值为 `0xF`, PMU 则为 `IMPLEMENTATION DEFINE`， 如果是这种情况，
 > KVM 不打算报漏给虚拟机这个值。(这种类似于自定义的，KVM 没有办法（也不想）模拟)
 >
-> 个人理解
+> 个人瞎猜，还需要在看下手册 **TODO**
 
 上面两个 patch 代码类似，我们以后一个patch为例, 代码为:
 ```diff
@@ -340,6 +340,17 @@ KVM: arm64: Upgrade PMU support to ARMv8.4
     arm64: perf: Add support caps under sysfs
     ```
   + 上游版本: `v5.10-rc1+`
+* host kernel:
+  + 未合入 commit
+    ```
+    c854188ea01062f5a5fd7f05658feb1863774eaa
+    KVM: arm64: limit PMU version to PMUv3 for ARMv8.1
+    ```
+  + 上游版本: `v5.7-rc1`
+
+> NOTE
+>
+> 必须上面三个条件都满足才会复现问题
 
 ### 解决方法
 

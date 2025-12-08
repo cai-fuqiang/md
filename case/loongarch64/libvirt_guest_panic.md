@@ -82,3 +82,37 @@ TVAL=0000000000000000
  f24 0000000000000000 f25 0000000000000000 f26 0000000000000000 f27 0000000000000000
  f28 0000000000000000 f29 0000000000000000 f30 0000000000000000 f31 0000000000000000
 ```
+
+
+```cpp
+static const TypeInfo loongarch_cpu_type_infos[] = {
+    {
+        .name = TYPE_LOONGARCH_CPU,
+        .parent = TYPE_CPU,
+        .instance_size = sizeof(LoongArchCPU),
+        .instance_align = __alignof(LoongArchCPU),
+        .instance_init = loongarch_cpu_init,
+
+        .abstract = true,
+        .class_size = sizeof(LoongArchCPUClass),
+        .class_init = loongarch_cpu_class_init,
+    },
+    {
+        .name = TYPE_LOONGARCH32_CPU,
+        .parent = TYPE_LOONGARCH_CPU,
+
+        .abstract = true,
+        .class_init = loongarch32_cpu_class_init,
+    },
+    {
+        .name = TYPE_LOONGARCH64_CPU,
+        .parent = TYPE_LOONGARCH_CPU,
+
+        .abstract = true,
+        .class_init = loongarch64_cpu_class_init,
+    },
+    DEFINE_LOONGARCH_CPU_TYPE(64, "la464", loongarch_la464_initfn),
+    DEFINE_LOONGARCH_CPU_TYPE(32, "la132", loongarch_la132_initfn),
+    DEFINE_LOONGARCH_CPU_TYPE(64, "max", loongarch_max_initfn),
+};
+```

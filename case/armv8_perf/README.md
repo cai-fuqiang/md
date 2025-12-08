@@ -1,6 +1,12 @@
+## 环境描述
+
+* **CPU**: `kunpeng 920 7260z`
+* **host kernel**: 4.19.90-89.11.v2401.ky10.aarch64
+* **guest OS**: 
+  + openeuler 2203+ (目前仅测试了openeuler 2203, openeuler 2509)
+
 ## 问题描述
-在`kunpeng 920 7260z` 硬件中, 使用kylin 内核`4.19`作为host内核，并在虚拟机
-中启动`openeuler 2203 sp1`，以及`openeuler 2509`系统均会遇到下面panic
+启动虚拟机后 , 系统卡住，通过串口查看dmesg，发现出现内核panic:
 ```
 Loading Linux 6.6.0-102.0.0.8.oe2509.aarch64 ...
 ^MLoading initial ramdisk ...
@@ -45,8 +51,27 @@ Loading Linux 6.6.0-102.0.0.8.oe2509.aarch64 ...
 [    0.583171][    T1] Rebooting in 3 seconds..
 ```
 
-通过反编译触发问题的指令是在访问`pmmir` sys regsiter, 
-代码如下:
+## 问题调研
+
+panic 原因是`undefine inst`, 使用gdb 查看出问题的指令:
+```
+(gdb) p __armv8pmu_probe_pmu
+$1 = {void (void *)} 0xffff800080b948e0 <__armv8pmu_probe_pmu>
+
+## 0xe0+0xdc = 0x1bc
+
+0xffff800080b949b8 <+216>:   b.ls    0xffff800080b949c0 <__armv8pmu_probe_pmu+224>  // b.plast
+0xffff800080b949bc <+220>:   mrs     x23, s3_0_c9_c14_6  // <== here
+0xffff800080b949c0 <+224>:   str     x23, [x20, #1152]
+```
+
+可以看到是访问`s3_0_c9_c14_6`，查看内核代码:
+
+```cpp
+#define SYS_PMMIR_EL1                   sys_reg(3, 0, 9, 14, 6)
+```
+
+可以发现触发问题的指令是在访问`pmmir` sys regsiter, 代码如下:
 
 ```sh
 __armv8pmu_probe_pmu
@@ -105,11 +130,27 @@ UnsignedEnum    11:8    PMUVer
 
 手册中也有如下介绍:
 
+<details>
+<summary>ID_DFR0_EL1_PMUVer 展开</summary>
+
 ![ID_DFR0_EL1_PMUVer](pic/ID_DFR0_EL1_PMUVer.png)
+
+</details>
 
 而`PMUV3P4`也控制`PMMIR` register define.
 
+<details>
+<summary> PMUV3P4 展开</summary>
+
 ![PMUV3P4](pic/PMUV3P4.png)
+
+
+> 除了`ID_AA64DFR0_EL1`, 还有其他寄存器都通过字段指示 PMUV3P4 功能是是
+> 否存在
+>
+> （这里不太确定是不是子feature, 这些寄存器会不会呈现不同的vesion)
+
+</details>
 
 而在
 ```diff
@@ -151,9 +192,17 @@ Date:   Mon Mar 2 18:17:51 2020 +0000
     registers (added in PMUv3 for ARMv8.4) and 64-bit event counters
     added in (PMUv3 for ARMv8.5).
 
+    我们目前通过对 DFR0_EL1 和 AA64DFR0_EL1 调试特性寄存器的模拟，将主机的 PMU
+    版本暴露给客户机。然而，KVM 并不支持 PMUv3 for 8.1 之后提供的许多功能。例如，
+    PMUv3 for ARMv8.4 中新增的 PMMIR 寄存器支持，以及 PMUv3 for ARMv8.5 中新增的
+    64 位事件计数器等。
+
     Let's trap the Debug Feature Registers in order to limit
     PMUVer/PerfMon in the Debug Feature Registers to PMUv3 for ARMv8.1
     to avoid unexpected behaviour.
+
+    为了避免意外行为，让我们对调试特性寄存器进行陷阱处理，将调试特性寄存器中的
+    PMUVer/PerfMon 限制在 PMUv3 for ARMv8.1 的范围内。
 
     Both ID_AA64DFR0.PMUVer and ID_DFR0.PerfMon follow the "Alternative ID
     scheme used for the Performance Monitors Extension version" where 0xF
@@ -162,9 +211,27 @@ Date:   Mon Mar 2 18:17:51 2020 +0000
     present). As we don't expect to expose an IMPLEMENTATION DEFINED PMU,
     and our cap is below 0xF, we can treat these fields as unsigned when
     applying the cap.
+
+    ID_AA64DFR0.PMUVer 和 ID_DFR0.PerfMon 都遵循“Alternative ID  scheme used for
+    the Performance Monitors Extension version", 其中 0xF 表示实现定义
+    （IMPLEMENTATION DEFINED）的 PMU 被实现，0x0-0xE 的值则作为无符号字段处理
+    （0x0 表示没有 PMU）。由于我们不打算暴露实现定义的 PMU，并且我们的上限低于
+    0xF，因此在应用上限时可以将这些字段视为无符号数。
 ```
 
-其patch 代码为:
+大概的意思是, 目前KVM只支持到了 `ARMv8.1` 的 PMU feature, ARMv8.4 中新增的
+`PMMIR`寄存器以及 ARMv8.5 64 event counter 均不支持。(kvm还没有实现)
+
+所以这里将暴露给guest的`PMUVer`, `PerfMon` 均限制在 `< PMUv3(ARMv8.1)`.
+
+> NOTE
+>
+> 如果这字段值为 `0xF`, 毕晓世 PMU 是 `IMPLEMENTATION DEFINE`， 如果是这种情况，
+> KVM 不打算报漏给虚拟机这个值。(这种类似于自定义的，KVM 没有办法（也不想）模拟)
+>
+> 个人理解
+
+上面两个 patch 代码类似，我们以后一个patch为例, 代码为:
 ```diff
 @@ -1085,6 +1085,16 @@ static u64 read_id_reg(const struct kvm_vcpu *vcpu,
                          (0xfUL << ID_AA64ISAR1_API_SHIFT) |
@@ -209,8 +276,11 @@ cpuid_feature_cap_perfmon_field
 大概的算法是 `val` 表示该字段的值，一般表示ver, ver 越大，表示版本越新，一般
 新版本功能在旧版本功能基础上的扩展。
 
-* 如果 `val == ID_AA64DFR0_EL1_PMUVer_IMP_DEF`, 则val 返回zero.(这个待研究 **TODO**)
-* 如果 `val > cap`, 则 尝试使用`cap` 变量的值覆盖原来的。
+* 如果 `val == ID_AA64DFR0_EL1_PMUVer_IMP_DEF`, 则val 返回zero.(不暴露
+    `IMPLEMENTATION DEFINE PMU`)
+
+* 如果 `val > cap`, (相当于当前host版本 --`val` 高于KVM 目前实现的版本 
+  -- `cap`, 则使用 KVM 目前实现的版本。
 
 回到上面patch:
 ```cpp
@@ -230,18 +300,22 @@ In an Armv8.1 implementation, if FEAT_PMUv3 is implemented, FEAT_PMUv3p1 is impl
 
 而`ID_DFR0.PERFMON`， 则表示另一个verison,我们这里先不详细展开:
 
+<details>
+<summary>ID_DFR0_PERFMON 展开</summary>
+
 ![ID_DFR0_PERFMON](pic/ID_DFR0_PERFMON.png)
+
+</details>
 
 ***
 
-综合来看，该patch的作用就是将 guest 能观察到的一些 "version" 限制到了 `armv8.1`, 为什么要这样
-做呢? 是因为 PMU 的一些功能是需要kvm来模拟的，当前KVM 版本只实现了 armv8.1 的功能。
-(commit 
+综合来看，该patch的作用就是将 guest 能观察到的一些 "version" 限制到了 `armv8.1`,
+(而上面第一个commit 
 ```
 46081078feb451b5488c225c1e600ada24285c06
 KVM: arm64: Upgrade PMU support to ARMv8.4
 ```
-则是实现到了8.4)
+则是KVM PMU 实现到了 `armv8.4`,  所以暴露给guest 8.4 的 Ver)
 
 ## 其他host 内核测试
 
@@ -249,16 +323,36 @@ KVM: arm64: Upgrade PMU support to ARMv8.4
 虚拟机可以正常启动
 
 ## 总结
-所以，该问题的原因是, `kunpeng 920 7260z` 硬件支持`PMUV3P4`, KVM 将该feature 报告给了guest,
-guest 误认为 自己所在的"硬件" 支持该feature, 便访问了`pmmir`, 但是KVM 只实现到了
-`PMU 8.1(PMUv3P1)`. 所以需要报告给guest，当前模拟的硬件为`PMU 8.1`
+
+### 问题原因
+
+`kunpeng 920 7260z` 硬件支持`PMUV3P4`, KVM 将该feature 报告给了guest, guest 误认
+为 自己所在的"硬件" 支持该feature, 便访问了`pmmir`, 但是KVM 只实现到了 `PMU
+8.1(PMUv3P1)`. 所以需要报告给guest，当前模拟的硬件为`PMU 8.1`
+
+### 影响范围
+* CPU: 支持 PMUv3p4, 例如 `kunpeng 920 7260z`
+* guest kernel:
+  + 合入 commit 
+    ```
+    f5be3a61fdb5dd11ef60173e2783ccf62685f892
+
+    arm64: perf: Add support caps under sysfs
+    ```
+  + 上游版本: `v5.10-rc1+`
+
+### 解决方法
 
 需要在原有内核合入下面patch:
 ```
 c854188ea01062f5a5fd7f05658feb1863774eaa
 KVM: arm64: limit PMU version to PMUv3 for ARMv8.1
 ```
+openeuler commit:
+* https://gitee.com/openeuler/kernel/commit/c854188ea
 
+<!--
 ## TODO
 * 在客户环境host，查看 `kunpeng 920 7260z` 是否支持`PMUV3P4`
 * `ID_AA64DFR0_EL1_PMUVer_xxx` 在内核中的定义
+-->

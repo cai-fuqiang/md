@@ -120,3 +120,36 @@ XhcClearBiosOwnership: called to clear BIOS ownership
 DisableFloatExitBootServicesEventNotify
 ```
 查看openeuler社区和 龙蜥社区，`CONFIG_LOONGARCH_IOMMU`都设置的`m`.
+
+但是在下面commit 中，将 `loongarch_iommu_disable` 更改为1， 这样的修复方式真的
+6.
+
+```
+commit 7e640142ed329d136ee5d8aad89fe14226330abb
+Author: Xianglai Li <lixianglai@loongson.cn>
+Date:   Tue Jun 24 17:32:27 2025 +0800
+
+    drivers/iommu: Fix the initialization failure issue of the iommu module
+
+    LoongArch inclusion
+    category: feature
+    bugzilla: https://gitee.com/openeuler/kernel/issues/ICOJKT
+
+    ------------------------------------------
+
+    Add support for the def_domain_type callback function.
+
+    Link:https://gitee.com/openeuler/kernel/pulls/17271
+    Signed-off-by: Xianglai Li <lixianglai@loongson.cn>
+
+diff --git a/drivers/iommu/loongarch_iommu.c b/drivers/iommu/loongarch_iommu.c
+index 038438b06281..8cfd36878e50 100644
+--- a/drivers/iommu/loongarch_iommu.c
++++ b/drivers/iommu/loongarch_iommu.c
+@@ -109,7 +109,7 @@ u16 la_iommu_last_bdf;                      /* largest PCI device id
+                                                 *  we have to handle
+                                                 */
+
+-int loongarch_iommu_disable = 1;
++int loongarch_iommu_disable;
+```

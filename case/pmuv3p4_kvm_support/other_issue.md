@@ -59,3 +59,69 @@ root     1402916  0.0  0.0 214080  1536 pts/2    S+   11:30   0:00 grep --color=
   kvm_set_irq: No such device or address
   Aborted
   ```
+## gdb 调试带PMU
+```
+(gdb) bt
+#0  0x0000fffff68f6614 in raise () from /usr/lib64/libc.so.6
+#1  0x0000fffff68f7a80 in abort () from /usr/lib64/libc.so.6
+#2  0x0000aaaaaaf3591c in kvm_arm_pmu_set_irq (cs=cs@entry=0xaaaaacc00000, irq=<optimized out>, irq@entry=23)
+    at /usr/src/debug/qemu-4.1.0.30-3253dce3.ky10.aarch64/target/arm/kvm64.c:444
+#3  0x0000aaaaaaebd2dc in virt_cpu_init_pmu (cpu=cpu@entry=0xaaaaacc00000, vms=0xaaaaac680000) at /usr/src/debug/qemu-4.1.0.30-3253dce3.ky10.aarch64/hw/arm/virt.c:617
+#4  0x0000aaaaaaec09e8 in fdt_add_pmu_nodes (vms=0xaaaaac680000) at /usr/src/debug/qemu-4.1.0.30-3253dce3.ky10.aarch64/hw/arm/virt.c:632
+#5  machvirt_init (machine=0xaaaaab38e000 <__func__.43377+8>) at /usr/src/debug/qemu-4.1.0.30-3253dce3.ky10.aarch64/hw/arm/virt.c:1841
+#6  0x0000aaaaab0711e0 in machine_run_board_init (machine=0xaaaaac680000) at hw/core/machine.c:1132
+#7  0x0000aaaaaad899b4 in main (argc=<optimized out>, argv=<optimized out>, envp=<optimized out>) at vl.c:4484
+(gdb) f 2
+#2  0x0000aaaaaaf3591c in kvm_arm_pmu_set_irq (cs=cs@entry=0xaaaaacc00000, irq=<optimized out>, irq@entry=23)
+    at /usr/src/debug/qemu-4.1.0.30-3253dce3.ky10.aarch64/target/arm/kvm64.c:444
+444	        abort();
+
+```
+
+## gdb 调试 不带 PMU
+
+在此处打断点:
+```cpp
+int kvm_set_irq(KVMState *s, int irq, int level)
+{
+    struct kvm_irq_level event;
+    int ret;
+
+    assert(kvm_async_interrupts_enabled());
+
+    event.level = level;
+    event.irq = irq;
+    ret = kvm_vm_ioctl(s, s->irq_set_ioctl, &event);
+    if (ret < 0) {
+        perror("kvm_set_irq");   //here
+        abort();
+    }
+
+    return (s->irq_set_ioctl == KVM_IRQ_LINE) ? 1 : event.status;
+}
+```
+调试断点:
+```
+Thread 4 (LWP 1515341):
+#0  kvm_set_irq (s=0xaaaaac7b0000, irq=<optimized out>, level=<optimized out>) at /usr/src/debug/qemu-4.1.0.30-3253dce3.ky10.aarch64/accel/kvm/kvm-all.c:1272
+#1  0x0000aaaaaaf203bc in write_cpustate_to_list (cpu=cpu@entry=0xaaaaacc00000, kvm_sync=kvm_sync@entry=true) at /usr/src/debug/qemu-4.1.0.30-3253dce3.ky10.aarch64/target/arm/helper.c:323
+#2  0x0000aaaaaaf36578 in kvm_arch_put_registers (cs=0xaaaaacc00000, level=43690) at /usr/src/debug/qemu-4.1.0.30-3253dce3.ky10.aarch64/target/arm/kvm64.c:912
+#3  0x0000aaaaaadf4114 in do_kvm_cpu_synchronize_post_init (cpu=0xaaaaacc00000, arg=...) at /usr/src/debug/qemu-4.1.0.30-3253dce3.ky10.aarch64/accel/kvm/kvm-all.c:2199
+#4  0x0000aaaaaaffd350 in process_queued_cpu_work (cpu=0xaaaaacc00000) at cpus-common.c:342
+#5  0x0000aaaaaadd4b50 in qemu_wait_io_event (cpu=cpu@entry=0xaaaaacc00000) at /usr/src/debug/qemu-4.1.0.30-3253dce3.ky10.aarch64/cpus.c:1254
+#6  0x0000aaaaaadd4ea0 in qemu_kvm_cpu_thread_fn (arg=0xaaaaacc00000) at /usr/src/debug/qemu-4.1.0.30-3253dce3.ky10.aarch64/cpus.c:1290
+#7  0x0000aaaaab31f15c in qemu_thread_start (args=0xaaaaac6540e0) at util/qemu-thread-posix.c:502
+#8  0x0000fffff6a587a0 in ?? () from /usr/lib64/libpthread.so.0
+#9  0x0000fffff699bcbc in ?? () from /usr/lib64/libc.so.6
+
+(gdb) f 1
+#1  0x0000aaaaaaf203bc in write_cpustate_to_list (cpu=cpu@entry=0xaaaaacc00000, kvm_sync=kvm_sync@entry=true)
+    at /usr/src/debug/qemu-4.1.0.30-3253dce3.ky10.aarch64/target/arm/helper.c:323
+323	                write_raw_cp_reg(&cpu->env, ri, oldval);
+(gdb) p *ri
+$10 = {name = 0xaaaaac1a69b0 "PMINTENCLR_EL1", cp = 19 '\023', crn = 9 '\t', crm = 14 '\016', opc0 = 3 '\003', opc1 = 0 '\000', opc2 = 2 '\002', state = 1, type = 96, 
+  access = 252, secure = 2, opaque = 0x0, resetvalue = 0, fieldoffset = 1168, bank_fieldoffsets = {0, 0}, accessfn = 0xaaaaaaf18f38 <access_tpm>, readfn = 0x0, 
+  writefn = 0xaaaaaaf160c8 <pmintenclr_write>, raw_readfn = 0x0, raw_writefn = 0x0, resetfn = 0x0}
+```
+
+发现同样是`PMU`相关寄存器.

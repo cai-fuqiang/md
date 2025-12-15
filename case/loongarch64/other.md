@@ -115,6 +115,19 @@ kexec: failed to load kdump kernel
 Starting kdump: [FAILED]
 ```
 dmesg中无报错.
+
+咨询龙芯研发人员，其建议用13以上版本。
+
+查看openeuler kexec-tools所有分支:
+
+发现`openEuler-24.03-LTS-SP3` 是最新的。
+
+https://gitee.com/src-openeuler/kexec-tools/blob/openEuler-24.03-LTS-SP3/kexec-tools.spec
+
+在版本为16版本。
+
+编译后，执行`echo c > /proc/sysrq-trigger` 可以正常产生vmcore, 并且vmcore可以正
+常打开。
 <!--
 调试，找到kexec命令cmdline
 ```

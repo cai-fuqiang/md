@@ -10,4 +10,4 @@
 * [ ] [其他](./other.md)
   + [X] 热迁移
   + [ ] virsh dump后的转储文件, 使用crash命令打开失败
-  + [ ] kdumpctl start 报错
+  + [X] kdumpctl start 报错

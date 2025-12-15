@@ -78,6 +78,57 @@ root     1402916  0.0  0.0 214080  1536 pts/2    S+   11:30   0:00 grep --color=
 
 ```
 
+代码为:
+```sh
+machvirt_init
+=> fdt_add_pmu_nodes
+   => CPU_FOREACH(cpu)
+      => if !arm_feature(&armcpu->env, ARM_FEATURE_PMU)
+         \-> return
+      => if kvm_enabled()
+         \=> if kvm_irqchip_in_kernel()
+             \=> kvm_arm_pmu_set_irq(cpu, PPI(VIRTUAL_PMU_IRQ));
+                 |=> struct kvm_device_attr attr = {
+                          .group = KVM_ARM_VCPU_PMU_V3_CTRL,
+                          .addr = (intptr_t)&irq,
+                          .attr = KVM_ARM_VCPU_PMU_V3_IRQ,
+                     } 
+                 |=> kvm_arm_pmu_set_attr(cs, &attr);
+         |=> kvm_arm_pmu_init()
+             => struct kvm_device_attr attr = {
+                    .group = KVM_ARM_VCPU_PMU_V3_CTRL,
+                    .attr = KVM_ARM_VCPU_PMU_V3_INIT,
+                };
+             => kvm_arm_pmu_set_attr(cs, &attr)
+   ## 下面构造fdt node
+   => armcpu = ARM_CPU(qemu_get_cpu(0));
+   => qemu_fdt_add_subnode(vms->fdt, "/pmu");
+   => if arm_feature(&armcpu->env, ARM_FEATURE_V8)
+      => const char compat[] = "arm,armv8-pmuv3";
+      => qemu_fdt_setprop(vms->fdt, "/pmu", "compatible", ...)
+      => qemu_fdt_setprop_cells(vms->fdt, "/pmu", "interrupts", ...)
+```
+大概的逻辑是:
+1. 先设置PMU IRQ vector
+2. 调用` KVM_ARM_VCPU_PMU_V3_INIT` 初始化PMU
+3. 在fdt 中新增 pmu node
+
+kvm 中会调用`kvm_arm_pmu_v3_set_attr` 执行具体的attr, 使用function_graph tracer
+调试:
+
+```
+[root@43-66-4-72 20:07:14 tracing]# echo kvm_arm_pmu_v3_set_attr > set_graph_function
+[root@43-66-4-72 20:07:33 tracing]# echo function_graph > current_tracer 
+[root@43-66-4-72 20:10:06 tracing]# cat trace
+# tracer: function_graph
+#
+# CPU  DURATION                  FUNCTION CALLS
+# |     |   |                     |   |   |   |
+ 230)   2.770 us    |  kvm_arm_pmu_v3_set_attr();
+ ------------------------------------------
+ 230) qemu-kv-712267 => qemu-kv-712819
+```
+
 ## gdb 调试 不带 PMU
 
 在此处打断点:

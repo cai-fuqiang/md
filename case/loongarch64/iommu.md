@@ -153,3 +153,42 @@ index 038438b06281..8cfd36878e50 100644
 -int loongarch_iommu_disable = 1;
 +int loongarch_iommu_disable;
 ```
+
+## 简单测试
+使用`dpdk-devbind.py` 将设备驱动更改为`vfio-pci`:
+```
+[root@localhost wangfuqiang]# dpdk-devbind.py --bind=vfio-pci 0001:01:00.0
+[root@localhost wangfuqiang]# dpdk-devbind.py --status
+
+Network devices using DPDK-compatible driver
+============================================
+0001:01:00.0 'MT2894 Family [ConnectX-6 Lx] 101f' numa_node=1 drv=vfio-pci unused=mlx5_core
+```
+
+更改xml:
+```
+    <hostdev mode='subsystem' type='pci' managed='yes'>
+      <driver name='vfio'/>
+      <source>
+        <address domain='0x0001' bus='0x01' slot='0x00' function='0x0'/>
+      </source>
+      <alias name='hostdev0'/>
+      <address type='pci' domain='0x0000' bus='0x01' slot='0x00' function='0x0'/>
+    </hostdev>
+```
+
+进入虚拟机查看透传网卡
+```
+[root@localhost ~]# lspci |grep Mell
+01:00.0 Ethernet controller: Mellanox Technologies MT2894 Family [ConnectX-6 Lx]
+```
+
+配ip简单测试:
+```
+[root@localhost ~]# ifconfig eth0 1.1.1.1
+[root@localhost ~]# ip a
+2: eth0: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc mq state DOWN group default qlen 1000
+    link/ether e0:9d:73:59:cd:f4 brd ff:ff:ff:ff:ff:ff
+    inet 1.1.1.1/8 brd 1.255.255.255 scope global eth0
+       valid_lft forever preferred_lft forever
+```

@@ -83,7 +83,15 @@ TVAL=0000000000000000
  f28 0000000000000000 f29 0000000000000000 f30 0000000000000000 f31 0000000000000000
 ```
 
+经定位是kernel没有找到相关的`cpu model`
 
+在xml 中必须定义如下的配置，否则就会出现上面的问题
+```xml
+  <cpu mode='xxxx' match='exact' check='none'>
+  </cpu>
+```
+
+但是 查看qemu代码，发现没有`cpu host` 的cpu model:
 ```cpp
 static const TypeInfo loongarch_cpu_type_infos[] = {
     {
@@ -115,4 +123,26 @@ static const TypeInfo loongarch_cpu_type_infos[] = {
     DEFINE_LOONGARCH_CPU_TYPE(32, "la132", loongarch_la132_initfn),
     DEFINE_LOONGARCH_CPU_TYPE(64, "max", loongarch_max_initfn),
 };
+```
+
+在host执行下面的命令也会报错:
+```
+[root@localhost wangfuqiang]# qemu-system-loongarch64 -cpu host --machine virt,accel=kvm
+...
+configure accelerator virt start
+machine init start
+qemu-system-loongarch64: unable to find CPU model 'host'
+```
+所以不能使用`host-passthrough`的配置方式
+
+## 修改方法
+
+配置为
+```xml
+  <cpu mode='custom' match='exact' check='none'>
+    <model fallback='forbid'>la464</model>
+    <numa>
+      <cell id='0' cpus='0-127' memory='16777216' unit='KiB' memAccess='shared'/>
+    </numa>
+  </cpu>
 ```

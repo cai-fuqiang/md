@@ -401,3 +401,26 @@ main
             "/unattached"), "sysbus", OBJECT(sysbus_get_default()),
             NULL);
 ```
+
+## 其他
+### 查看正常机器domcapabilities 会启动哪些 cmdline的qemu 
+使用execsnoop抓取
+1. 先清缓存
+   ```
+   [root@11-244-8-133 18:21:26 ~]# /bin/rm -rf /var/cache/libvirt/* 
+   ```
+2. 执行`execsnoop`脚本等待输出
+3. 重启libvirtd
+4. 观察`execsnoop`程序
+   ```
+   qemu-kvm         1603167 1603129   0 /usr/libexec/qemu-kvm -S -no-user-config
+     -nodefaults -nographic -machine none,accel=kvm:tcg 
+     -qmp unix:/var/lib/libvirt/qemu/qmp-D96SH3/qmp.monitor,server,nowait 
+     -pidfile /var/lib/libvirt/qemu/qmp-D96SH3/qmp.pid -daemonize
+   qemu-kvm         1603177 1603129   0 /usr/libexec/qemu-kvm -S -no-user-config 
+     -nodefaults -nographic -machine none,accel=tcg 
+     -qmp unix:/var/lib/libvirt/qemu/qmp-J7PVH3/qmp.monitor,server,nowait
+     -pidfile /var/lib/libvirt/qemu/qmp-J7PVH3/qmp.pid -daemonize
+   ```
+
+   可以发现在这个过程中不会启动, `machine virt`(不带gic-version=3)的qemu

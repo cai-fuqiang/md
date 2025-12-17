@@ -1,0 +1,513 @@
+       qemu-kvm2-147728 [075] ....  5066.143510: sys_futex(uaddr: fffff2b37234, op: 1, val: 1, utime: 0, uaddr2: 0, val3: 0)
+       qemu-kvm2-147728 [075] ....  5066.143518: sys_futex -> 0x0
+       qemu-kvm2-147728 [075] ....  5066.143522: sys_futex(uaddr: fffff2b37234, op: 81, val: 1, utime: 0, uaddr2: 0, val3: 0)
+       qemu-kvm2-147728 [075] ....  5066.143523: sys_futex -> 0x0
+       qemu-kvm2-147731 [077] ....  5066.150870: sys_futex(uaddr: aaab1e1057f0, op: 80, val: 2, utime: 0, uaddr2: aaab1e1057f0, val3: 80)
+       qemu-kvm2-147731 [077] ....  5066.150877: sys_futex -> 0xfffffffffffffff5
+       qemu-kvm2-147731 [077] ....  5066.150880: sys_futex(uaddr: aaab1e1057f0, op: 81, val: 1, utime: 0, uaddr2: aaab1e1057f0, val3: 17f)
+       qemu-kvm2-147731 [077] ....  5066.150884: sys_futex -> 0x0
+       qemu-kvm2-147733 [079] ....  5066.151067: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5066.151151: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5066.151156: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5066.151168: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5066.151359: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5066.152618: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5066.152623: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147729 [076] ....  5066.154355: sys_futex(uaddr: aaab1e105838, op: 0, val: ffffffff, utime: 0, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5066.155163: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5066.155167: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5066.157161: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5066.157165: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5066.161261: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5066.161264: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5066.161452: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5066.161455: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5066.162047: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5066.162056: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5066.166811: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5066.166814: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5066.169814: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5066.169818: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5066.177737: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5066.177741: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5066.177847: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5066.177851: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5066.178048: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5066.178051: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5066.178328: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5066.178332: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5066.184209: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5066.184212: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5066.186487: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5066.186491: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5066.188620: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5066.188624: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5066.188795: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5066.188799: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5066.190211: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5066.190213: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5066.199954: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5066.199959: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5066.203837: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5066.203841: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5066.211749: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5066.211751: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5066.216292: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5066.216297: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5066.225752: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5066.225753: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5066.226022: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5066.226024: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5066.227111: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5066.227116: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5066.229413: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5066.229417: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5066.238334: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5066.238336: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5066.239378: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5066.239380: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5066.241888: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5066.241889: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5066.242498: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5066.242499: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5066.243363: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5066.243365: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5066.255605: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5066.255609: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5066.262403: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5066.262408: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5066.271441: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5066.271445: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5066.272926: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5066.272930: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5066.284158: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5066.284162: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5066.285854: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5066.285858: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5066.286750: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5066.286754: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5066.295679: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5066.295683: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5066.302780: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5066.302782: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5066.309676: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5066.309680: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5066.317001: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5066.317005: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5066.331741: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5066.331745: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5066.346316: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5066.346321: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5066.349365: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5066.349370: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5066.352877: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5066.352881: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5066.360694: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5066.360698: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5066.371335: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5066.371339: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5066.386969: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5066.386975: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5066.395703: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5066.395708: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5066.413091: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5066.413096: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5066.420910: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5066.420914: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5066.440759: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5066.440763: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5066.447198: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5066.447202: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5066.464627: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5066.464631: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5066.470916: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5066.470920: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5066.472455: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5066.472459: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5066.475748: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5066.475752: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5066.479330: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5066.479334: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5066.508290: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5066.508294: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5066.511917: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5066.511921: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5066.514183: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5066.514188: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5066.521095: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5066.521100: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5066.538366: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5066.538371: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5066.563449: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5066.563454: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5066.588269: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5066.588274: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5066.599793: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5066.599798: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5066.602877: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5066.602882: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5066.620508: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5066.620512: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5066.647579: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5066.647584: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5066.660631: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5066.660636: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5066.666770: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5066.666772: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5066.701318: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5066.701319: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5066.729059: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5066.729063: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5066.729282: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5066.729287: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5066.740321: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5066.740325: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5066.766672: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5066.766676: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5066.840475: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5066.840479: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5066.841421: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5066.841425: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5066.854342: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5066.854347: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5066.858584: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5066.858589: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5066.902766: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5066.902770: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5066.903755: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5066.903759: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5066.908828: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5066.908832: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5066.920374: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5066.920376: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5066.920909: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5066.920911: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5066.933299: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5066.933301: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5066.954867: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5066.954869: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5067.017975: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5067.017979: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5067.038956: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5067.038961: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5067.038975: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5067.038977: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5067.086392: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5067.086397: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5067.104634: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5067.104639: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5067.161880: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5067.161884: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5067.167054: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5067.167058: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5067.193240: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5067.193244: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5067.224994: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5067.224998: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5067.299252: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5067.299257: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5067.330162: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5067.330166: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5067.419100: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5067.419104: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5067.430461: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5067.430465: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5067.497238: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5067.497242: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5067.624149: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5067.624154: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5067.625200: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5067.625204: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5067.675109: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5067.675114: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5067.729254: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5067.729258: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5067.834970: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5067.834974: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5067.851502: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5067.851506: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5067.874373: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5067.874377: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5067.907310: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5067.907315: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5067.936527: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5067.936531: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5067.973200: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5067.973205: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5067.974188: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5067.974192: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5068.021595: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5068.021599: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5068.127780: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5068.127784: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5068.142903: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5068.142907: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5068.235057: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5068.235061: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5068.276724: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5068.276728: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5068.284011: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5068.284015: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5068.288517: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5068.288521: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5068.313379: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5068.313383: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5068.411790: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5068.411794: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5068.420297: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5068.420301: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5068.522591: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5068.522595: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5068.530240: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5068.530244: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5068.660103: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5068.660107: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5068.739981: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5068.739986: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5068.743611: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5068.743615: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5068.793493: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5068.793497: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5068.839247: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5068.839251: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5068.927018: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5068.927022: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5069.006017: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5069.006022: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5069.014023: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5069.014027: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5069.032388: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5069.032392: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5069.058964: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5069.058969: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5069.078221: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5069.078226: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5069.153965: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5069.153970: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5069.231834: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5069.231840: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5069.267228: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5069.267233: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5069.280490: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5069.280495: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5069.346757: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5069.346763: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5069.519617: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5069.519622: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5069.520492: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5069.520496: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5069.565756: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5069.565760: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5069.574517: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5069.574522: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5069.636473: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5069.636477: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5069.648694: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5069.648698: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5069.714165: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5069.714169: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5069.736795: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5069.736799: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5069.760017: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5069.760022: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5069.769719: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5069.769724: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5069.819703: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5069.819708: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5069.839745: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5069.839749: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5069.907025: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5069.907029: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5069.924156: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5069.924160: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5069.978128: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5069.978132: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5069.984522: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5069.984526: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5070.001193: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5070.001197: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5070.054804: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5070.054809: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5070.216797: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5070.216802: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5070.235911: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5070.235915: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5070.260653: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5070.260657: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5070.286318: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5070.286322: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5070.358642: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5070.358647: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5070.450030: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5070.450034: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5070.457058: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5070.457062: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5070.465691: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5070.465695: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5070.529276: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5070.529281: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5070.550884: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5070.550888: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5070.713495: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5070.713499: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5070.714007: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5070.714012: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5070.766747: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5070.766752: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5070.772649: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5070.772654: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5070.792754: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5070.792759: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5070.823894: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5070.823899: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5070.824991: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5070.824996: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5070.852147: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5070.852151: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5070.924690: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5070.924695: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5070.966938: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5070.966943: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5070.979339: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5070.979344: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5071.059815: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5071.059819: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5071.076351: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5071.076355: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5071.087867: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5071.087872: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5071.126880: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5071.126884: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5071.274494: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5071.274498: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5071.291216: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5071.291220: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5071.339832: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5071.339836: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5071.344439: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5071.344443: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5071.536658: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5071.536664: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5071.545572: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5071.545577: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5071.587400: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5071.587405: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5071.611080: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5071.611084: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5071.728091: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5071.728096: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5071.814631: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5071.814637: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5071.829385: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5071.829389: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5071.846934: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5071.846938: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5071.867481: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5071.867485: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5071.888467: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5071.888471: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5071.974279: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5071.974284: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5072.047832: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5072.047837: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5072.104393: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5072.104399: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5072.109271: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5072.109276: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5072.157205: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5072.157210: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5072.214638: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5072.214643: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5072.228849: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5072.228850: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5072.325336: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5072.325341: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5072.350918: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5072.350919: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5072.388231: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5072.388236: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5072.491294: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5072.491299: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5072.544687: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5072.544691: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5072.559605: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5072.559610: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5072.632909: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5072.632913: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5072.726075: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5072.726079: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5072.727031: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5072.727036: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5072.773133: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5072.773137: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5072.811270: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5072.811274: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5072.827344: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5072.827348: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5072.871989: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5072.871993: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5072.886011: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5072.886015: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5072.926861: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5072.926865: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5072.971143: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5072.971148: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5073.045964: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5073.045968: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5073.078612: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5073.078616: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5073.139211: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5073.139215: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5073.161072: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5073.161076: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5073.252631: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5073.252635: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5073.305624: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5073.305628: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5073.379345: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5073.379349: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5073.395968: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5073.395972: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5073.577926: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5073.577930: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5073.593026: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5073.593031: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5073.636257: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5073.636263: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5073.647475: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5073.647479: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5073.760126: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5073.760131: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5073.781272: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5073.781277: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5073.831937: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5073.831941: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5073.869559: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5073.869564: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5073.870422: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5073.870426: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5073.925760: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5073.925765: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5073.967612: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5073.967616: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5073.975454: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5073.975459: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5073.997259: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5073.997263: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5074.018453: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5074.018458: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5074.097009: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5074.097013: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5074.149691: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5074.149696: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5074.194462: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5074.194467: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5074.200046: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5074.200050: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147732 [078] ....  5074.369112: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147732 [078] ....  5074.369116: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+       qemu-kvm2-147733 [079] ....  5074.431173: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147733 [079] ....  5074.431178: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+       qemu-kvm2-147734 [079] ....  5074.450677: sys_futex -> 0xffffffffffffff92
+       qemu-kvm2-147734 [079] ....  5074.450682: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+

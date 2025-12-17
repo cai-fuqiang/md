@@ -402,8 +402,184 @@ main
             NULL);
 ```
 
+## 使用tracepoint syscall::futex 调试
+
+1. 打开trace event
+   ```
+   echo 0 > /sys/kernel/debug/tracing/tracing_on
+   echo '' > /sys/kernel/debug/tracing/trace
+   echo 1 > /sys/kernel/debug/tracing/events/syscalls/sys_enter_futex/enable
+   echo 1 > /sys/kernel/debug/tracing/events/syscalls/sys_exit_futex/enable
+   echo 1 > /sys/kernel/debug/tracing/tracing_on
+   ```
+2. 启动qemu_kvm进程
+3. 过滤
+   ```
+    cat /sys/kernel/debug/tracing/trace_pipe|grep qemu-kvm2 > futex_log.txt
+   ```
+5. 可以发现
+   ```
+   qemu-kvm2-147733 [079] ....  5066.151067: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+   qemu-kvm2-147733 [079] ....  5066.151151: sys_futex -> 0xffffffffffffff92
+   qemu-kvm2-147733 [079] ....  5066.151156: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa239b928, uaddr2: 0, val3: 0)
+   qemu-kvm2-147734 [079] ....  5066.151168: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: ffffa1b8b928, uaddr2: 0, val3: 0)
+   qemu-kvm2-147732 [078] ....  5066.151359: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+   qemu-kvm2-147732 [078] ....  5066.152618: sys_futex -> 0xffffffffffffff92
+   qemu-kvm2-147732 [078] ....  5066.152623: sys_futex(uaddr: ffffad0a5838, op: 80, val: 2, utime: fffff2b36ae8, uaddr2: 0, val3: 0)
+   qemu-kvm2-147729 [076] ....  5066.154355: sys_futex(uaddr: aaab1e105838, op: 0, val: ffffffff, utime: 0, uaddr2: 0, val3: 0)
+   qemu-kvm2-147733 [079] ....  5066.155163: sys_futex -> 0xffffffffffffff92
+   ```
+   qemu的三个线程只执行过 `WAIT`, 但是没有执行过`WAKEUP`
+## 如下修改代码, 让子进程, 父进程在fork()后STOP
+```diff
+ void os_daemonize(void)
+ {
++    pid_t pid_tmp;
+     if (daemonize) {
+         pid_t pid;
+         int fds[2];
+@@ -288,6 +289,10 @@ void os_daemonize(void)
+
+         pid = fork();
+         if (pid > 0) {
++           pid_tmp = getpid();
++            printf("[%d] daemon father stop...\n", pid_tmp);
++           kill(pid_tmp, SIGSTOP);
++            printf("[%d] daemon father stop end\n", pid_tmp);
+             exit(0);
+         } else if (pid < 0) {
+             exit(1);
+@@ -297,6 +302,10 @@ void os_daemonize(void)
+         signal(SIGTSTP, SIG_IGN);
+         signal(SIGTTOU, SIG_IGN);
+         signal(SIGTTIN, SIG_IGN);
++       pid_tmp = getpid();
++       printf("[%d]: child process begin exec, STOP...\n", pid_tmp);
++       kill(pid_tmp, SIGSTOP);
++       printf("[%d]: child process STOP END\n", pid_tmp);
+     }
+ }
+```
+使父子进程fork()前后均调用`kill()`, 然后使用gdb调试两者堆栈:
+
+父进程
+```
+Thread 2 (LWP 346664):
+#0  0x0000fffe7dd72c58 in nanosleep () from /usr/lib64/libpthread.so.0
+#1  0x0000fffe7f121b1c in g_usleep () from /usr/lib64/libglib-2.0.so.0
+#2  0x0000aaac35311ee4 in call_rcu_thread (opaque=<optimized out>) at util/rcu.c:252
+#3  0x0000aaac352fee6c in qemu_thread_start (args=<optimized out>) at util/qemu-thread-posix.c:502
+#4  0x0000fffe7dd687a0 in ?? () from /usr/lib64/libpthread.so.0
+#5  0x0000fffe7dcabcbc in ?? () from /usr/lib64/libc.so.6
+
+Thread 1 (LWP 346663):
+#0  0x0000fffe7dc06948 in kill () from /usr/lib64/libc.so.6
+#1  0x0000aaac34fd6370 in os_daemonize () at os-posix.c:294
+#2  0x0000aaac34d66934 in main (argc=<optimized out>, argv=<optimized out>, envp=<optimized out>) at vl.c:3998
+```
+
+子进程:
+```
+Thread 2 (LWP 346666):
+#0  0x0000fffe7dca7e10 in syscall () from /usr/lib64/libc.so.6
+#1  0x0000fffe7e445f94 in base::internal::SpinLockDelay (w=0xfffe7e575838 <tcmalloc::Static::central_cache_+2432>, value=2, loop=<optimized out>) at ./src/base/spinlock_linux-inl.h:84
+#2  0x0000fffe7e445e30 in SpinLock::SlowLock (this=0xfffe7e575838 <tcmalloc::Static::central_cache_+2432>) at src/base/spinlock.cc:118
+#3  0x0000fffe7e434514 in SpinLock::Lock (this=0xfffe7e575838 <tcmalloc::Static::central_cache_+2432>) at src/base/spinlock.h:71
+#4  SpinLockHolder::SpinLockHolder (l=0xfffe7e575838 <tcmalloc::Static::central_cache_+2432>, this=<synthetic pointer>) at src/base/spinlock.h:133
+#5  tcmalloc::CentralFreeList::InsertRange (this=0xfffe7e575838 <tcmalloc::Static::central_cache_+2432>, start=0xaaac3d955820, end=0xaaac3d955820, N=1) at src/central_freelist.cc:230
+#6  0x0000fffe7f0faa14 in g_free () from /usr/lib64/libglib-2.0.so.0
+#7  0x0000aaac352fee34 in qemu_thread_start (args=0xaaac3de02c00) at util/qemu-thread-posix.c:499
+#8  0x0000fffe7dd687a0 in ?? () from /usr/lib64/libpthread.so.0
+#9  0x0000fffe7dcabcbc in ?? () from /usr/lib64/libc.so.6
+
+Thread 1 (LWP 346665):
+#0  0x0000fffe7dc06948 in kill () from /usr/lib64/libc.so.6
+#1  0x0000aaac34fd632c in os_daemonize () at os-posix.c:307
+#2  0x0000aaac34d66934 in main (argc=<optimized out>, argv=<optimized out>, envp=<optimized out>) at vl.c:3998
+```
+
+子进程刚刚进入就卡住了, 而卡住的位置:
+```cpp
+480 static void *qemu_thread_start(void *args)
+481 {
+482     QemuThreadArgs *qemu_thread_args = args;
+483     void *(*start_routine)(void *) = qemu_thread_args->start_routine;
+484     void *arg = qemu_thread_args->arg;
+485     void *r;
+486
+487 #ifdef CONFIG_THREAD_SETNAME_BYTHREAD
+488     /* Attempt to set the threads name; note that this is for debug, so
+489      * we're not going to fail if we can't set it.
+490      */
+491     if (name_threads && qemu_thread_args->name) {
+492 # if defined(CONFIG_PTHREAD_SETNAME_NP_W_TID)
+493         pthread_setname_np(pthread_self(), qemu_thread_args->name);
+494 # elif defined(CONFIG_PTHREAD_SETNAME_NP_WO_TID)
+495         pthread_setname_np(qemu_thread_args->name);
+496 # endif
+497     }
+498 #endif
+499     g_free(qemu_thread_args->name);
+500     g_free(qemu_thread_args);       //-->卡在这里面了
+501     pthread_cleanup_push(qemu_thread_atexit_notify, NULL);
+502     r = start_routine(arg);
+503     pthread_cleanup_pop(1);
+504     return r;
+505 }
+```
+其中`start_routine`:
+```sh
+(gdb) p qemu_thread_args->start_routine
+$5 = (void *(*)(void *)) 0xaaac35311e80 <call_rcu_thread>
+```
+
+那也就是说，父进程在fork()时，还未执行`start_routine()`, 在fork()之后，
+父进程执行未卡住，但是子进程卡住了。。。
+
+我们再增加调试信息, 让其在`fork()`之前STOP
+
+## 继续增加调试信息
+```
+[464030][464031]: enter new thread
+[464030][464031]: start gfree beg
+[464030][464031]: start gfree end
+[464030][464031]: start_routine
+[464033][464033]: stop before fork
+
+## kill -18 464033
+## 第一个stop
+
+## 父进程继续执行
+[464033][464034]: enter new thread
+[464033][464034]: start gfree beg
+[464033][464033]: stop end before fork
+[464033][464033]: start fork
+[464033][464034]: start gfree end
+[464033][464034]: start_routine
+[464033][464033]: fork end
+
+## 464673  是子进程,  子进程创建时, 父进程还没有执行到 
+## start_routine, 子进程创建后，会继续执行
+
+[464673][464673]: fork end
+[464673][464674]: enter new thread
+
+## 但是gfree 时，会因为futex卡住
+[464673][464674]: start gfree beg
+[464673][464673]: child process begin exec, STOP...
+
+[464673][464673]: child process STOP END
+[464673][466434]: enter new thread
+[464673][466434]: start gfree beg
+```
+
+此时父进程还未执行到子进程, 父进程却卡在了 `gfree`. 
+但是如果此时发送`SIGCONT`  给父进程, 父进程会继续执行, 并且
+可以执行到`start_routine`. 子进程也最终会执行到gfree，
+但是其会因为futex卡住。
+
 ## 其他
-### 查看正常机器domcapabilities 会启动哪些 cmdline的qemu 
+### 查看正常机器 domcapabilities 会启动哪些 cmdline 的qemu 
 使用execsnoop抓取
 1. 先清缓存
    ```
@@ -424,3 +600,7 @@ main
    ```
 
    可以发现在这个过程中不会启动, `machine virt`(不带gic-version=3)的qemu
+
+## 参考链接
+1. [性能打磨手记：记一段 Futex 机制的内核优化之旅](https://kernel.meizu.com/2024/03/15/Futex%E6%9C%BA%E5%88%B6%E7%9A%84%E5%86%85%E6%A0%B8%E4%BC%98%E5%8C%96/)
+2. 

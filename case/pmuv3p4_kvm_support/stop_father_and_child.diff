@@ -1,0 +1,93 @@
+
++#define deb(fmt, ...) \
++       printf("[%d][%ld]: " fmt "\n", getpid(), syscall(SYS_gettid), ## __VA_ARGS__)
+ void os_daemonize(void)
+ {
++    pid_t pid_tmp;
+     if (daemonize) {
+         pid_t pid;
+         int fds[2];
+@@ -286,8 +290,27 @@ void os_daemonize(void)
+
+         setsid();
+
++       pid_tmp = getpid();
++
++//#define SLEEP_BEFORE_FORK
++#ifndef SLEEP_BEFORE_FORK
++       deb("stop before fork");
++       kill(pid_tmp, SIGSTOP);
++       deb("stop end before fork");
++#else
++       deb("sleep before fork");
++       sleep(1);
++       deb("sleep end before fork");
+diff --git a/VERSION b/VERSION
+index fd02f4cf..c6e57298 100644
+--- a/VERSION
++++ b/VERSION
+@@ -1 +1 @@
+-4.1.0.3
++4.1.0.32
+diff --git a/os-posix.c b/os-posix.c
+index 3ba7df8d..ae4a4610 100644
+--- a/os-posix.c
++++ b/os-posix.c
+@@ -42,6 +42,7 @@
+ #include <sys/prctl.h>
+ #endif
+
++#include <sys/syscall.h>
+ /*
+  * Must set all three of these at once.
+  * Legal combinations are              unset   by name   by uid
+@@ -251,8 +252,11 @@ static void change_root(void)
+
+ }
+
++#define deb(fmt, ...) \
++       printf("[%d][%ld]: " fmt "\n", getpid(), syscall(SYS_gettid), ## __VA_ARGS__)
+ void os_daemonize(void)
+ {
++    pid_t pid_tmp;
+     if (daemonize) {
+         pid_t pid;
+         int fds[2];
+@@ -286,8 +290,27 @@ void os_daemonize(void)
+
+         setsid();
+
++       pid_tmp = getpid();
++
++//#define SLEEP_BEFORE_FORK
++#ifndef SLEEP_BEFORE_FORK
++       deb("stop before fork");
++       kill(pid_tmp, SIGSTOP);
++       deb("stop end before fork");
++#else
++       deb("sleep before fork");
++       sleep(1);
++       deb("sleep end before fork");
++#endif
++
++       deb("start fork");
+         pid = fork();
++       deb("fork end");
+         if (pid > 0) {
++           pid_tmp = getpid();
++            printf("daemon father stop...");
++           kill(pid_tmp, SIGSTOP);
++            printf("daemon father stop end");
+             exit(0);
+         } else if (pid < 0) {
+             exit(1);
+@@ -297,6 +320,10 @@ void os_daemonize(void)
+         signal(SIGTSTP, SIG_IGN);
+         signal(SIGTTOU, SIG_IGN);
+         signal(SIGTTIN, SIG_IGN);
++       pid_tmp = getpid();
++       deb("child process begin exec, STOP...");
++       kill(pid_tmp, SIGSTOP);
++       deb("child process STOP END");
+     }
+ }

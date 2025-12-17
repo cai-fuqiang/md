@@ -106,3 +106,7 @@
 [ 1267.534673] megaraid_sas 0001:08:00.0: megasas_enable_intr_fusion is called outbound_intr_mask:0x40000000
 [ 1277.766802] sd 4:0:8:0: Power-on or device reset occurred
 ```
+
+## 解决方法
+
+按照龙芯要求，切换内核到 `6.6.0-117.0.0.122` 解决。

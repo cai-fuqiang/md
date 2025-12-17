@@ -6,7 +6,7 @@
 * [X] [qemu不支持 host-passthrough](./libvirt_guest_panic.md)
 * [X] [kernel cmdline 以及 xml 改动](.,./config_or_xml.md)
 * [X] [vfio (iommu) 无法使用问题](./iommu.md)
-* [ ] [megaraid_sas 问题](./megaraid_sas.md)
+* [X] [megaraid_sas 问题](./megaraid_sas.md)
 * [ ] [其他](./other.md)
   + [X] 热迁移
   + [ ] virsh dump后的转储文件, 使用crash命令打开失败

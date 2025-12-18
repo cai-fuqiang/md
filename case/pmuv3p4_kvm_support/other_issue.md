@@ -601,6 +601,86 @@ $5 = (void *(*)(void *)) 0xaaac35311e80 <call_rcu_thread>
 
    可以发现在这个过程中不会启动, `machine virt`(不带gic-version=3)的qemu
 
+### 使用tcmalloc编译上游qemu
+
+会在编译阶段卡住:
+```
+root     2714114  0.0  0.0 811776  9280 pts/1    Sl   16:18   0:00 /root/wangfuqiang/qemu-wang-upstream/build/qemu-keymap -f pc-bios/keymaps/mk -l mk
+root     2714115  0.0  0.0 811776  9344 pts/1    Sl   16:18   0:00 /root/wangfuqiang/qemu-wang-upstream/build/qemu-keymap -f pc-bios/keymaps/nl -l nl
+root     2714120  0.0  0.0 811776  9344 pts/1    Sl   16:18   0:00 /root/wangfuqiang/qemu-wang-upstream/build/qemu-keymap -f pc-bios/keymaps/no -l no
+root     2714121  0.0  0.0 811776  9344 pts/1    Sl   16:18   0:00 /root/wangfuqiang/qemu-wang-upstream/build/qemu-keymap -f pc-bios/keymaps/pl -l pl
+root     2714122  0.0  0.0 811776  9344 pts/1    Sl   16:18   0:00 /root/wangfuqiang/qemu-wang-upstream/build/qemu-keymap -f pc-bios/keymaps/pt -l pt
+root     2714123  0.0  0.0 811776  9344 pts/1    Sl   16:18   0:00 /root/wangfuqiang/qemu-wang-upstream/build/qemu-keymap -f pc-bios/keymaps/pt-br -l br
+root     2714124  0.0  0.0 811776  9344 pts/1    Sl   16:18   0:00 /root/wangfuqiang/qemu-wang-upstream/build/qemu-keymap -f pc-bios/keymaps/ru -l ru
+root     2714125  0.0  0.0 811776  9280 pts/1    Sl   16:18   0:00 /root/wangfuqiang/qemu-wang-upstream/build/qemu-keymap -f pc-bios/keymaps/th -l th
+```
+(堆栈信息和下面相同)
+
+并且执行qemu命令也会卡在`_start`阶段
+```
+#0  0x0000fffc4e207e10 in syscall () at /usr/lib64/libc.so.6
+#1  0x0000fffc4e335f94 in base::internal::SpinLockDelay(int volatile*, int, int) (w=0xfffc4e48bf40 <tcmalloc::Static::pageheap_lock_>, value=2, loop=<optimized out>) at ./src/base/spinlock_linux-inl.h:84
+#2  0x0000fffc4e335e30 in SpinLock::SlowLock() (this=0xfffc4e48bf40 <tcmalloc::Static::pageheap_lock_>) at src/base/spinlock.cc:118
+#3  0x0000fffc4e3247ac in SpinLock::Lock() (this=<optimized out>) at src/base/spinlock.h:71
+#4  SpinLockHolder::SpinLockHolder(SpinLock*) (l=<optimized out>, this=<synthetic pointer>) at src/base/spinlock.h:133
+#5  tcmalloc::CentralFreeList::Populate() (this=this@entry=0xfffc4e478cf8 <tcmalloc::Static::central_cache_+81472>) at src/central_freelist.cc:325
+#6  0x0000fffc4e3248b0 in tcmalloc::CentralFreeList::FetchFromOneSpansSafe(int, void**, void**) (this=0xfffc4e478cf8 <tcmalloc::Static::central_cache_+81472>, N=1, start=0xffffcc1f38e8, end=0xffffcc1f38f0) at src/central_freelist.cc:282
+#7  0x0000fffc4e32496c in tcmalloc::CentralFreeList::RemoveRange(void**, void**, int) (this=0xfffc4e478cf8 <tcmalloc::Static::central_cache_+81472>, start=0xffffcc1f38e8, start@entry=0xffffcc1f3928, end=0xffffcc1f38f0, end@entry=0xffffcc1f3930, N=1) at src/central_freelist.cc:262
+#8  0x0000fffc4e3282b8 in tcmalloc::ThreadCache::FetchFromCentralCache(unsigned int, int, void* (*)(unsigned long)) (this=this@entry=0xaaacc7871040, cl=<optimized out>, byte_size=32768, oom_handler=oom_handler@entry=0xfffc4e317510 <(anonymous namespace)::nop_oom_handler(size_t)>)
+    at src/thread_cache.cc:126
+#9  0x0000fffc4e3397a4 in tcmalloc::ThreadCache::Allocate(unsigned long, unsigned int, void* (*)(unsigned long)) (oom_handler=0xfffc4e317510 <(anonymous namespace)::nop_oom_handler(size_t)>, cl=<optimized out>, size=<optimized out>, this=<optimized out>) at src/thread_cache.h:380
+#10 (anonymous namespace)::do_malloc (size=32768) at src/tcmalloc.cc:1386
+#11 (anonymous namespace)::do_malloc_or_cpp_alloc (size=32768) at src/tcmalloc.cc:1394
+#12 (anonymous namespace)::do_realloc_with_callback (invalid_get_size_fn=<optimized out>, invalid_free_fn=0xfffc4e317518 <(anonymous namespace)::InvalidFree(void*)>, new_size=32768, old_ptr=0xaaacc8118000) at src/tcmalloc.cc:1568
+#13 (anonymous namespace)::do_realloc (new_size=32768, old_ptr=0xaaacc8118000) at src/tcmalloc.cc:1591
+#14 tc_realloc(void*, size_t) (old_ptr=0xaaacc8118000, new_size=32768) at src/tcmalloc.cc:1990
+#15 0x0000fffc4d3e8ce8 in _ULaarch64_dwarf_find_debug_frame () at /usr/lib64/libunwind.so.8
+#16 0x0000fffc4d3e8f10 in  () at /usr/lib64/libunwind.so.8
+#17 0x0000fffc4e248268 in dl_iterate_phdr () at /usr/lib64/libc.so.6
+#18 0x0000fffc4d3e94a0 in  () at /usr/lib64/libunwind.so.8
+#19 0x0000fffc4d3e62b0 in  () at /usr/lib64/libunwind.so.8
+#20 0x0000fffc4d3e79ac in  () at /usr/lib64/libunwind.so.8
+#21 0x0000fffc4d3e45e8 in _ULaarch64_step () at /usr/lib64/libunwind.so.8
+#22 0x0000fffc4e336a90 in GetStackTrace_libunwind(void**, int, int) (result=<optimized out>, max_depth=30, skip_count=<optimized out>) at src/stacktrace_libunwind-inl.h:138
+#23 0x0000fffc4e336e40 in GetStackTrace(void**, int, int) (result=result@entry=0xaaacc7850220, max_depth=max_depth@entry=30, skip_count=skip_count@entry=3) at src/stacktrace.cc:295
+#24 0x0000fffc4e326464 in tcmalloc::RecordGrowth (growth=1048576) at src/page_heap.cc:641
+#25 tcmalloc::PageHeap::GrowHeap(unsigned long) (this=0xfffc4e3647e0 <tcmalloc::Static::pageheap_>, n=<optimized out>) at src/page_heap.cc:667
+#26 0x0000fffc4e326708 in tcmalloc::PageHeap::New(unsigned long) (this=0xfffc4e3647e0 <tcmalloc::Static::pageheap_>, n=n@entry=1) at src/page_heap.cc:154
+#27 0x0000fffc4e324688 in tcmalloc::CentralFreeList::Populate() (this=this@entry=0xfffc4e46a438 <tcmalloc::Static::central_cache_+21888>) at src/central_freelist.cc:326
+#28 0x0000fffc4e3248b0 in tcmalloc::CentralFreeList::FetchFromOneSpansSafe(int, void**, void**) (this=0xfffc4e46a438 <tcmalloc::Static::central_cache_+21888>, N=1, start=0xffffcc1f6aa8, end=0xffffcc1f6ab0) at src/central_freelist.cc:282
+#29 0x0000fffc4e32496c in tcmalloc::CentralFreeList::RemoveRange(void**, void**, int) (this=0xfffc4e46a438 <tcmalloc::Static::central_cache_+21888>, start=0xffffcc1f6aa8, start@entry=0xffffcc1f6ae8, end=0xffffcc1f6ab0, end@entry=0xffffcc1f6af0, N=1) at src/central_freelist.cc:262
+#30 0x0000fffc4e3282b8 in tcmalloc::ThreadCache::FetchFromCentralCache(unsigned int, int, void* (*)(unsigned long)) (this=this@entry=0xaaacc7871040, cl=<optimized out>, byte_size=288, oom_handler=oom_handler@entry=0xfffc4e317510 <(anonymous namespace)::nop_oom_handler(size_t)>)
+    at src/thread_cache.cc:126
+#31 0x0000fffc4e3397a4 in tcmalloc::ThreadCache::Allocate(unsigned long, unsigned int, void* (*)(unsigned long)) (oom_handler=0xfffc4e317510 <(anonymous namespace)::nop_oom_handler(size_t)>, cl=<optimized out>, size=<optimized out>, this=<optimized out>) at src/thread_cache.h:380
+#32 (anonymous namespace)::do_malloc (size=288) at src/tcmalloc.cc:1386
+#33 (anonymous namespace)::do_malloc_or_cpp_alloc (size=288) at src/tcmalloc.cc:1394
+#34 (anonymous namespace)::do_realloc_with_callback (invalid_get_size_fn=<optimized out>, invalid_free_fn=0xfffc4e317518 <(anonymous namespace)::InvalidFree(void*)>, new_size=288, old_ptr=0xaaacc8220000) at src/tcmalloc.cc:1568
+#35 (anonymous namespace)::do_realloc (new_size=288, old_ptr=0xaaacc8220000) at src/tcmalloc.cc:1591
+#36 tc_realloc(void*, size_t) (old_ptr=0xaaacc8220000, new_size=288) at src/tcmalloc.cc:1990
+#37 0x0000fffc4e82a9bc in g_realloc () at /usr/lib64/libglib-2.0.so.0
+#38 0x0000aaac8c2ef4e8 in qemuio_add_command (ci=0xaaac8d3888a0 <write_cmd>) at ../qemu-io-cmds.c:48
+#39 0x0000aaac8c2efd7c in init_qemuio_commands () at ../qemu-io-cmds.c:2787
+#40 0x0000aaac8c4f84e8 in __libc_csu_init ()
+#41 0x0000fffc4e153f28 in __libc_start_main () at /usr/lib64/libc.so.6
+#42 0x0000aaac8b8304a4 in _start ()
+```
+
+## 相关patch
+1. `rcu_disable_atfork()`
+
+  ```
+   commit 73c6e4013b4cd92d3d531bc22cc29e6036ef42e0
+   Author: Paolo Bonzini <pbonzini@redhat.com>
+   Date:   Wed Jan 27 08:49:21 2016 +0100
+   
+       rcu: completely disable pthread_atfork callbacks as soon as possible
+   ```
+
 ## 参考链接
 1. [性能打磨手记：记一段 Futex 机制的内核优化之旅](https://kernel.meizu.com/2024/03/15/Futex%E6%9C%BA%E5%88%B6%E7%9A%84%E5%86%85%E6%A0%B8%E4%BC%98%E5%8C%96/)
-2. 
+
+## tcmalloc
+
+1. https://github.com/gperftools/gperftools/issues/499
+2. https://github.com/gperftools/gperftools/commit/eeb7b84c20146c0e2e039ce72a2ea083a94ba80d
+

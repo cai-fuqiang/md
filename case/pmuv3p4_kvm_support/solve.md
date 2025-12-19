@@ -3,14 +3,14 @@
 1. 编写脚本`disable_pmu.stp`
 
    ```
-   probe process("/usr/libexec/qemu-kvm").statement("kvm_arm_set_cpu_features_from_host@/usr/src/debug/qemu-4.1.0.30-3253dce3.ky10.aarch64/target/arm/kvm.c:165")
+   probe process("/usr/libexec/qemu-kvm").statement("kvm_arm_set_cpu_features_from_host@/usr/src/debug/qemu-4.1.0.33-7b50881a.ky10.aarch64/target/arm/kvm.c:165")
    {
        printf("env->features: 0x%x\n", $cpu->env->features)
        $cpu->env->features = $cpu->env->features & (~(1 << 38));
    
        printf("env->features after: 0x%x\n", $cpu->env->features)
    }
-   probe process("/usr/bin/qemu-kvm").statement("kvm_arm_set_cpu_features_from_host@/usr/src/debug/qemu-4.1.0.30-3253dce3.ky10.aarch64/target/arm/kvm.c:165")
+   probe process("/usr/bin/qemu-kvm").statement("kvm_arm_set_cpu_features_from_host@/usr/src/debug/qemu-4.1.0.33-7b50881a.ky10.aarch64/target/arm/kvm.c:165")
    {
        printf("env->features: 0x%x\n", $cpu->env->features)
        $cpu->env->features = $cpu->env->features & (~(1 << 38));

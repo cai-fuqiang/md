@@ -129,3 +129,11 @@ loongarch64 不支持 `host-passthrough`, 需要修改成`la464`
  </devices>
 </domain>
 ```
+
+video  更换为virtio:
+```
+<video>
+      <model type='virtio' heads='1' primary='yes'/>
+      <alias name='video0'/>
+</video>
+```

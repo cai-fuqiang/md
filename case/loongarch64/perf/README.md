@@ -158,6 +158,15 @@ hygon损耗在`35~40%`之间。
 |45%~55%|10%~15%|35%~40%|
 
 ## 其他细节图
+
+### UNIXBENCH 各项跑分对比
+
+单线程
+![unixbench](./unixbench/unixbench_detailed_single_thread.png)
+
+多线程
+![unixbench](./unixbench/unixbench_detailed_16_threads.png)
+
 ### 内存延迟测试`lat_mem_rd`
 
 ![memory_latency](./lat_mem_rd/memory_latency_9lines.png)

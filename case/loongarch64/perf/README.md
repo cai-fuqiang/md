@@ -107,6 +107,52 @@ cross-numa 测试中，kunpeng比龙芯高200%，hygon比龙芯高190%.
 
 hygon损耗在`35~40%`之间。
 
+**但是, 龙芯是每个socket两个numa，而其他架构每个socket是一个numa, 所以这样测试
+有点不太公平**，我们应该用per-socket，和整机粒度来评测。测试如下:
+
+编译方式:
+```sh
+gcc -O3 -fopenmp -DSTREAM_ARRAY_SIZE=100000000 -mtune=native -DNTIMES=100 stream.c -o stream
+```
+
+测试方式:
+* 环境变量(所有测试均执行):
+  ```sh
+  export OMP_PLACES=cores
+  export OMP_PROC_BIND=spread
+  ```
+* 单socket
+  * 环境变量(单socket执行)
+    ```sh
+    export OMP_NUM_THREADS=32
+    ```
+  + loongarch命令:
+    ```sh
+    numactl --cpunodebind=0,1 ./stream
+    ```
+  + kunpeng命令
+    ```sh
+    numactl --cpunodebind=0 ./stream
+    ```
+    
+* 整机
+  * 环境变量
+    ```sh
+    export OMP_NUM_THREADS=64
+    ```
+  * 命令
+    ```sh
+    numactl ./stream
+    ```
+
+![stream](./stream_allsocket/stream_socket_combined.png)
+
+> NOTE
+>
+> 目前仅有龙芯机器和kunpeng机器做对比测试，可以发现, 在单socket情况下做测试，
+> 龙芯性能要比鲲鹏高`6~25%`左右, 在整机情况下，kunpeng要比龙芯高`%1~30%`左右。
+> (可能得益于kunpeng良好的跨numa性能)
+
 ## TODO
 
 * [X] 测试hygon vm 的unixbench, 目前还在测试中
@@ -142,6 +188,9 @@ hygon损耗在`35~40%`之间。
 ### stream 内存压测
 
 各个架构之间的跑分对比:
+
+### 测试一个numa
+
 |是否跨numa|龙芯对比hygon|龙芯对比kunpeng|
 |----|----|----|
 |不跨numa|-115%~134%|-65%~83%|
@@ -156,6 +205,21 @@ hygon损耗在`35~40%`之间。
 |龙芯|kunpeng|hygon|
 |----|----|----|
 |45%~55%|10%~15%|35%~40%|
+
+
+### 测试一个socket && 整机
+
+||龙芯对比kunpeng|
+|----|----|
+|单socket|+6%~25%|
+|整机|-1%~30%|
+
+
+结论由于龙芯架构一个socket有两个numa，而其他的架构为一个socket一个numa，
+所以从单socket来看，其他架构的性能要比loongxin高接近一倍。
+
+但是从单socket测试，龙芯甚至比kunpeng要好，但是整机粒度来看，龙芯性能不如kunpeng，
+因为龙芯有4个numa，其访问跨numa的概率要更大，另外，龙芯跨numa性能要差. 所以被kunpeng反超。
 
 ## 其他细节图
 

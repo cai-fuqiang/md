@@ -10,6 +10,9 @@
 * ovs
   + [ovs idle](./ovs_idle/README.md)
     + 问题描述: ovs pmd线程占用未到接近100%
+* GPU
+  + [b200透传适配](./b200_passthough/README.md)
+    + 问题描述: b200 UEFI 镜像透传测试中会bios卡死
 
 * 2026-01-12:
   + qemu_io_hung_kernel_or_io_backend

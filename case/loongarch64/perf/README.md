@@ -1,6 +1,7 @@
 ## 硬件说明
 
 ### CPU
+
 | 架构        | cpu               | thread数量 | 主频   | 缓存L1(icache + dcache) | 缓存L2 | 缓存L3 |
 |-------------|-------------------|------------|--------|-------------------------|--------|--------|
 | loongarch64 | Loongson-3C6000/D | 128        | 2.1GHz | 4MiB+4MiB               | 16MiB  | 128MiB |
@@ -8,6 +9,7 @@
 | kunpeng     | Kunpeng 920 7262C | 128        | 2.5GHz | 8MiB+8MiB               | 64MiB  | 128MiB |
 
 ### memory
+
 | 架构        | 大小 | 规格                     | numa |
 |-------------|------|--------------------------|------|
 | loongarch64 | 512G | 16 * 32GB DDR4 3200 MT/s | 4    |
@@ -51,6 +53,11 @@ kunpeng强于龙芯 `14.3%`, hygon弱于龙芯`2.9%`, 龙芯虚拟化损耗`2.5%
 kunpeng非常优秀，综合跑分无论是单线程还是多线程，虚拟化损耗在`10%-15%`, 而龙芯在`25%-45%`,  其中
 多线程性能损耗更明显。(单线程下降24.6%, 多线程下降43.2%)
 
+当使用guest不跨numa 或者  1:1绑核时, 虚拟化损耗会减小, 单核24%下降到7%，多核从43%下降到25%。使用
+1:1 绑核和不跨numa 带来的提升类似。
+
+#### 优化UNIXBENCH 虚拟机跑分
+
 ### sysbench
 
 #### sysbench 多核单核跑分
@@ -60,7 +67,6 @@ kunpeng非常优秀，综合跑分无论是单线程还是多线程，虚拟化�
 ![sysbench 16](./sysbench/sysbench_cpu_16_threads.png)
 
 龙芯高于hygon `48%`, 低于kunpeng `30%`左右
-
 
 #### 虚拟化损耗
 
@@ -111,36 +117,48 @@ hygon损耗在`35~40%`之间。
 有点不太公平**，我们应该用per-socket，和整机粒度来评测。测试如下:
 
 编译方式:
+
 ```sh
 gcc -O3 -fopenmp -DSTREAM_ARRAY_SIZE=100000000 -mtune=native -DNTIMES=100 stream.c -o stream
 ```
 
 测试方式:
+
 * 环境变量(所有测试均执行):
+
   ```sh
   export OMP_PLACES=cores
   export OMP_PROC_BIND=spread
   ```
+
 * 单socket
   * 环境变量(单socket执行)
+
     ```sh
     export OMP_NUM_THREADS=32
     ```
-  + loongarch命令:
+
+  * loongarch命令:
+
     ```sh
     numactl --cpunodebind=0,1 ./stream
     ```
-  + kunpeng命令
+
+  * kunpeng命令
+
     ```sh
     numactl --cpunodebind=0 ./stream
     ```
-    
+
 * 整机
   * 环境变量
+
     ```sh
     export OMP_NUM_THREADS=64
     ```
+
   * 命令
+
     ```sh
     numactl ./stream
     ```
@@ -164,9 +182,9 @@ gcc -O3 -fopenmp -DSTREAM_ARRAY_SIZE=100000000 -mtune=native -DNTIMES=100 stream
 ### CPU性能测试结果
 
 > NOTE
-> 
->  * `+` 龙芯比该架构性能高出的百分比
->  * `-` 龙芯比该架构性能低出的百分比
+>
+> * `+` 龙芯比该架构性能高出的百分比
+> * `-` 龙芯比该架构性能低出的百分比
 
 各个架构之间的跑分对比:
 
@@ -178,14 +196,26 @@ gcc -O3 -fopenmp -DSTREAM_ARRAY_SIZE=100000000 -mtune=native -DNTIMES=100 stream
 |sysbench 测试|+45%~50%|-30%-35%|
 
 各个架构unixbench 综合跑分虚拟化损耗(其他测试项虚拟化损耗可忽略 < 5%):
+
+**不做任何numa亲和性**
+
 |架构|损耗比单核|损耗比16核|
 |----|----|----|
 |loongarch|25%|43%|
 |kunpeng|12%|12%|
-|hygon|-|-|
+|hygon|16%|17%|
 
+**numa cpuset亲核**
 
-### stream 内存压测
+|架构|损耗比单核|损耗比16核|
+|----|----|----|
+|loongarch|7%|22%|
+
+**1:1绑核**
+
+|架构|损耗比单核|损耗比16核|
+|----|----|----|
+|loongarch|7.3%|25.4%|
 
 各个架构之间的跑分对比:
 
@@ -206,14 +236,12 @@ gcc -O3 -fopenmp -DSTREAM_ARRAY_SIZE=100000000 -mtune=native -DNTIMES=100 stream
 |----|----|----|
 |45%~55%|10%~15%|35%~40%|
 
-
 ### 测试一个socket && 整机
 
 ||龙芯对比kunpeng|
 |----|----|
 |单socket|+6%~25%|
 |整机|-1%~30%|
-
 
 结论由于龙芯架构一个socket有两个numa，而其他的架构为一个socket一个numa，
 所以从单socket来看，其他架构的性能要比loongxin高接近一倍。
@@ -244,11 +272,12 @@ gcc -O3 -fopenmp -DSTREAM_ARRAY_SIZE=100000000 -mtune=native -DNTIMES=100 stream
 ![core-to-core-latency](./core-to-core-latency/images/core_to_core_latency_loongarch.png)
 
 ## 龙芯目前存在的性能问题
+
 1. 虚拟化损耗较高
-   + perfbench
-   + unixbench综合跑分
+   * perfbench
+   * unixbench综合跑分
 2. stream 测试性能低
 3. 跨nume通信差
-   + `core-to-core-latency`
-   + `lat_mem_rd` 跨numa测试大步长
-   + stream 跨numa测试
+   * `core-to-core-latency`
+   * `lat_mem_rd` 跨numa测试大步长
+   * stream 跨numa测试

@@ -10,9 +10,6 @@ kernel-6.6.0-117.0.0.122.oe2403sp2
 
 出现了 `list_add corruption` 的WARN:
 
-<details>
-<summary>具体堆栈展开</summary>
-
 ```
 [26771.080369] ------------[ cut here ]------------
 [26771.081331] list_add corruption. next->prev should be prev (ffff800003f89348), but was 9000001af36780c0. (next=ffff800003f89348).
@@ -63,8 +60,6 @@ kernel-6.6.0-117.0.0.122.oe2403sp2
 [26771.117855] [<90000000015cd028>] do_syscall+0x88/0xd0
 [26771.118253] [<9000000000221f18>] handle_syscall+0xb8/0x158
 ```
-
-</details>
 
 分析`kvm_ioeventfd`跳转位置:
 
@@ -191,11 +186,292 @@ kvm_shadow_list = $4 = {
 当再次获取next->prev时，发现已经为 `ffff800003f89348(kvm_shadow_list)`,
 疑似发生了 `list_del`
 
-经定位疑似 KVM BUG<sup>1</sup>, 似乎可以通过<sup>2</sup>, 具体细节待补充
+查看`openeuler2403-sp2 122` KVM代码, 其操作 `kvm_shadow_list` 时，并未使用全局性的
+lock保护，也未使用rcu保护，可能会出现free和read之间的冲突。
 
-> TODO
+而该代码是openeuler KVM的一个新特性，用来加速多队列的申请ioeventfd的性能。会对热迁移
+以及热插拔带来不小的性能提升, 具体来分析下代码.
+
+我们先来看下，upstream(非openeuler) 目前的代码
+
+## upstream ioeventfd
+
+> [!NOTE]
 >
-> 补充细节
+> 本节只是简述eventfd的功能，以及和case相关的实现细节。
+
+kernel 提供了一下的ioctl作为ioeventfd interface, 用来绑定address_space和
+eventfd, 如果KVM 捕获到guest目前对该address space 做操作，则通过eventfd
+通知到对端 (qemu, or other agent(ovs))
+
+```
+vm_ioctl: `KVM_IOEVENTFD`
+```
+
+并提供了一个参数, `kvm_ioeventfd` 用户将eventfd 和地址相关信息传递到内核态。
+
+```cpp
+struct kvm_ioeventfd {
+ __u64 datamatch;
+ __u64 addr;        /* legal pio/mmio address */
+ __u32 len;         /* 1, 2, 4, or 8 bytes; or 0 to ignore length */
+ __s32 fd;
+ __u32 flags;
+ __u8  pad[36];
+};
+```
+
+其中flags 表示本次调用类型， 其中`KVM_IOEVENTFD_FLAG_DEASSIGN` 表示本次
+为解绑 , 否则为绑定. 对应kvm两个接口调用:
+
+* kvm_assign_ioeventfd
+* kvm_deassign_ioeventfd
+
+而KVM 对于模拟设备MMIO访问抽象成 `kvm_io_devices` 其包含三个回调:
+
+* read
+* write
+* destructor
+
+并且为这些device抽象了bus -- `kvm_io_bus`, 该bus 包含了一组
+`kvm_io_range`, 而 `kvm_io_range` 除了包含`kvm_io_device` 外,还包含
+`addr, len`等地址范围信息.
+
+而bus 在系统中会有多个，由 `enum kvm_bus` 定义.
+
+在触发 io emulate 的流程中, 遍历bus中的数组, 如果能匹配到则调用相关
+回调。本次emulate 就执行完了:
+
+```sh
+handle_ept_misconfig
+=> if (!is_guest_mode(vcpu) &&
+     !kvm_io_bus_write(vcpu, KVM_FAST_MMIO_BUS, gpa, 0, NULL)) 
+   => trace_kvm_fast_mmio(gpa);
+   ## 完事了
+   => return kvm_skip_emulated_instruction(vcpu);
+
+## 如果返回0，则表示emulate 成功，可以success
+
+kvm_io_bus_write
+## get 对应bus
+=> bus = kvm_get_bus_srcu(vcpu->kvm, bus_idx);
+## 可能有多个range 重叠，一次通知每个range
+=> r = __kvm_io_bus_write(vcpu, bus, &range, val);
+   => idx = kvm_io_bus_get_first_dev(bus, range->addr, range->len);
+   => while (idx < bus->dev_count &&
+       kvm_io_bus_cmp(range, &bus->range[idx]) == 0)
+      => if (!kvm_iodevice_write(vcpu, bus->range[idx].dev, range->addr,
+        range->len, val))
+              => dev->ops->write
+         => return idx
+      => idx++
+=> return r < 0 ? r : 0;
+```
+
+一般像这种指针+数组的更新往往采用rcu的机制, 用来加速读者，
+在`kvm_assign_ioeventfd` 会处理rcu 写者端逻辑:
+
+```sh
+kvm_assign_ioeventfd
+=> kvm_assign_ioeventfd_idx
+   => ret = kvm_io_bus_register_dev(kvm, bus_idx, p->addr, p->length,
+       &p->dev);
+      => bus = kvm_get_bus(kvm, bus_idx);
+      => new_bus = kmalloc(,,bus->dev_count+1, )
+      ## 先找到bus中的插入位置，在new_bus中数组中更新
+      => for (i = 0; i < bus->dev_count; i++)
+         => if (kvm_io_bus_cmp(&bus->range[i], &range) > 0)
+            => break
+      ## 更新前半部分
+      => memcpy(new_bus, bus, sizeof(*bus) + i * sizeof(struct kvm_io_range));
+      ## 处理新增加的元素
+      => new_bus->dev_count++
+      => new_bus->range[i] = range;
+      ## 更新后半部分
+     => memcpy(new_bus->range + i + 1, bus->range + i,
+         (bus->dev_count - i) * sizeof(struct kvm_io_range));
+     ## 发布
+    => rcu_assign_pointer(kvm->buses[bus_idx], new_bus);
+    => call_srcu(&kvm->srcu, &bus->rcu, __free_bus);
+    ## 这需要注意，并未主动wait rcu callback complete
+```
+
+看起来并没有什么问题. 但是`deassign`和`assign`不同，`assign` 是在原来的接口中
+新增元素，其 old array 释放与否对后续流程无影响. 因为old array 是new array
+的子集, 确保其他cpu可以看到新的映射关系, assign的语义就完成了。
+
+但是`deassign`则完全不同，其 `new array` 是 `old array`子集，当前系统可能正在
+使用`new array`中没有的映射关系，`deassign` 接口的结束应该确保映射关系解除完成。
+
+所以，`deassign` 往往会等待rcu callback完成:
+
+```sh
+kvm_io_bus_unregister_dev
+=> rcu_assign_pointer(kvm->buses[bus_idx], new_bus);
+## wait...
+=> synchronize_srcu_expedited(&kvm->srcu);
+```
+
+该wait在一般流程中不会影响性能，但是在热迁移过程中，最后一步是在位于downtime中停
+io device, 而停io device, 恰好会调用上述流程。
+
+并且为了提升虚拟机io性能, 现在的虚拟机配置往往采用多队列。而每个队列都会有一个
+`host notify`, 用来driver(guest driver) 通知device(kvm,qemu emulate) 有请求到达。
+而kvm目前只支持单个ioeventfd的 assign deassign, 所以在该场景下，性能代价更大一些。
+
+## openeuler batch ioeventfd (de)assign
+
+为此，openeuler搞了一个套新的ioeventfd的flags <sup>1</sup>, 用来实现batch下发,
+从名字上看比较好理解, batch 下发无非是将eventfd批量下发到一个数组中，然后, 等
+批量下发完成后，再调用一次 `rcu_assign_pointer()`.
+
+而华为工程师并未改变太多rcu的接口或者数据结构，最大程度保证和之前的API兼容，使用
+未更改的qemu也能正常工作。
+
+怎么做的呢？增加两个flags bit:
+
+* KVM_IOEVENTFD_FLAG_BATCH_BEGIN
+* KVM_IOEVENTFD_FLAG_BATCH_END
+
+在这两个flags处理的调用中做一些前置工作，或者准备工作。在`BATCH_BEGIN`中分配
+相关数据结构，使后续的 assign/deassign ioeventfd 保留在该数据结构中，另外，在`BATCH_END`
+中将这些eventfd 集中 commit.
+
+如下代码:
+
+```sh
+
+## 分配一个 kvm_shadow数据结构, 并串联到 
+## kvm_shadow_list结构中
+kvm_ioeventfd_batch_begin
+=> ks = kzalloc(sizeof(*ks), GFP_KERNEL_ACCOUNT);
+=> INIT_LIST_HEAD(&ks->list);
+=> INIT_LIST_HEAD(&ks->ioeventfds_shadow);
+=> list_add_tail(&ks->list, &kvm_shadow_list);
+=> ks->kvm = kvm;
+
+kvm_assign_ioeventfd
+=> kvm_assign_ioeventfd_idx
+   ## struct _ioeventfd
+   => p = kzalloc(sizeof(*p), GFP_KERNEL_ACCOUNT);
+   => kvm_iodevice_init(&p->dev, &ioeventfd_ops);
+   => ks = kvm_find_shadow(kvm);
+   => if (ks)
+      ## 分配一个eventfd_shadow数据结构, 然后串联到ks->ioeventfds_shadow链表中
+      => es = kzalloc(sizeof(*es), GFP_KERNEL_ACCOUNT);
+      => es->flag = IOEVENTFD_SHADOW_FLAG_ADD;
+      => es->eventfd = p;
+      => list_add_tail(&es->node, &ks->ioeventfds_shadow);
+
+kvm_ioeventfd_batch_end
+=> ks = kvm_find_shadow(kvm);
+## copy old list to ks->buses_shadow, 作为base array
+=> for (i = 0; i < KVM_NR_BUSES; i++)
+   => bus = kvm_get_real_bus(kvm, i);
+   => new_bus = kmalloc(struct_size(bus, range, bus->dev_count), GFP_KERNEL_ACCOUNT);
+   => len = sizeof(*bus);
+   => len += bus->dev_count * sizeof(struct kvm_io_range);
+   => memcpy(new_bus, bus, len);
+   => ks->buses_shadow[i] = new_bus
+## 处理新添加的 eventfds shadow --  从ks->ioeventfds_shadow链表中依次提取
+=> kvm_handle_ioeventfds_shadow(kvm);
+   => list_for_each_entry_safe(es, tmp, &ks->ioeventfds_shadow, node)
+      => if es->flag == IOEVENTFD_SHADOW_FLAG_ADD
+         => kvm_io_bus_register_dev(kvm, p->bus_idx, p->addr,
+      -- else
+         => kvm_io_bus_unregister_dev(kvm, p->bus_idx, &p->dev);
+## 替换数组
+=> for (i = 0; i < KVM_NR_BUSES; i++)
+   => old[i] = kvm_get_real_bus(kvm, i);
+   => rcu_assign_pointer(kvm->buses[i], ks->buses_shadow[i]);
+## 注意batch中可能有 assign 请求，也可能有deassign请求，也可能都有，所以这里
+## 干脆等一次
+=> synchronize_srcu_expedited(&kvm->srcu);
+## 释放老的 bus
+=> for (i = 0; i < KVM_NR_BUSES; i++)
+   => kfree(old[i]);
+
+kvm_io_bus_register_dev
+## .. 省略相同流程
+=> bus = kvm_get_bus(kvm, bus_idx);
+   ## old bus 在 kvm->buses_shadow中找
+   => return is_kvm_in_shadow(kvm) ?
+         kvm_find_shadow(kvm)->buses_shadow[idx] : kvm_get_real_bus(kvm, idx);
+=> ks = kvm_find_shadow(kvm);
+=> if ks
+   ## 将new bus 更新到 ks->buses_shadow中
+   => ks->buses_shadow[bus_idx] = new_bus;
+```
+
+大概的流程是, 在`begin_batch`中新增一个数据结构。并做初始化，在之后`assign`,`deassign`
+过程中，如果发现有新增的数据结构(`kvm_find_shadow()`)， 则认为本次是要做batch，
+在本次`a/de ssign` 中不去`kvm_io_bus_(un)register_dev()`, 而是更新到一个链表中。
+在`end batch`接口中，遍历该链表，并依次做`kvm_io_bus_(un)register_dev()`, 并将
+new array先更新到`buses_shadow`中，等所有请求处理完成后，将带有所有新请求的array
+更新到`kvm->buses`上，并调用 **一次** `synchronize_srcu_expedited()`.
+
+对应qemu的逻辑:
+
+```diff
+diff --git a/system/memory.c b/system/memory.c
+index fd76eb7048..08d34262c3 100644
+--- a/system/memory.c
++++ b/system/memory.c
+@@ -1134,10 +1134,12 @@ void memory_region_commit(void)
+         ioeventfd_update_pending = false;
+         MEMORY_LISTENER_CALL_GLOBAL(commit, Forward);
+     } else if (ioeventfd_update_pending) {
++        MEMORY_LISTENER_CALL_GLOBAL(eventfd_begin, Forward);
+         QTAILQ_FOREACH(as, &address_spaces, address_spaces_link) {
+             address_space_update_ioeventfds(as);
+         }
+         ioeventfd_update_pending = false;
++        MEMORY_LISTENER_CALL_GLOBAL(eventfd_end, Forward);
+     }
+ }
+```
+
+在`update ioeventfds`前后，用`BATCH BEGIN`, `BATCH END` 包裹。
+
+## 最初batch patch问题
+
+在`batch_begin` 将ks加入`kvm_shadow_list`, 和在`batch end`将`ks` 移除 `kvm_shadow_list`
+时, 未加全局性的锁(虽然加了`kvm->slots_lock`但是这时per kvm 粒度的), 导致多个虚拟机
+同时搞会有问题。
+
+但是, 如果每个虚拟机都在ioeventfd中申请全局性的锁，有很影响性能。所以这个方式得改。
+patch <sup>2</sup> 将`ks`的生命周期，搞成了和kvm的生命周期一致，在`kvm_create_vm()`
+中创建`ks`, 并在 `kvm_destroy_vm()`中释放`ks`, 并在操作这些时，通过`kvm_lock`大锁保护.
+
+以`kvm_destroy_vm()`为例:
+
+```sh
+kvm_destroy_vm
+=> mutex_lock(&kvm->slots_lock);
+=> ks = kvm_find_shadow(kvm);
+=> if (ks && ks->in_shadow) {
+   => kvm_release_ioeventfds_shadow(ks);
+   => ks->in_shadow = false;
+## 加大锁
+=> mutex_lock(&kvm_lock);
+   => if (ks)
+      ## RCU?
+      => list_del_rcu(&ks->list);
+=> mutex_unlock(&kvm_lock);
+=> synchronize_rcu();
+=> kfree(ks)
+```
+
+需要注意的时，现在的释放逻辑，完全脱离了`assign/deassign`流程，这意味着读取和释放
+可能并行，所以需要rcu保护。
+
+另外还有一个更重要的是, 由于ks的生命周期变了，需要一个其他的方式标记，本次请求是否是batch
+的, 而新增的方式是`kvm_shadow`中新增`in_shadow`变量。
+
+* begin_batch: ==> true
+* end_batch: ==> false
+
+当`in_shadow`为true时，表示在使用`batch ioeventfd`
 
 ## 参考链接
 

@@ -9,7 +9,7 @@
   * 内核
     * [ ] 多次重启后，重启卡住，进不去任何系统（包括bios setup)
     * [ ] 更换kernel 为 `kernel-6.6.0-117.0.0.122.oe2403sp2` 后，仍然出现了 `megaraid_sas`报错 [details](./bug/2026_02_09_kernel__megaraid_sas.md)
-    * [ ] KVM ioeventfd bug, 现象是疑似vm delete 和 io eventfd assign 出现race [details](./bug/2026_02_09_kernel__ioeventfd.md)
+    * [X] KVM ioeventfd bug, 现象是疑似 多个vm之间io eventfd batch (de)assign 出现race [details](./bug/2026_02_09_kernel__ioeventfd.md)
   * qemu
     * [ ] 热迁移后，源端目的端均异常，virsh 命令卡住. [details](./bug/2026_02_09_qemu__migrate_hung.md)
 

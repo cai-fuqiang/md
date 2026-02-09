@@ -8,7 +8,8 @@
 * [X] [vfio (iommu) 无法使用问题](./iommu.md)
 * [X] [megaraid_sas 问题](./megaraid_sas.md)
 * [ ] [其他](./other.md)
-  + [X] 热迁移
-  + [ ] virsh dump后的转储文件, 使用crash命令打开失败
-  + [X] kdumpctl start 报错
+  * [X] 热迁移
+  * [ ] virsh dump后的转储文件, 使用crash命令打开失败
+  * [X] kdumpctl start 报错
 * [X] [性能测试对比](./perf/README.md)
+* [ ] [遗留问题汇总](./report.md)

@@ -3,7 +3,10 @@
 热迁移后, qemu hung住, 源端目的端执行 `virsh xxx $instance-id` 均
 会卡住
 
-### 源端堆栈
+### 堆栈
+
+<details>
+<summary>源端堆栈</summary>
 
 ```
 (gdb) thread apply all bt
@@ -212,6 +215,8 @@ Thread 1 (Thread 0x7ffff0c57820 (LWP 1646145) "qemu-system-loo"):
 #10 0x0000555555a395c0 in _start ()
 ```
 
+</details>
+
 很多线程都在抢`bql`。查看该锁是谁在占用:
 
 ```
@@ -255,195 +260,6 @@ $1 = {lock = {__data = {__lock = 2, __count = 0, __owner = 1652338, __nusers = 9
     6   │   │   goto retry;
     7   │   }
     8   }
-```
-
-> TODO
->
-> 待进一步分析
-
-### 目的端堆栈
-
-查看目的端堆栈:
-
-```
-Thread 17 (Thread 0x7ff7a6862940 (LWP 2463588) "vnc_worker"):
-#0  0x00007ffff17e0bb8 in ?? () from target:/usr/lib64/libc.so.6
-#1  0x00007ffff17e4054 in pthread_cond_wait () from target:/usr/lib64/libc.so.6
-#2  0x000055555964fc34 in qemu_cond_wait_impl (cond=0x55557becbc00, mutex=0x55557becbc38, file=0x5555596d4f50 "../ui/vnc-jobs.c", line=<optimized out>) at ../util/qemu-thread-posix.c:225
-#3  0x00005555590aa760 in vnc_worker_thread_loop (queue=queue@entry=0x55557becbc00) at ../ui/vnc-jobs.c:248
-#4  0x00005555590ab318 in vnc_worker_thread (arg=arg@entry=0x55557becbc00) at ../ui/vnc-jobs.c:362
-#5  0x000055555964ecd0 in qemu_thread_start (args=<optimized out>) at ../util/qemu-thread-posix.c:541
-#6  0x00007ffff17e4d90 in ?? () from target:/usr/lib64/libc.so.6
-#7  0x00007ffff185f60c in ?? () from target:/usr/lib64/libc.so.6
-
-Thread 16 (Thread 0x7ff7baff6940 (LWP 2463586) "CPU 7/KVM"):
-#0  0x00007ffff17e0bb8 in ?? () from target:/usr/lib64/libc.so.6
-#1  0x00007ffff17e4054 in pthread_cond_wait () from target:/usr/lib64/libc.so.6
-#2  0x000055555964fc34 in qemu_cond_wait_impl (cond=0x55557a42c910, mutex=0x555559ca2fd0 <qemu_global_mutex>, file=0x555559736af8 "../system/cpus.c", line=<optimized out>) at ../util/qemu-thread-posix.c:225
-#3  0x00005555592a4d44 in qemu_wait_io_event (cpu=cpu@entry=0x55557a41b120) at ../system/cpus.c:445
-#4  0x0000555559494348 in kvm_vcpu_thread_fn (arg=arg@entry=0x55557a41b120) at ../accel/kvm/kvm-accel-ops.c:56
---Type <RET> for more, q to quit, c to continue without paging--
-#5  0x000055555964ecd0 in qemu_thread_start (args=<optimized out>) at ../util/qemu-thread-posix.c:541
-#6  0x00007ffff17e4d90 in ?? () from target:/usr/lib64/libc.so.6
-#7  0x00007ffff185f60c in ?? () from target:/usr/lib64/libc.so.6
-
-Thread 15 (Thread 0x7ff7d1ffe940 (LWP 2463585) "CPU 6/KVM"):
-#0  0x00007ffff17e0bb8 in ?? () from target:/usr/lib64/libc.so.6
-#1  0x00007ffff17e4054 in pthread_cond_wait () from target:/usr/lib64/libc.so.6
-#2  0x000055555964fc34 in qemu_cond_wait_impl (cond=0x55557a41ad10, mutex=0x555559ca2fd0 <qemu_global_mutex>, file=0x555559736af8 "../system/cpus.c", line=<optimized out>) at ../util/qemu-thread-posix.c:225
-#3  0x00005555592a4d44 in qemu_wait_io_event (cpu=cpu@entry=0x55557a409520) at ../system/cpus.c:445
-#4  0x0000555559494348 in kvm_vcpu_thread_fn (arg=arg@entry=0x55557a409520) at ../accel/kvm/kvm-accel-ops.c:56
-#5  0x000055555964ecd0 in qemu_thread_start (args=<optimized out>) at ../util/qemu-thread-posix.c:541
-#6  0x00007ffff17e4d90 in ?? () from target:/usr/lib64/libc.so.6
-#7  0x00007ffff185f60c in ?? () from target:/usr/lib64/libc.so.6
-
-Thread 14 (Thread 0x7fffd2ff6940 (LWP 2463584) "CPU 5/KVM"):
-#0  0x00007ffff17e0bb8 in ?? () from target:/usr/lib64/libc.so.6
-#1  0x00007ffff17e4054 in pthread_cond_wait () from target:/usr/lib64/libc.so.6
-#2  0x000055555964fc34 in qemu_cond_wait_impl (cond=0x55557a409110, mutex=0x555559ca2fd0 <qemu_global_mutex>, file=0x555559736af8 "..--Type <RET> for more, q to quit, c to continue without paging--
-/system/cpus.c", line=<optimized out>) at ../util/qemu-thread-posix.c:225
-#3  0x00005555592a4d44 in qemu_wait_io_event (cpu=cpu@entry=0x55557a3f79c0) at ../system/cpus.c:445
-#4  0x0000555559494348 in kvm_vcpu_thread_fn (arg=arg@entry=0x55557a3f79c0) at ../accel/kvm/kvm-accel-ops.c:56
-#5  0x000055555964ecd0 in qemu_thread_start (args=<optimized out>) at ../util/qemu-thread-posix.c:541
-#6  0x00007ffff17e4d90 in ?? () from target:/usr/lib64/libc.so.6
-#7  0x00007ffff185f60c in ?? () from target:/usr/lib64/libc.so.6
-
-Thread 13 (Thread 0x7fffd37fa940 (LWP 2463583) "CPU 4/KVM"):
-#0  0x00007ffff17e0bb8 in ?? () from target:/usr/lib64/libc.so.6
-#1  0x00007ffff17e4054 in pthread_cond_wait () from target:/usr/lib64/libc.so.6
-#2  0x000055555964fc34 in qemu_cond_wait_impl (cond=0x55557a3f75d0, mutex=0x555559ca2fd0 <qemu_global_mutex>, file=0x555559736af8 "../system/cpus.c", line=<optimized out>) at ../util/qemu-thread-posix.c:225
-#3  0x00005555592a4d44 in qemu_wait_io_event (cpu=cpu@entry=0x55557a3e5c80) at ../system/cpus.c:445
-#4  0x0000555559494348 in kvm_vcpu_thread_fn (arg=arg@entry=0x55557a3e5c80) at ../accel/kvm/kvm-accel-ops.c:56
-#5  0x000055555964ecd0 in qemu_thread_start (args=<optimized out>) at ../util/qemu-thread-posix.c:541
-#6  0x00007ffff17e4d90 in ?? () from target:/usr/lib64/libc.so.6
-#7  0x00007ffff185f60c in ?? () from target:/usr/lib64/libc.so.6
-
-Thread 12 (Thread 0x7fffd3ffe940 (LWP 2463582) "CPU 3/KVM"):
---Type <RET> for more, q to quit, c to continue without paging--
-#0  0x00007ffff17e0bb8 in ?? () from target:/usr/lib64/libc.so.6
-#1  0x00007ffff17e4054 in pthread_cond_wait () from target:/usr/lib64/libc.so.6
-#2  0x000055555964fc34 in qemu_cond_wait_impl (cond=0x55557a3e5870, mutex=0x555559ca2fd0 <qemu_global_mutex>, file=0x555559736af8 "../system/cpus.c", line=<optimized out>) at ../util/qemu-thread-posix.c:225
-#3  0x00005555592a4d44 in qemu_wait_io_event (cpu=cpu@entry=0x55557a3d4080) at ../system/cpus.c:445
-#4  0x0000555559494348 in kvm_vcpu_thread_fn (arg=arg@entry=0x55557a3d4080) at ../accel/kvm/kvm-accel-ops.c:56
-#5  0x000055555964ecd0 in qemu_thread_start (args=<optimized out>) at ../util/qemu-thread-posix.c:541
-#6  0x00007ffff17e4d90 in ?? () from target:/usr/lib64/libc.so.6
-#7  0x00007ffff185f60c in ?? () from target:/usr/lib64/libc.so.6
-
-Thread 11 (Thread 0x7ff7d17fa940 (LWP 2463581) "CPU 2/KVM"):
-#0  0x00007ffff17e0bb8 in ?? () from target:/usr/lib64/libc.so.6
-#1  0x00007ffff17e4054 in pthread_cond_wait () from target:/usr/lib64/libc.so.6
-#2  0x000055555964fc34 in qemu_cond_wait_impl (cond=0x55557a3d3e70, mutex=0x555559ca2fd0 <qemu_global_mutex>, file=0x555559736af8 "../system/cpus.c", line=<optimized out>) at ../util/qemu-thread-posix.c:225
-#3  0x00005555592a4d44 in qemu_wait_io_event (cpu=cpu@entry=0x55557a3c2680) at ../system/cpus.c:445
-#4  0x0000555559494348 in kvm_vcpu_thread_fn (arg=arg@entry=0x55557a3c2680) at ../accel/kvm/kvm-accel-ops.c:56
-#5  0x000055555964ecd0 in qemu_thread_start (args=<optimized out>) at ../util/qemu-thread-posix.c:541
-#6  0x00007ffff17e4d90 in ?? () from target:/usr/lib64/libc.so.6
---Type <RET> for more, q to quit, c to continue without paging--
-#7  0x00007ffff185f60c in ?? () from target:/usr/lib64/libc.so.6
-
-Thread 10 (Thread 0x7ff7d0ff6940 (LWP 2463580) "CPU 1/KVM"):
-#0  0x00007ffff17e0bb8 in ?? () from target:/usr/lib64/libc.so.6
-#1  0x00007ffff17e4054 in pthread_cond_wait () from target:/usr/lib64/libc.so.6
-#2  0x000055555964fc34 in qemu_cond_wait_impl (cond=0x55557a3c2470, mutex=0x555559ca2fd0 <qemu_global_mutex>, file=0x555559736af8 "../system/cpus.c", line=<optimized out>) at ../util/qemu-thread-posix.c:225
-#3  0x00005555592a4d44 in qemu_wait_io_event (cpu=cpu@entry=0x55557a3b0c90) at ../system/cpus.c:445
-#4  0x0000555559494348 in kvm_vcpu_thread_fn (arg=arg@entry=0x55557a3b0c90) at ../accel/kvm/kvm-accel-ops.c:56
-#5  0x000055555964ecd0 in qemu_thread_start (args=<optimized out>) at ../util/qemu-thread-posix.c:541
-#6  0x00007ffff17e4d90 in ?? () from target:/usr/lib64/libc.so.6
-#7  0x00007ffff185f60c in ?? () from target:/usr/lib64/libc.so.6
-
-Thread 9 (Thread 0x7ff7bbffe940 (LWP 2463579) "CPU 0/KVM"):
-#0  0x00007ffff17e0bb8 in ?? () from target:/usr/lib64/libc.so.6
-#1  0x00007ffff17e4054 in pthread_cond_wait () from target:/usr/lib64/libc.so.6
-#2  0x000055555964fc34 in qemu_cond_wait_impl (cond=0x55557a3b0a80, mutex=0x555559ca2fd0 <qemu_global_mutex>, file=0x555559736af8 "../system/cpus.c", line=<optimized out>) at ../util/qemu-thread-posix.c:225
-#3  0x00005555592a4d44 in qemu_wait_io_event (cpu=cpu@entry=0x55557a39f0f0) at ../system/cpus.c:445
---Type <RET> for more, q to quit, c to continue without paging--
-#4  0x0000555559494348 in kvm_vcpu_thread_fn (arg=arg@entry=0x55557a39f0f0) at ../accel/kvm/kvm-accel-ops.c:56
-#5  0x000055555964ecd0 in qemu_thread_start (args=<optimized out>) at ../util/qemu-thread-posix.c:541
-#6  0x00007ffff17e4d90 in ?? () from target:/usr/lib64/libc.so.6
-#7  0x00007ffff185f60c in ?? () from target:/usr/lib64/libc.so.6
-
-Thread 8 (Thread 0x7ff7bb7fa940 (LWP 2463578) "IO mon_iothread"):
-#0  0x00007ffff185398c in poll () from target:/usr/lib64/libc.so.6
-#1  0x00007ffff1ba122c in ?? () from target:/usr/lib64/libglib-2.0.so.0
-#2  0x00007ffff1ba1ecc in g_main_loop_run () from target:/usr/lib64/libglib-2.0.so.0
-#3  0x00005555594de5d8 in iothread_run (opaque=opaque@entry=0x55557a0a8490) at ../iothread.c:70
-#4  0x000055555964ecd0 in qemu_thread_start (args=<optimized out>) at ../util/qemu-thread-posix.c:541
-#5  0x00007ffff17e4d90 in ?? () from target:/usr/lib64/libc.so.6
-#6  0x00007ffff185f60c in ?? () from target:/usr/lib64/libc.so.6
-
-Thread 7 (Thread 0x7fffee2f2940 (LWP 2463514) "IO iothread4"):
-#0  0x00007ffff1853fd0 in ppoll () from target:/usr/lib64/libc.so.6
-#1  0x0000555559669be4 in ppoll (__ss=0x0, __timeout=0x0, __nfds=<optimized out>, __fds=<optimized out>) at /usr/include/bits/poll2.h:88
-#2  0x000055555964be50 in fdmon_poll_wait (ctx=0x55557a2b3250, ready_list=0x7fffee2f1f40, timeout=-1) at ../util/fdmon-poll.c:79
---Type <RET> for more, q to quit, c to continue without paging--
-#3  0x000055555964b36c in aio_poll (ctx=0x55557a2b3250, blocking=blocking@entry=true) at ../util/aio-posix.c:670
-#4  0x00005555594de584 in iothread_run (opaque=opaque@entry=0x55557a0db090) at ../iothread.c:63
-#5  0x000055555964ecd0 in qemu_thread_start (args=<optimized out>) at ../util/qemu-thread-posix.c:541
-#6  0x00007ffff17e4d90 in ?? () from target:/usr/lib64/libc.so.6
-#7  0x00007ffff185f60c in ?? () from target:/usr/lib64/libc.so.6
-
-Thread 6 (Thread 0x7fffeeaf6940 (LWP 2463512) "IO iothread3"):
-#0  0x00007ffff1853fd0 in ppoll () from target:/usr/lib64/libc.so.6
-#1  0x0000555559669be4 in ppoll (__ss=0x0, __timeout=0x0, __nfds=<optimized out>, __fds=<optimized out>) at /usr/include/bits/poll2.h:88
-#2  0x000055555964be50 in fdmon_poll_wait (ctx=0x55557a2b0ea0, ready_list=0x7fffeeaf5f40, timeout=-1) at ../util/fdmon-poll.c:79
-#3  0x000055555964b36c in aio_poll (ctx=0x55557a2b0ea0, blocking=blocking@entry=true) at ../util/aio-posix.c:670
-#4  0x00005555594de584 in iothread_run (opaque=opaque@entry=0x55557a0db1a0) at ../iothread.c:63
-#5  0x000055555964ecd0 in qemu_thread_start (args=<optimized out>) at ../util/qemu-thread-posix.c:541
-#6  0x00007ffff17e4d90 in ?? () from target:/usr/lib64/libc.so.6
-#7  0x00007ffff185f60c in ?? () from target:/usr/lib64/libc.so.6
-
-Thread 5 (Thread 0x7fffef2fa940 (LWP 2463510) "IO iothread2"):
-#0  0x00007ffff1853fd0 in ppoll () from target:/usr/lib64/libc.so.6
---Type <RET> for more, q to quit, c to continue without paging--
-#1  0x0000555559669be4 in ppoll (__ss=0x0, __timeout=0x0, __nfds=<optimized out>, __fds=<optimized out>) at /usr/include/bits/poll2.h:88
-#2  0x000055555964be50 in fdmon_poll_wait (ctx=0x55557a2b1af0, ready_list=0x7fffef2f9f40, timeout=-1) at ../util/fdmon-poll.c:79
-#3  0x000055555964b36c in aio_poll (ctx=0x55557a2b1af0, blocking=blocking@entry=true) at ../util/aio-posix.c:670
-#4  0x00005555594de584 in iothread_run (opaque=opaque@entry=0x55557a1440a0) at ../iothread.c:63
-#5  0x000055555964ecd0 in qemu_thread_start (args=<optimized out>) at ../util/qemu-thread-posix.c:541
-#6  0x00007ffff17e4d90 in ?? () from target:/usr/lib64/libc.so.6
-#7  0x00007ffff185f60c in ?? () from target:/usr/lib64/libc.so.6
-
-Thread 4 (Thread 0x7fffefafe940 (LWP 2463508) "IO iothread1"):
-#0  0x00007ffff1853fd0 in ppoll () from target:/usr/lib64/libc.so.6
-#1  0x0000555559669be4 in ppoll (__ss=0x0, __timeout=0x0, __nfds=<optimized out>, __fds=<optimized out>) at /usr/include/bits/poll2.h:88
-#2  0x000055555964be50 in fdmon_poll_wait (ctx=0x55557a2af770, ready_list=0x7fffefafdf40, timeout=-1) at ../util/fdmon-poll.c:79
-#3  0x000055555964b36c in aio_poll (ctx=0x55557a2af770, blocking=blocking@entry=true) at ../util/aio-posix.c:670
-#4  0x00005555594de584 in iothread_run (opaque=opaque@entry=0x55557a175650) at ../iothread.c:63
-#5  0x000055555964ecd0 in qemu_thread_start (args=<optimized out>) at ../util/qemu-thread-posix.c:541
-#6  0x00007ffff17e4d90 in ?? () from target:/usr/lib64/libc.so.6
-#7  0x00007ffff185f60c in ?? () from target:/usr/lib64/libc.so.6
---Type <RET> for more, q to quit, c to continue without paging--
-
-Thread 3 (Thread 0x7ffff0302940 (LWP 2463507) "TC tc-ram-node0"):
-#0  0x00007ffff17e0bb8 in ?? () from target:/usr/lib64/libc.so.6
-#1  0x00007ffff17e4054 in pthread_cond_wait () from target:/usr/lib64/libc.so.6
-#2  0x000055555964fc34 in qemu_cond_wait_impl (cond=0x55557a15ae78, mutex=0x55557a15ae40, file=0x5555597e5270 "../util/qemu-thread-posix.c", line=<optimized out>) at ../util/qemu-thread-posix.c:225
-#3  0x0000555559650284 in qemu_sem_wait (sem=0x55557a15ae40) at ../util/qemu-thread-posix.c:314
-#4  0x00005555596802c8 in thread_context_run (opaque=opaque@entry=0x55557a15ad90) at ../util/thread-context.c:81
-#5  0x000055555964ecd0 in qemu_thread_start (args=<optimized out>) at ../util/qemu-thread-posix.c:541
-#6  0x00007ffff17e4d90 in ?? () from target:/usr/lib64/libc.so.6
-#7  0x00007ffff185f82c in ?? () from target:/usr/lib64/libc.so.6
-
-Thread 2 (Thread 0x7ffff0c0a940 (LWP 2463499) "qemu-system-loo"):
-#0  0x00007ffff185d1e8 in syscall () from target:/usr/lib64/libc.so.6
-#1  0x0000555559650440 in qemu_futex_wait (val=<optimized out>, f=<optimized out>) at /usr/src/debug/qemu-8.2.0.939-571ed885b.loongarch64/include/qemu/futex.h:29
-#2  qemu_event_wait (ev=ev@entry=0x555559cc9660 <rcu_call_ready_event>) at ../util/qemu-thread-posix.c:464
-#3  0x000055555965ae44 in call_rcu_thread (opaque=opaque@entry=0x0) at ../util/rcu.c:278
-#4  0x000055555964ecd0 in qemu_thread_start (args=<optimized out>) at ../util/qemu-thread-posix.c:541
---Type <RET> for more, q to quit, c to continue without paging--
-#5  0x00007ffff17e4d90 in ?? () from target:/usr/lib64/libc.so.6
-#6  0x00007ffff185f82c in ?? () from target:/usr/lib64/libc.so.6
-
-Thread 1 (Thread 0x7ffff0c0f820 (LWP 2463493) "qemu-system-loo"):
-#0  0x00007ffff1853fd0 in ppoll () from target:/usr/lib64/libc.so.6
-#1  0x0000555559669b68 in ppoll (__ss=0x0, __timeout=0x7ffffbb45bc8, __nfds=<optimized out>, __fds=<optimized out>) at /usr/include/bits/poll2.h:88
-#2  qemu_poll_ns (fds=<optimized out>, nfds=<optimized out>, timeout=<optimized out>) at ../util/qemu-timer.c:420
-#3  0x0000555559666604 in os_host_main_loop_wait (timeout=1000000000) at ../util/main-loop.c:308
-#4  main_loop_wait (nonblocking=nonblocking@entry=0) at ../util/main-loop.c:592
-#5  0x00005555592b1924 in qemu_main_loop () at ../system/runstate.c:794
-#6  0x0000555559498a84 in qemu_default_main () at ../system/main.c:39
-#7  0x00007ffff17847c8 in ?? () from target:/usr/lib64/libc.so.6
-#8  0x00007ffff17848b0 in __libc_start_main () from target:/usr/lib64/libc.so.6
-#9  0x00005555590695c0 in _start ()
 ```
 
 > TODO
@@ -931,7 +747,7 @@ do_vm_stop
 
 ```
 coroutine_trampoline
-=> virtio_blk_rw_complete
+=> virtio_blk_rw_complete== 0
 ### !!!!!!!!!!!
 ### get ctx lock
 ### !!!!!!!!!!!
@@ -969,36 +785,165 @@ coroutine_trampoline
 > ```
 
 按也就是说，在`virtio_blk_data_plane_stop->aio_context_acquire(s->ctx)`
-就会获取锁，触发死锁。
-<!--
-我们先来确认下这几个ctx 是如何赋值的:
+就会获取锁，触发死锁。更为致命的是,
 
-* s->ctx(VirtioBlockDataPlane) -- 来自于 iothread->ctx
+<font color=red size=4><b>
+即便是没有AioContext->clock, migrate thread 会持有BQL的情况下, 等待iothread 处理完inflight的io, 所以, 持有AioContext->lock并不是复现问题的必要条件.
+</b></font>
+
+那现在的问题变为 这两个线程的逻辑谁有问题? 我们来重新理下两个线程的逻辑:
+
+* migrate thread: 首先其需要持有bql, 以防止在虚拟机状态, 在pause过程中被别的线程修改。
+  看起来没有问题(我个人浅薄理解，不了解bql的使用规范)
+
+  而其在迁移过程中需要做一件事情, 将pending的IO都处理完, 怎样保证呢？和其他存储相关的
+  一致性逻辑相同:
+  * 保证新的IO不再下发
+  * 保证已经下发的IO(给内核的)都处理完成，并且填充到vring中。
+
+  怎么保证到这一点呢, migrate 线程做如下操作:
+  1. 使用ctx bh 机制, 将host notify 切换到 migrate thread ctx (qemu_aio_context).
+     在设置完, 该选项之后, iothread 不再接受host notify
+  2. 等待iothread 处理完其已经发现 或 下发的io请求;
+  3. 关闭host notifer(ioeventfd), 在guest来看，数据面已经停止工作（不响应了)
+     (可以思考下为什么在这里要关闭host notify，关闭host notify 意味着无需再发送
+     消息给中断控制器，某些架构中断控制器state保存，也在state change callback中)
+  4. 等待处理所有设备的io请求.
+
+  看起来并没有问题.
+
+* iothread: 其工作原理非常简单，通过`aio_poll()` poll host notify, 然后处理vq中的req。通过
+  协程的方式处理`aio complete`.
+
+  那iothread 可不可以获取BQL锁呢?
+
+  iothread  本身设计的目的，就是为了避免io 等慢路径获取 BQL, 对VCPU或者其他线程造成阻塞。
+  在链接<sup>1</sup>, 中也提到:
 
   ```
-  virtio_blk_data_plane_create
-  => if conf->iothread
-     => s->iothread = conf->iothread;
-     => s->ctx = iothread_get_aio_context(s->iothread);
-        => return iothread->ctx
+  Since they implicitly work on the main loop they cannot be used in code that runs
+  in an IOThread. They might cause a crash or deadlock if called from an IOThread since
+  the BQL is not held.
   ```
 
-* `s->conf->conf.blk->ctx`(BlockBackend) (略过初始化流程)
+  从这些信息可以得出，**iothread不能获取BQL，否则可能造成死锁**
 
-  ```sh
-  virtio_blk_data_plane_start
-  => r = blk_set_aio_context(s->conf->conf.blk, s->ctx, &local_err);
-     => !
-  ```
+## upstream solve this issue
 
-* `bs->aio_context`(BlockDriverState->aio_context)
+解决这个问题的方式有两个:
 
-  ```sh
-  blk_set_aio_context
-  bdrv_try_change_aio_context
-  bdrv_change_aio_context
-  bdrv_set_aio_context_commit
-  bdrv_attach_aio_context
-  => bs->aio_context = new_context;
-  ```
--->
+1. 让iothread 使用irqfd, 避免使用`traditional qdev irq path`(因为此时irqfd还未关闭)
+2. 让 `irq controller memory region listener` 变为线程安全, 可以不持有BQL执行相关回调<sup>3</sup>;
+
+目前, 社区采用的第一种方式<sup>2</sup>
+
+## 问题复现
+
+### qemu 代码修改
+
+我们要验证该问题是否能通过该patch解决，需要一种可以较稳定复现的方式, 我这边基于`openeuler 8.2.0`
+做了一些更改，方便复现问题:
+
+1. 增加一个同步机制，让migrate thread 尽量在 iothread 执行到`prepare_mmio_access()` 之后，
+   在继续执行
+2. 忽视`virtio_should_notify()`的返回结果, 无条件发送guest notify
+3. 增加一些debug
+
+### qemu启动参数
+
+```
+        -device virtio-blk-pci,drive=drv0,num-queues=4,iothread=iothread0 \
+        -drive file=a.img,if=none,id=drv0,format=qcow2,aio=native,cache=none\
+        -object iothread,id=iothread0 \
+```
+
+增加一个virtio-blk设备，注意使用多队列+aio(一定要aio), 并分配iothread。
+
+### fio 脚本
+
+```sh
+fio --name=seqwrite \
+    --filename=/dev/vda \
+    --size=10G \
+    --bs=512B \
+    --rw=write \
+    --numjobs=4 \
+    --iodepth=256 \
+    --direct=1 \
+    --runtime=60 \
+    --group_reporting \
+    --ioengine=libaio \
+    --rw=write
+```
+
+> [!NOTE]
+>
+> 另外，尽量增加io负载，让其处理慢，可以增加(infight != 0 的几率)(个人认为可以通过kprobe 增加
+> aio_complete延迟, 不过我并未尝试)
+
+### 复现方法
+
+1. 启动虚拟机
+2. 启动fio
+3. 在qemumonitor 中执行s
+4. 如果未复现执行c重复测试
+
+### 未合入patch 前打印信息
+
+> 使用`qemu-8.2.0-vm-stop-debug` 分支:
+
+打印如下:
+
+```
+(qemu) s
+stop vcpu cost time: 0 ms
+wait hb oneshot detach host notify...
+set host notifiers...
+print bs info... before wait
+blk in_flight is 15
+eventfd stop mr is loongarch_pch_msi
+virtio notify is enter
+```
+
+需要注意，第一次打印`blk in_flight is xxx` 该值必须大于0, 否则肯定不会复现。
+
+ 复现后，qemu monitor 完全卡死，查看堆栈，和当前case堆栈类似
+
+### 合入patch后打印信息
+
+> 使用`qemu-8.2.0-vm-stop-hung-fix-include-debug` 分支
+
+打印如下:
+
+```
+(qemu) s
+stop vcpu cost time: 0 ms
+wait hb oneshot detach host notify...
+set host notifiers...
+print bs info... before wait
+blk in_flight is 8
+virtio notify wait timeout
+print bs info... after wait
+blk in_flight is 0
+print bs info... before blk_drain
+blk in_flight is 0
+print bs info..e after blk_drain
+blk in_flight is 0
+virtio-blk device status is 15 that means DRIVER OK
+virtio-net device status is 15 that means DRIVER OK
+virtio-scsi device status is 15 that means DRIVER OK
+virtio-net device status is 15 that means DRIVER OK
+{"timestamp": {"seconds": 1770804416, "microseconds": 968765}, "event": "STOP"}
+(qemu)
+```
+
+在出现`in_flight is 8`(非零)后, iothread 仍然处理完这些inflight io，说明这些io complete路径，
+并未受到BQL锁的影响。
+
+## 参考链接
+
+1. [Using Multiple IOThreads](https://www.qemu.org/docs/master/devel/multiple-iothreads.html)
+2. [virtio-blk: avoid using ioeventfd state in irqfd conditional](https://github.com/qemu/qemu/commit/bfa36802d1704fc413c590ebdcc4e5ae0eacf439)
+3. [system/physmem: mark io_mem_unassigned lockless](https://github.com/qemu/qemu/commit/c0c6a6ac7bd61f862d9c1800129c80dc2a93704e)
+4. [复现问题代码分支](https://atomgit.com/cai-fuqiang/qemu/tree/qemu-8.2.0-vm-stop-hung)
+5. [修复问题代码分支](https://atomgit.com/cai-fuqiang/qemu/commits/qemu-8.2.0-vm-stop-hung-fix-include-debug)

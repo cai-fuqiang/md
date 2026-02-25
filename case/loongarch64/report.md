@@ -18,7 +18,11 @@
     * [ ] 热迁移后，源端异常，virsh 命令卡住. [details](./bug/2026_02_09_qemu__migrate_hung_source.md)
       * [X] 问题定位(定位到是openeuler上游bug，upstream已经解决)
       * [ ] 反馈openeuler
+        * [X] 提交issue patch
+        * [ ] 等待反馈
     * [ ] 热迁移后，源端异常后，目的端也异常, virsh 命令卡住. [details](./bug/2026_02_09_qemu__migrate_hung_dest.md)
+    * [X] 合入pv-ipi补丁后，热迁移源端qemu 从热度门票 [details](./bug/2026_02_25_qemu__migrate_source_qemu_crash.md)
+    * [ ] 龙芯不支持CPU热插拔 [details](./bug/2026_02_25_cpu_hotplug_error.md)
   * 其他
     * [ ] gcore 命令获取的coredump堆栈信息打印不全
 

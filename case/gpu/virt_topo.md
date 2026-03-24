@@ -25,9 +25,10 @@ GPU 之间的通信有下面几种方式:
    网络用于在不同的主机上传输数据。而GPU 和 IB 网卡通信是通过 GPU Direct RDMA的方式(PCIe P2P),
    根据 1 应该让GPU和其PCI 拓扑较近的IB卡进行绑定，如下图:
 
-![IB_GPU_TOPO_HOST](pic/IB_GPU_TOPO_HOST.png)
+![IB_GPU_TOPO_HOST](pic/IB_GPU_TOPO_HOST.svg)
 
-图中, 用绿虚线框框起来的位于一个 `PCIe switch`, 位于一个框中的设备在PCIe 拓扑中是"较近" 的.
+图中, 用绿虚线框框起来的位于一个 `PCIe switch`, 位于一个框中的设备在PCIe 拓扑中是"较近" 的. 并且在
+每个numa上，有一个storage IB，用来链接不同的存储网络（下面会提到)
 
 上面是基于物理机考虑, 在虚拟化中，由于IOMMU的存在，所有从设备触发的PCIe tlp 都要经过IOMMU
 的地址转换，基于此，如果设备之间要做P2P则需要一个非常长的路径:
@@ -68,6 +69,13 @@ IB 的NUMA亲和，还需要让虚拟机能看到 GPU和 IB 的亲和性**
    (`NCCL_TOPO_FILE`)
 
 目前打算使用 2
+
+另外，关于存储IB卡，目前存储IB卡有两个，两个IB卡会通过不同的交换机连接到不同的IB网络。
+每个虚拟机都需要通过这两个IB网络链接不同的后端存储，这两个IB 卡是位于不同的NUMA，所以
+我们在`1, 2, 4` 卡虚拟机上，避免面临访问其中1个IB卡跨numa的情况.
+
+除非每个虚拟机分配两个numa内存, 但是GPU这边的分组又不能跨NUMA。
+所以综合考虑来看，我决定牺牲一个存储IB的性能，让`1,2,4`卡虚拟机为单NUMA 拓扑。
 
 [示例xml](./example.xml)
 

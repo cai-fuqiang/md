@@ -1,9 +1,11 @@
 ## 需求概述
+
 物理机有8个GPU, 目前需求是创建虚拟机规格可能是有2,4卡规格虚拟机，
 每个虚拟机中的GPU支持通过NVLINK P2P, 需要对做nvlink share虚拟化
 工作.
 
 ## 操作步骤
+
 NVIDIA 官方提供了相关操作步骤<sup>1</sup>. 其主要的思路是, 在GPU虚拟机外
 使用`nvidia-fabricmanager`接管`NVLINK`, 然后对NVLINK进行分区，将分区后某 **一个**
 分区的GPU透传给 虚拟机。

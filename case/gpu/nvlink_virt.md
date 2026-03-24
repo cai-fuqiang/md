@@ -4,6 +4,8 @@
 每个虚拟机中的GPU支持通过NVLINK P2P, 需要对做nvlink share虚拟化
 工作.
 
+![GPU nvlink partition](pic/GPU_nvlink_partition.svg)
+
 ## 操作步骤
 
 NVIDIA 官方提供了相关操作步骤<sup>1</sup>. 其主要的思路是, 在GPU虚拟机外
@@ -250,8 +252,12 @@ GPU之间是否有`nvlink`链接, 我们来看下现象:
         than displayed in the above matrix
   ```
 
-### 其他测试
-可以执行`nvbandwidth` 测试工具测试两个卡的 P2P带宽
+### 性能测试
+可以执行`nvbandwidth` 测试工具测试两个卡的 P2P带宽.
+
+我们对比了虚拟机8卡(nvlink share partition include 8 GPU)和物理机 `nvbandwidth` 数据:
+
+[测试数据](./perftest/nvbandwidth)
 
 ### 注意事项
 * 无论是`Service VM` 还是`Host`接管 `NVswitch`, 都需要保证fabric manager 启动，并且透传给

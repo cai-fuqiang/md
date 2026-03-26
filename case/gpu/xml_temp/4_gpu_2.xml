@@ -1,0 +1,103 @@
+<!-- expander node 0 -->
+<controller type='pci' index='2' model='pci-expander-bus'>
+   <model name='pxb'/>
+   <target busNr='254'>
+     <node>0</node>
+   </target>
+   <alias name='pci.2'/>
+   <address type='pci' domain='0x0000' bus='0x00' slot='0x03' function='0x0'/>
+ </controller>
+<controller type='pci' index='3' model='pci-expander-bus'>
+   <model name='pxb'/>
+   <target busNr='252'>
+     <node>0</node>
+   </target>
+   <alias name='pci.3'/>
+   <address type='pci' domain='0x0000' bus='0x00' slot='0x04' function='0x0'/>
+ </controller>
+<controller type='pci' index='4' model='pci-expander-bus'>
+   <model name='pxb'/>
+   <target busNr='250'>
+     <node>0</node>
+   </target>
+   <alias name='pci.4'/>
+   <address type='pci' domain='0x0000' bus='0x00' slot='0x05' function='0x0'/>
+ </controller>
+<controller type='pci' index='5' model='pci-expander-bus'>
+   <model name='pxb'/>
+   <target busNr='248'>
+     <node>0</node>
+   </target>
+   <alias name='pci.5'/>
+   <address type='pci' domain='0x0000' bus='0x00' slot='0x06' function='0x0'/>
+ </controller>
+<!-- expander node 0 E -->
+    <!-- node 1-->
+    <hostdev mode='subsystem' type='pci' managed='yes'>
+      <driver name='vfio'/>
+      <source>
+        <address domain='0x0000' bus='0x9b' slot='0x00' function='0x0'/>
+      </source>
+      <alias name='hostdev0'/>
+      <address type='pci' domain='0x0000' bus='0x2' slot='0x01' function='0x0'/>
+    </hostdev>
+    <hostdev mode='subsystem' type='pci' managed='yes'>
+      <driver name='vfio'/>
+      <source>
+        <address domain='0x0000' bus='0x9c' slot='0x00' function='0x0'/>
+      </source>
+      <alias name='hostdev0'/>
+      <address type='pci' domain='0x0000' bus='0x2' slot='0x02' function='0x0'/>
+    </hostdev>
+
+    <hostdev mode='subsystem' type='pci' managed='yes'>
+      <driver name='vfio'/>
+      <source>
+        <address domain='0x0000' bus='0xbb' slot='0x00' function='0x0'/>
+      </source>
+      <alias name='hostdev0'/>
+      <address type='pci' domain='0x0000' bus='0x3' slot='0x01' function='0x0'/>
+    </hostdev>
+    <hostdev mode='subsystem' type='pci' managed='yes'>
+      <driver name='vfio'/>
+      <source>
+        <address domain='0x0000' bus='0xbc' slot='0x00' function='0x0'/>
+      </source>
+      <alias name='hostdev0'/>
+      <address type='pci' domain='0x0000' bus='0x3' slot='0x02' function='0x0'/>
+    </hostdev>
+
+    <hostdev mode='subsystem' type='pci' managed='yes'>
+      <driver name='vfio'/>
+      <source>
+        <address domain='0x0000' bus='0xcb' slot='0x00' function='0x0'/>
+
+      </source>
+      <alias name='hostdev0'/>
+      <address type='pci' domain='0x0000' bus='0x4' slot='0x01' function='0x0'/>
+    </hostdev>
+    <hostdev mode='subsystem' type='pci' managed='yes'>
+      <driver name='vfio'/>
+      <source>
+        <address domain='0x0000' bus='0xcc' slot='0x00' function='0x0'/>
+      </source>
+      <alias name='hostdev0'/>
+      <address type='pci' domain='0x0000' bus='0x4' slot='0x02' function='0x0'/>
+    </hostdev>
+
+    <hostdev mode='subsystem' type='pci' managed='yes'>
+      <driver name='vfio'/>
+      <source>
+        <address domain='0x0000' bus='0xdb' slot='0x00' function='0x0'/>
+      </source>
+      <alias name='hostdev0'/>
+      <address type='pci' domain='0x0000' bus='0x5' slot='0x01' function='0x0'/>
+    </hostdev>
+    <hostdev mode='subsystem' type='pci' managed='yes'>
+      <driver name='vfio'/>
+      <source>
+        <address domain='0x0000' bus='0xdc' slot='0x00' function='0x0'/>
+      </source>
+      <alias name='hostdev0'/>
+      <address type='pci' domain='0x0000' bus='0x5' slot='0x02' function='0x0'/>
+    </hostdev>

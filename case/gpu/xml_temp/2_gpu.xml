@@ -1,0 +1,16 @@
+<controller type='pci' index='2' model='pci-expander-bus'>
+   <model name='pxb'/>
+   <target busNr='254'>
+     <node>0</node>
+   </target>
+   <alias name='pci.2'/>
+   <address type='pci' domain='0x0000' bus='0x00' slot='0x03' function='0x0'/>
+ </controller>
+<controller type='pci' index='3' model='pci-expander-bus'>
+   <model name='pxb'/>
+   <target busNr='252'>
+     <node>0</node>
+   </target>
+   <alias name='pci.3'/>
+   <address type='pci' domain='0x0000' bus='0x00' slot='0x04' function='0x0'/>
+ </controller>

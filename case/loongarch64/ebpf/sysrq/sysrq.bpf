@@ -1,0 +1,27 @@
+#include "sysrq.h"
+
+kfunc:vmlinux:sysrq_handle_keypress
+{
+	$sysrq_state=(struct sysrq_state *)args->sysrq;
+	printf("the code16(%x) code10(%u), value (%lx)\n", args->code, args->code,args->value);
+	printf("  sysrq alt(%u) alt_use(%u) shift(%u) shift_use(%u) active(%d)\n",
+		$sysrq_state->alt,
+		$sysrq_state->alt_use,
+		$sysrq_state->shift,
+		$sysrq_state->shift_use,
+		$sysrq_state->active);
+
+}
+kretfunc:vmlinux:sysrq_handle_keypress
+{
+	$sysrq_state=(struct sysrq_state *)args->sysrq;
+	printf("  sysrq alt(%u) alt_use(%u) shift(%u) shift_use(%u) active(%d) [ret]\n",
+		$sysrq_state->alt,
+		$sysrq_state->alt_use,
+		$sysrq_state->shift,
+		$sysrq_state->shift_use,
+		$sysrq_state->active);
+	printf("\n=======================\n\n");
+
+}
+

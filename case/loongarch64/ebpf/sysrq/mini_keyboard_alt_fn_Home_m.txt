@@ -1,0 +1,27 @@
+the code16(38) code10(56), value (1)
+  sysrq alt(0) alt_use(0) shift(0) shift_use(0) active(0)
+  sysrq alt(56) alt_use(0) shift(0) shift_use(0) active(0) [ret]
+
+=======================
+
+the code16(63) code10(99), value (1)
+  sysrq alt(56) alt_use(0) shift(0) shift_use(0) active(0)
+  sysrq alt(56) alt_use(56) shift(0) shift_use(0) active(1) [ret]
+
+=======================
+
+the code16(38) code10(56), value (0)
+  sysrq alt(56) alt_use(56) shift(0) shift_use(0) active(1)
+  sysrq alt(0) alt_use(56) shift(0) shift_use(0) active(0) [ret]
+
+=======================
+
+the code16(32) code10(50), value (1)
+  sysrq alt(0) alt_use(56) shift(0) shift_use(0) active(0)
+  sysrq alt(0) alt_use(56) shift(0) shift_use(0) active(0) [ret]
+
+=======================
+
+the code16(32) code10(50), value (0)
+  sysrq alt(0) alt_use(56) shift(0) shift_use(0) active(0)
+  sysrq alt(0) alt_use(56) shift(0) shift_use(0) active(0) [ret]

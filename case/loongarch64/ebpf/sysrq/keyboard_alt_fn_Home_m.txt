@@ -1,0 +1,95 @@
+the code16(38) code10(56), value (1)
+  sysrq alt(0) alt_use(0) shift(0) shift_use(0) active(0)
+  sysrq alt(56) alt_use(0) shift(0) shift_use(0) active(0) [ret]
+
+=======================
+
+the code16(b7) code10(183), value (1)
+  sysrq alt(56) alt_use(0) shift(0) shift_use(0) active(0)
+  sysrq alt(56) alt_use(0) shift(0) shift_use(0) active(0) [ret]
+
+=======================
+
+the code16(b7) code10(183), value (0)
+  sysrq alt(56) alt_use(0) shift(0) shift_use(0) active(0)
+  sysrq alt(56) alt_use(0) shift(0) shift_use(0) active(0) [ret]
+
+=======================
+
+the code16(38) code10(56), value (0)
+  sysrq alt(56) alt_use(0) shift(0) shift_use(0) active(0)
+  sysrq alt(0) alt_use(0) shift(0) shift_use(0) active(0) [ret]
+
+=======================
+
+the code16(b7) code10(183), value (1)
+  sysrq alt(0) alt_use(0) shift(0) shift_use(0) active(0)
+  sysrq alt(0) alt_use(0) shift(0) shift_use(0) active(0) [ret]
+
+=======================
+
+the code16(b7) code10(183), value (0)
+  sysrq alt(0) alt_use(0) shift(0) shift_use(0) active(0)
+  sysrq alt(0) alt_use(0) shift(0) shift_use(0) active(0) [ret]
+
+=======================
+
+the code16(b7) code10(183), value (1)
+  sysrq alt(0) alt_use(0) shift(0) shift_use(0) active(0)
+  sysrq alt(0) alt_use(0) shift(0) shift_use(0) active(0) [ret]
+
+=======================
+
+the code16(b7) code10(183), value (0)
+  sysrq alt(0) alt_use(0) shift(0) shift_use(0) active(0)
+  sysrq alt(0) alt_use(0) shift(0) shift_use(0) active(0) [ret]
+
+=======================
+
+the code16(b7) code10(183), value (1)
+  sysrq alt(0) alt_use(0) shift(0) shift_use(0) active(0)
+  sysrq alt(0) alt_use(0) shift(0) shift_use(0) active(0) [ret]
+
+=======================
+
+the code16(b7) code10(183), value (0)
+  sysrq alt(0) alt_use(0) shift(0) shift_use(0) active(0)
+  sysrq alt(0) alt_use(0) shift(0) shift_use(0) active(0) [ret]
+
+=======================
+
+the code16(b7) code10(183), value (1)
+  sysrq alt(0) alt_use(0) shift(0) shift_use(0) active(0)
+  sysrq alt(0) alt_use(0) shift(0) shift_use(0) active(0) [ret]
+
+=======================
+
+the code16(b7) code10(183), value (0)
+  sysrq alt(0) alt_use(0) shift(0) shift_use(0) active(0)
+  sysrq alt(0) alt_use(0) shift(0) shift_use(0) active(0) [ret]
+
+=======================
+
+the code16(b7) code10(183), value (1)
+  sysrq alt(0) alt_use(0) shift(0) shift_use(0) active(0)
+  sysrq alt(0) alt_use(0) shift(0) shift_use(0) active(0) [ret]
+
+=======================
+
+the code16(b7) code10(183), value (0)
+  sysrq alt(0) alt_use(0) shift(0) shift_use(0) active(0)
+  sysrq alt(0) alt_use(0) shift(0) shift_use(0) active(0) [ret]
+
+=======================
+
+the code16(52) code10(82), value (1)
+  sysrq alt(0) alt_use(0) shift(0) shift_use(0) active(0)
+  sysrq alt(0) alt_use(0) shift(0) shift_use(0) active(0) [ret]
+
+=======================
+
+the code16(52) code10(82), value (0)
+  sysrq alt(0) alt_use(0) shift(0) shift_use(0) active(0)
+  sysrq alt(0) alt_use(0) shift(0) shift_use(0) active(0) [ret]
+
+=======================

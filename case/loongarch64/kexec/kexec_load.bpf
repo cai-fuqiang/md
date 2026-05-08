@@ -1,0 +1,143 @@
+#!/usr/bin/bpftrace
+
+#include <linux/kexec.h>
+
+BEGIN
+{
+    printf("Tracing kexec syscalls (LoongArch)... Hit Ctrl-C to end.\n\n");
+}
+
+// ========== sys_kexec_load ==========
+
+kprobe:sys_kexec_load
+{
+    $entry    = arg0;
+    $nr_seg   = (uint64)arg1;
+    $segments = (uint64)arg2;
+    $flags    = arg3;
+
+    // KEXEC_ARCH_LOONGARCH64 = 0x1020000
+    // KEXEC_ON_CRASH = 0x1
+    $arch     = $flags & 0xffff0000;
+    $is_crash = ($flags & 0x1) != 0;
+    printf("=== sys_kexec_load (enter) ===\n");
+    printf("  pid: %d, comm: %s\n", pid, comm);
+    printf("  entry: 0x%lx\n", $entry);
+    printf("  nr_segments: %lu\n", $nr_seg);
+    printf("  flags: 0x%lx arch=0x%lx %s\n",
+           $flags, $arch, $is_crash ? "[CRASH]" : "[NORMAL]");
+
+    // 遍历 segment
+    $i = (uint64)0;
+    while ($i < $nr_seg && $i < 8)
+    {
+        $buf   = *((uint64)($segments + $i * 32));
+        $bufsz = *((uint64)($segments + $i * 32 + 8));
+        $mem   = *((uint64)($segments + $i * 32 + 16));
+        $memsz = *((uint64)($segments + $i * 32 + 24));
+
+        // 只打印非空 segment
+        if ($bufsz != 0 || $memsz != 0)
+        {
+            printf("  segment[%lu]: buf=0x%lx bufsz=%lu mem=0x%lx memsz=%lu\n",
+                   $i, $buf, $bufsz, $mem, $memsz);
+
+            // 如果是小的 buffer (疑似 cmdline), 尝试读取
+            if ($bufsz > 0 && $bufsz < 2048)
+            {
+                printf("    -> content: \"%s\"\n", str($buf));
+            }
+        }
+        $i++;
+    }
+    printf("\n");
+}
+
+kretprobe:sys_kexec_load
+{
+    printf("  sys_kexec_load (exit) => ret: %d\n", retval);
+    printf("\n");
+}
+
+// ========== 内核内部关键函数 ==========
+
+kprobe:crash_kexec
+{
+    printf("=== crash_kexec (kernel internal) ===\n");
+    printf("  pid: %d, comm: %s\n", pid, comm);
+    printf("\n");
+}
+
+kprobe:kernel_kexec
+{
+    printf("=== kernel_kexec (entry point) ===\n");
+    printf("  pid: %d, comm: %s\n", pid, comm);
+    printf("\n");
+}
+
+kprobe:machine_kexec
+{
+    printf("=== machine_kexec (arch-specific, goes to new kernel) ===\n");
+    printf("  pid: %d, comm: %s\n", pid, comm);
+    printf("\n");
+}
+
+kprobe:do_kexec_load
+{
+    $entry    = arg0;
+    $nr_seg   = (uint64)arg1;
+    $segments = (uint64)arg2;
+    $flags    = arg3;
+    $is_crash = ($flags & 0x1) != 0;
+    printf("=== do_kexec_load ===\n");
+    printf("  pid: %d, comm: %s\n", pid, comm);
+    printf("  entry: 0x%lx, nr_segments: %lu, %s\n",
+           $entry, $nr_seg, $is_crash ? "[CRASH]" : "[NORMAL]");
+
+    // 遍历 segment，当 bufsz == 4096 时以字符串形式打印 buf
+    $i = (uint64)0;
+    while ($i < $nr_seg && $i < 8)
+    {
+        $buf   = *((uint64)($segments + $i * 32));
+        $bufsz = *((uint64)($segments + $i * 32 + 8));
+        $mem   = *((uint64)($segments + $i * 32 + 16));
+        $memsz = *((uint64)($segments + $i * 32 + 24));
+
+        if ($bufsz == 4096)
+        {
+            printf("  segment[%lu]: buf=0x%lx bufsz=%lu mem=0x%lx memsz=%lu\n",
+                   $i, $buf, $bufsz, $mem, $memsz);
+            // 分段打印 buf 内容（用户态地址，需用 str() 读取）
+            // 每次执行 kexec 修改偏移值: 0, 200, 400, 600, ..., 3800
+            // 用 BPFTRACE_STRLEN=200 运行
+            printf("    [str @0]:    \"%s\"\n", str($buf + 0, 100));
+            printf("    [str @100]:  \"%s\"\n", str($buf + 100, 100));
+            printf("    [str @200]:  \"%s\"\n", str($buf + 200, 100));
+            printf("    [str @300]:  \"%s\"\n", str($buf + 300, 100));
+            printf("    [str @400]:  \"%s\"\n", str($buf + 400, 100));
+            printf("    [str @500]:  \"%s\"\n", str($buf + 500, 100));
+            printf("    [str @600]:  \"%s\"\n", str($buf + 600, 100));
+            printf("    [str @700]:  \"%s\"\n", str($buf + 700, 100));
+            printf("    [str @800]:  \"%s\"\n", str($buf + 800, 100));
+            printf("    [str @800]:  \"%s\"\n", str($buf + 900, 100));
+            printf("    [str @1000]: \"%s\"\n", str($buf + 1000, 200));
+            printf("    [str @1200]: \"%s\"\n", str($buf + 1200, 200));
+            printf("    [str @1400]: \"%s\"\n", str($buf + 1400, 200));
+            printf("    [str @1600]: \"%s\"\n", str($buf + 1600, 200));
+            printf("    [str @1800]: \"%s\"\n", str($buf + 1800, 200));
+            printf("    [str @2000]: \"%s\"\n", str($buf + 2000, 200));
+            printf("    [str @2200]: \"%s\"\n", str($buf + 2200, 200));
+            printf("    [str @2400]: \"%s\"\n", str($buf + 2400, 200));
+            printf("    [str @2600]: \"%s\"\n", str($buf + 2600, 200));
+            printf("    [str @2800]: \"%s\"\n", str($buf + 2800, 200));
+            printf("    [str @3000]: \"%s\"\n", str($buf + 3000, 200));
+            printf("    [str @3200]: \"%s\"\n", str($buf + 3200, 200));
+            printf("    [str @3400]: \"%s\"\n", str($buf + 3400, 200));
+            printf("    [str @3600]: \"%s\"\n", str($buf + 3600, 200));
+            printf("    [str @3800]: \"%s\"\n", str($buf + 3800, 200));
+        }
+        $i++;
+    }
+    printf("\n");
+}
+

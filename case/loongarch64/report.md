@@ -102,13 +102,37 @@
     [438588.184401][    C0] [<90000000015c530c>] do_ri+0x174/0x180
     ```
     </details>
+
+    使用crash打开vmcore, 打开vmcore:
+    ```
+    crash> bt
+    PID: 0        TASK: 9000000002c3ef40  CPU: 0    COMMAND: "swapper/0"
+    bt: WARNING: cannot determine starting stack frame for task 9000000002c3ef40
+    crash> bt -a
+    PID: 0        TASK: 9000000002c3ef40  CPU: 0    COMMAND: "swapper/0"
+    bt: WARNING: cannot determine starting stack frame for task 9000000002c3ef40
+    
+    PID: 616997   TASK: 9000000108f93640  CPU: 1    COMMAND: "WT_task"
+    bt: WARNING: cannot determine starting stack frame for task 9000000108f93640
+    ```
   + [ ] kernel panic (访问非法地址) `i-xt7st1ncf7`
     + 只有一行报错
       ```
       general-2-11-211-129-43 login: [ 6717.673327][    C0] CPU 0 Unable to handle kernel paging request at virtual address 0000000000000010, era == 90000000002bf128, ra == 90000000002bf128
       ```
-
-      有vmcore，`virsh dump`产生
+      有vmcore，`virsh dump`产生:
+      ```
+      crash> bt
+      PID: 1002     TASK: 900000010c487fc0  CPU: 3    COMMAND: "JCSAgentCore"
+      crash> bt -a
+      PID: 0        TASK: 9000000002c4fec0  CPU: 0    COMMAND: "swapper/0"
+      
+      PID: 10840    TASK: 900000011e18c8c0  CPU: 1    COMMAND: "IO_task /dev/vd"
+      
+      PID: 10631    TASK: 9000000108e96d00  CPU: 2    COMMAND: "VM Thread"
+      
+      PID: 1002     TASK: 900000010c487fc0  CPU: 3    COMMAND: "JCSAgentCore"
+      ```
   + [ ] guest 无法产生vmcore
     + [X] 通过将guest内核替换为host内核版本基于`kernel-6.6.0-117.0.0.122.oe2403sp2.src.rpm` 构建 + 
       [kexec-tools](https://atomgit.com/src-openeuler/kexec-tools/issues/66)，并修改`kdump reserved memory

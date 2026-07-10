@@ -1,0 +1,79 @@
+Thread 4 (Thread 1.4 (CPU#3 [running])):
+#0  raw_atomic_read (v=0x90000000035c0000 <die_lock>) at ./arch/loongarch/include/asm/cmpxchg.h:171
+#1  atomic_read (v=0x90000000035c0000 <die_lock>) at ./include/linux/atomic/atomic-instrumented.h:33
+#2  virt_spin_lock (lock=0x90000000035c0000 <die_lock>) at ./arch/loongarch/include/asm/qspinlock.h:27
+#3  queued_spin_lock_slowpath (lock=0x90000000035c0000 <die_lock>, val=1) at kernel/locking/qspinlock.c:327
+#4  0x900000000144ef74 in tcp_v4_rcv (skb=0x900000010421bf00) at net/ipv4/tcp_ipv4.c:2163
+#5  0x90000000014085ec in ip_protocol_deliver_rcu (net=0x90000000036abb00 <init_net>, skb=0x900000010421bf00, protocol=<optimized out>) at net/ipv4/ip_input.c:205
+#6  0x90000000014089f0 in ip_local_deliver_finish (net=0x90000000036abb00 <init_net>, sk=<optimized out>, skb=<optimized out>) at net/ipv4/ip_input.c:233
+#7  0x9000000001407c38 in dst_input (skb=<optimized out>) at ./include/net/dst.h:480
+#8  ip_sublist_rcv_finish (head=head@entry=0x90000001002f3bb8) at net/ipv4/ip_input.c:580
+#9  0x9000000001408320 in ip_list_rcv_finish (sk=0x0, head=0x90000001002f3c58, net=0x90000000036abb00 <init_net>) at net/ipv4/ip_input.c:631
+#10 ip_sublist_rcv (head=head@entry=0x90000001002f3c58, dev=dev@entry=0x90000001062fc000, net=net@entry=0x90000000036abb00 <init_net>) at net/ipv4/ip_input.c:639
+#11 0x9000000001408e40 in ip_list_rcv (head=0x90000001002f3ce8, pt=<optimized out>, orig_dev=<optimized out>) at net/ipv4/ip_input.c:674
+#12 0x9000000001336624 in __netif_receive_skb_list_ptype (orig_dev=0x90000001062fc000, pt_prev=0x900000000261cca8 <ip_packet_type>, head=0x90000001002f3ce8) at net/core/dev.c:5598
+#13 __netif_receive_skb_list_core (head=head@entry=0x90000001076b2110, pfmemalloc=pfmemalloc@entry=false) at net/core/dev.c:5646
+#14 0x9000000001336eb4 in __netif_receive_skb_list (head=0x90000001076b2110) at net/core/dev.c:5698
+#15 netif_receive_skb_list_internal (head=head@entry=0x90000001076b2110) at net/core/dev.c:5789
+#16 0x9000000001337748 in gro_normal_list (napi=0x90000001076b2008) at ./include/net/gro.h:448
+#17 gro_normal_list (napi=0x90000001076b2008) at ./include/net/gro.h:444
+#18 napi_complete_done (n=0x90000001076b2008, work_done=<optimized out>) at net/core/dev.c:6129
+#19 0xffff800002668928 in ?? ()
+Backtrace stopped: frame did not save the PC
+
+
+Thread 3 (Thread 1.3 (CPU#2 [running])):
+#0  panic_smp_self_stop () at kernel/panic.c:146
+#1  0x900000000161c34c in panic (fmt=0x9000000001af4630 "softlockup: hung tasks") at kernel/panic.c:323
+#2  0x90000000003ba418 in watchdog_timer_fn (hrtimer=0x90000000080848a8) at kernel/watchdog.c:537
+#3  0x90000000003583c8 in __run_hrtimer (flags=176, now=0x90000001002fbe00, timer=0x90000000080848a8, base=0x9000000008083d80, cpu_base=0x9000000008083d40) at kernel/time/hrtimer.c:1692
+#4  __hrtimer_run_queues (cpu_base=cpu_base@entry=0x9000000008083d40, now=21068020001700, flags=flags@entry=176, active_mask=active_mask@entry=15) at kernel/time/hrtimer.c:1756
+#5  0x90000000003597c0 in hrtimer_interrupt (dev=<optimized out>) at kernel/time/hrtimer.c:1818
+#6  0x9000000000227f18 in constant_timer_interrupt (irq=<optimized out>, data=<optimized out>) at arch/loongarch/kernel/time.c:42
+#7  0x900000000030df98 in __handle_irq_event_percpu (desc=desc@entry=0x900000010025c800) at kernel/irq/handle.c:158
+#8  0x900000000030e170 in handle_irq_event_percpu (desc=0x900000010025c800) at kernel/irq/handle.c:193
+#9  0x9000000000316578 in handle_percpu_irq (desc=0x900000010025c800) at kernel/irq/chip.c:907
+#10 0x900000000030c700 in generic_handle_irq_desc (desc=<optimized out>) at ./include/linux/irqdesc.h:166
+#11 handle_irq_desc (desc=<optimized out>) at kernel/irq/irqdesc.c:676
+#12 generic_handle_domain_irq (domain=<optimized out>, hwirq=<optimized out>) at kernel/irq/irqdesc.c:732
+#13 0x9000000000d79178 in handle_cpu_irq (regs=<optimized out>) at drivers/irqchip/irq-loongarch-cpu.c:81
+#14 0x900000000163d4c0 in handle_loongarch_irq (regs=0x900000013eeb3a70) at arch/loongarch/kernel/traps.c:1069
+#15 0x900000000163d560 in do_vint (regs=0x900000013eeb3a70, sp=10376293546812193344) at arch/loongarch/kernel/traps.c:1090
+#16 0x0000000000000000 in ?? ()
+Backtrace stopped: frame did not save the PC
+
+Thread 2 (Thread 1.2 (CPU#1 [running])):
+#0  csd_lock_wait (csd=<optimized out>) at kernel/smp.c:320
+#1  csd_lock (csd=<optimized out>) at kernel/smp.c:326
+#2  smp_call_function_many_cond (mask=<optimized out>, func=0x9000000000235c60 <crash_shutdown_secondary>, info=0x0, scf_flags=<optimized out>, cond_func=cond_func@entry=0x0) at kernel/smp.c:813
+--Type <RET> for more, q to quit, c to continue without paging--
+#3  0x9000000000377a2c in smp_call_function_many (wait=<optimized out>, info=<optimized out>, func=<optimized out>, mask=<optimized out>) at kernel/smp.c:879
+#4  smp_call_function (func=<optimized out>, info=<optimized out>, wait=<optimized out>) at kernel/smp.c:901
+#5  0x9000000000235694 in crash_smp_send_stop () at arch/loongarch/kernel/machine_kexec.c:273
+#6  0x9000000000235f6c in crash_smp_send_stop () at arch/loongarch/kernel/machine_kexec.c:318
+#7  machine_crash_shutdown (regs=<optimized out>) at arch/loongarch/kernel/machine_kexec.c:313
+#8  0x900000000037bf7c in __crash_kexec (regs=0x0) at kernel/kexec_core.c:1066
+#9  0x900000000161c3f8 in panic (fmt=0x9000000001af4630 "softlockup: hung tasks") at kernel/panic.c:359
+#10 0x90000000003ba418 in watchdog_timer_fn (hrtimer=0x90000000080448a8) at kernel/watchdog.c:537
+#11 0x90000000003583c8 in __run_hrtimer (flags=176, now=0x90000001002f7e00, timer=0x90000000080448a8, base=0x9000000008043d80, cpu_base=0x9000000008043d40) at kernel/time/hrtimer.c:1692
+#12 __hrtimer_run_queues (cpu_base=cpu_base@entry=0x9000000008043d40, now=21044020002250, flags=flags@entry=176, active_mask=active_mask@entry=15) at kernel/time/hrtimer.c:1756
+#13 0x90000000003597c0 in hrtimer_interrupt (dev=<optimized out>) at kernel/time/hrtimer.c:1818
+#14 0x9000000000227f18 in constant_timer_interrupt (irq=<optimized out>, data=<optimized out>) at arch/loongarch/kernel/time.c:42
+#15 0x900000000030df98 in __handle_irq_event_percpu (desc=desc@entry=0x900000010025c800) at kernel/irq/handle.c:158
+#16 0x900000000030e170 in handle_irq_event_percpu (desc=0x900000010025c800) at kernel/irq/handle.c:193
+#17 0x9000000000316578 in handle_percpu_irq (desc=0x900000010025c800) at kernel/irq/chip.c:907
+#18 0x900000000030c700 in generic_handle_irq_desc (desc=<optimized out>) at ./include/linux/irqdesc.h:166
+#19 handle_irq_desc (desc=<optimized out>) at kernel/irq/irqdesc.c:676
+#20 generic_handle_domain_irq (domain=<optimized out>, hwirq=<optimized out>) at kernel/irq/irqdesc.c:732
+#21 0x9000000000d79178 in handle_cpu_irq (regs=<optimized out>) at drivers/irqchip/irq-loongarch-cpu.c:81
+#22 0x900000000163d4c0 in handle_loongarch_irq (regs=0x900000008e0cfa70) at arch/loongarch/kernel/traps.c:1069
+#23 0x900000000163d560 in do_vint (regs=0x900000008e0cfa70, sp=10376293543844837952) at arch/loongarch/kernel/traps.c:1090
+#24 0x0000000000000000 in ?? ()
+Backtrace stopped: frame did not save the PC
+
+Thread 1 (Thread 1.1 (CPU#0 [running])):
+#0  raw_atomic_read (v=0x90000000035c0000 <die_lock>) at ./arch/loongarch/include/asm/cmpxchg.h:171
+#1  atomic_read (v=0x90000000035c0000 <die_lock>) at ./include/linux/atomic/atomic-instrumented.h:33
+#2  virt_spin_lock (lock=0x90000000035c0000 <die_lock>) at ./arch/loongarch/include/asm/qspinlock.h:27
+#3  queued_spin_lock_slowpath (lock=0x90000000035c0000 <die_lock>, val=1) at kernel/locking/qspinlock.c:327
+Backtrace stopped: Cannot access memory at address 0xffffff8001fffe38

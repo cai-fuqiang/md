@@ -1,6 +1,7 @@
 ## HOST
 ### grub改动将nvidia 驱动绑定vfio
 ```sh
+# !只需要把h200绑定vfio即可
 OPT='vfio-pci.ids=10de:2335,10de:22a3'
 grep -qF "$OPT" /etc/default/grub || \
 sudo sed -i -E "s|^GRUB_CMDLINE_LINUX=\"([^\"]*)\"$|GRUB_CMDLINE_LINUX=\"\1 $OPT\"|" /etc/default/grub

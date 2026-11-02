@@ -127,3 +127,10 @@ root@ubuntu240403:~# lspci -t
 
 1. [Optimizing VM Configuration for Performant AI Inference](https://docs.nvidia.com/ai-enterprise/planning-resource/optimizing-vm-configuration-ai-inference/latest/appendix.html)
 2. [NVIDIA NVSWITCH The World’s Highest-Bandwidth On-Node Switch](https://images.nvidia.com/content/pdf/nvswitch-technical-overview.pdf)
+3. [NVIDIA NCCL DOCUMENTATION](https://docs.nvidia.com/deeplearning/nccl/install-guide/index.html)
+
+
+### topo file link
+1. [NCCL topology on the VM of H200](https://github.com/NVIDIA/nccl-tests/issues/256)
+2. [nccl-topology / nccl-topo-h100-v1.xml](https://github.com/nebius/nccl-topology/blob/main/nccl-topo-h100-v1.xml)
+3. []()
